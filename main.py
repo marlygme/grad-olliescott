@@ -1,21 +1,58 @@
-from flask import Flask, render_template, request
 
-app = Flask('app')
+from flask import Flask, render_template, request, redirect, url_for
+from datetime import datetime
+import json
+import os
+
+app = Flask(__name__)
+
+data_file = 'submissions.json'
+
+# Load existing data or create empty
+if not os.path.exists(data_file):
+    with open(data_file, 'w') as f:
+        json.dump([], f)
+
 
 @app.route('/')
-def hello_world():
-    print(request.headers)
-    return render_template(
-        'index.html',
-        user_id=request.headers['X-Replit-User-Id'],
-        user_name=request.headers['X-Replit-User-Name'],
-        user_roles=request.headers['X-Replit-User-Roles'],
-        user_bio=request.headers['X-Replit-User-Bio'],
-        user_profile_image=request.headers['X-Replit-User-Profile-Image'],
-        user_teams=request.headers['X-Replit-User-Teams'],
-        user_url=request.headers['X-Replit-User-Url']
-    )
+def index():
+    with open(data_file, 'r') as f:
+        submissions = json.load(f)
+    return render_template('index.html', submissions=submissions[::-1])
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080)
 
+@app.route('/submit', methods=['GET', 'POST'])
+def submit():
+    if request.method == 'POST':
+        new_entry = {
+            'company': request.form['company'],
+            'role': request.form['role'],
+            'salary': request.form.get('salary', ''),
+            'bonus': request.form.get('bonus', ''),
+            'university': request.form.get('university', ''),
+            'wam': request.form.get('wam', ''),
+            'application_stages': request.form.get('application_stages', ''),
+            'interview_experience': request.form.get('interview_experience', ''),
+            'outcome': request.form['outcome'],
+            'advice': request.form.get('advice', ''),
+            'timestamp': datetime.utcnow().isoformat()
+        }
+        with open(data_file, 'r') as f:
+            data = json.load(f)
+        data.append(new_entry)
+        with open(data_file, 'w') as f:
+            json.dump(data, f, indent=2)
+        return redirect(url_for('index'))
+    return render_template('submit.html')
+
+
+@app.route('/company/<name>')
+def company_page(name):
+    with open(data_file, 'r') as f:
+        data = json.load(f)
+    company_entries = [entry for entry in data if entry['company'].lower() == name.lower()]
+    return render_template('company.html', company=name, entries=company_entries)
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080, debug=True)

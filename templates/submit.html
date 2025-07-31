@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Your Experience</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .required {
+            color: red;
+        }
+        .submit-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .submit-btn:hover {
+            background-color: #218838;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <a href="{{ url_for('index') }}" class="back-link">← Back to submissions</a>
+        <h1>Share Your Application Experience</h1>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="company">Company <span class="required">*</span></label>
+                <input type="text" id="company" name="company" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="role">Role <span class="required">*</span></label>
+                <input type="text" id="role" name="role" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="salary">Salary (optional)</label>
+                <input type="text" id="salary" name="salary" placeholder="e.g., 80000">
+            </div>
+            
+            <div class="form-group">
+                <label for="bonus">Bonus (optional)</label>
+                <input type="text" id="bonus" name="bonus" placeholder="e.g., 5000">
+            </div>
+            
+            <div class="form-group">
+                <label for="university">University (optional)</label>
+                <input type="text" id="university" name="university">
+            </div>
+            
+            <div class="form-group">
+                <label for="wam">WAM/GPA (optional)</label>
+                <input type="text" id="wam" name="wam" placeholder="e.g., 85 or 3.8">
+            </div>
+            
+            <div class="form-group">
+                <label for="application_stages">Application Stages (optional)</label>
+                <textarea id="application_stages" name="application_stages" placeholder="Describe the application process..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="interview_experience">Interview Experience (optional)</label>
+                <textarea id="interview_experience" name="interview_experience" placeholder="Share your interview experience..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="outcome">Outcome <span class="required">*</span></label>
+                <select id="outcome" name="outcome" required>
+                    <option value="">Select outcome</option>
+                    <option value="Success">Success</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Pending">Pending</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="advice">Advice for Future Applicants (optional)</label>
+                <textarea id="advice" name="advice" placeholder="Any tips or advice..."></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn">Submit Experience</button>
+        </form>
+    </div>
+</body>
+</html>

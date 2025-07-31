@@ -1,0 +1,124 @@
+🧱 1. Create Your Folder Structure
+Inside your Replit project, make sure this exists:
+
+css
+Copy
+Edit
+.
+├── main.py              # (your Flask code file)
+├── submissions.json     # (empty or with [])
+└── templates/           
+    ├── index.html
+    ├── submit.html
+    └── company.html
+📄 2. Create submissions.json
+In the Replit file tree:
+
+Click + → New File → name it: submissions.json
+
+Paste in:
+
+json
+Copy
+Edit
+[]
+This is where all user submissions will be stored.
+
+🧠 3. Create templates/ folder + HTML files
+In the file tree:
+
+Click + → New Folder → name it templates
+
+Inside templates, create 3 files:
+
+index.html
+
+submit.html
+
+company.html
+
+✍️ 4. Paste the following HTML
+📄 index.html
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gradvantage – Grad Job Insights</title>
+</head>
+<body>
+  <h1>🧠 Gradvantage</h1>
+  <a href="/submit">+ Submit a Grad Experience</a>
+  <hr>
+  {% for entry in submissions %}
+    <div style="margin-bottom: 2em;">
+      <strong>{{ entry.role }}</strong> at <a href="/company/{{ entry.company }}">{{ entry.company }}</a><br>
+      <em>{{ entry.university }} (WAM: {{ entry.wam }})</em><br>
+      Outcome: {{ entry.outcome }}<br>
+      Advice: {{ entry.advice }}<br>
+      <small>Submitted: {{ entry.timestamp }}</small>
+    </div>
+  {% endfor %}
+</body>
+</html>
+📝 submit.html
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Submit Grad Role Insight</title>
+</head>
+<body>
+  <h1>Submit a Graduate Experience</h1>
+  <form method="POST">
+    Company: <input name="company"><br>
+    Role: <input name="role"><br>
+    Salary: <input name="salary"><br>
+    Bonus: <input name="bonus"><br>
+    University: <input name="university"><br>
+    WAM: <input name="wam"><br>
+    Application Stages:<br>
+    <textarea name="application_stages" rows="3" cols="40"></textarea><br>
+    Interview Experience:<br>
+    <textarea name="interview_experience" rows="3" cols="40"></textarea><br>
+    Outcome: 
+    <select name="outcome">
+      <option value="Offer">Offer</option>
+      <option value="Rejected">Rejected</option>
+      <option value="Ghosted">Ghosted</option>
+    </select><br>
+    Advice for Future Applicants:<br>
+    <textarea name="advice" rows="3" cols="40"></textarea><br>
+    <button type="submit">Submit</button>
+  </form>
+</body>
+</html>
+🏢 company.html
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ company }} – Grad Insights</title>
+</head>
+<body>
+  <h1>🎓 Graduate Role Info for {{ company }}</h1>
+  <a href="/">← Back</a><br><br>
+  {% for entry in entries %}
+    <div style="margin-bottom: 2em;">
+      <strong>{{ entry.role }}</strong><br>
+      Salary: {{ entry.salary }} | Bonus: {{ entry.bonus }}<br>
+      University: {{ entry.university }} (WAM: {{ entry.wam }})<br>
+      Application: {{ entry.application_stages }}<br>
+      Interview: {{ entry.interview_experience }}<br>
+      Outcome: {{ entry.outcome }}<br>
+      Advice: {{ entry.advice }}<br>
+      <small>Submitted: {{ entry.timestamp }}</small>
+    </div>
+  {% endfor %}
+</body>
+</html>

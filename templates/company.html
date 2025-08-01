@@ -1,134 +1,81 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ company }} - Application Experiences</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #007bff;
-            text-decoration: none;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-        .submission {
-            background: white;
-            margin: 15px 0;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .submission h3 {
-            margin-top: 0;
-            color: #333;
-        }
-        .outcome {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .outcome.success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .outcome.rejected {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        .outcome.pending {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-        .timestamp {
-            color: #666;
-            font-size: 12px;
-        }
-        .field {
-            margin: 8px 0;
-        }
-        .field strong {
-            color: #555;
-        }
-        .stats {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ company }} – Insights</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+    crossorigin="anonymous"
+  />
 </head>
-<body>
-    <a href="{{ url_for('index') }}" class="back-link">← Back to all submissions</a>
-    
-    <div class="header">
-        <h1>{{ company }} - Application Experiences</h1>
-    </div>
+<body class="bg-light">
+  <div class="container py-4">
+    <a href="{{ url_for('index') }}" class="btn btn-link mb-3">← Back to all submissions</a>
+    <h1 class="mb-4">{{ company }} Graduate Roles</h1>
 
     {% if entries %}
-        <div class="stats">
-            <h3>Summary</h3>
-            <p><strong>Total submissions:</strong> {{ entries|length }}</p>
-            <p><strong>Success rate:</strong> {{ ((entries|selectattr('outcome', 'equalto', 'Success')|list|length) / entries|length * 100)|round(1) }}%</p>
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Summary</h5>
+          <div class="row text-center">
+            <div class="col-md-4">
+              <h3 class="text-primary">{{ entries|length }}</h3>
+              <p class="text-muted">Total Submissions</p>
+            </div>
+            <div class="col-md-4">
+              <h3 class="text-success">{{ ((entries|selectattr('outcome', 'equalto', 'Success')|list|length) / entries|length * 100)|round(1) }}%</h3>
+              <p class="text-muted">Success Rate</p>
+            </div>
+            <div class="col-md-4">
+              <h3 class="text-info">{{ entries|selectattr('outcome', 'equalto', 'Pending')|list|length }}</h3>
+              <p class="text-muted">Pending</p>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {% for entry in entries %}
-        <div class="submission">
-            <h3>
-                {{ entry.role }}
-                <span class="outcome {{ entry.outcome.lower() }}">{{ entry.outcome }}</span>
-            </h3>
-            
-            {% if entry.salary %}
-            <div class="field"><strong>Salary:</strong> ${{ entry.salary }}</div>
-            {% endif %}
-            
-            {% if entry.bonus %}
-            <div class="field"><strong>Bonus:</strong> ${{ entry.bonus }}</div>
-            {% endif %}
-            
-            {% if entry.university %}
-            <div class="field"><strong>University:</strong> {{ entry.university }}</div>
-            {% endif %}
-            
-            {% if entry.wam %}
-            <div class="field"><strong>WAM:</strong> {{ entry.wam }}</div>
-            {% endif %}
-            
-            {% if entry.application_stages %}
-            <div class="field"><strong>Application Stages:</strong> {{ entry.application_stages }}</div>
-            {% endif %}
-            
-            {% if entry.interview_experience %}
-            <div class="field"><strong>Interview Experience:</strong> {{ entry.interview_experience }}</div>
-            {% endif %}
-            
-            {% if entry.advice %}
-            <div class="field"><strong>Advice:</strong> {{ entry.advice }}</div>
-            {% endif %}
-            
-            <div class="timestamp">Submitted: {{ entry.timestamp.split('T')[0] }}</div>
-        </div>
+      <div class="row gy-4">
+        {% for e in entries %}
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">{{ e.role }}</h5>
+                <p class="card-text">
+                  <span class="badge bg-{{ 'success' if e.outcome == 'Success' else 'danger' if e.outcome == 'Rejected' else 'warning' }}">
+                    {{ e.outcome }}
+                  </span><br>
+                  <strong>Salary:</strong> {{ '$' + e.salary if e.salary else '–' }} |
+                  <strong>Bonus:</strong> {{ '$' + e.bonus if e.bonus else '–' }}<br>
+                  {% if e.university %}
+                  <strong>University:</strong> {{ e.university }}
+                  {% if e.wam %}(WAM: {{ e.wam }}){% endif %}<br>
+                  {% endif %}
+                </p>
+                {% if e.application_stages %}
+                <p class="card-text"><strong>Application:</strong> {{ e.application_stages }}</p>
+                {% endif %}
+                {% if e.interview_experience %}
+                <p class="card-text"><strong>Interview:</strong> {{ e.interview_experience }}</p>
+                {% endif %}
+                {% if e.advice %}
+                <p class="card-text"><em>{{ e.advice }}</em></p>
+                {% endif %}
+                <small class="text-muted">
+                  Submitted: {{ e.timestamp.split('T')[0] }}
+                </small>
+              </div>
+            </div>
+          </div>
         {% endfor %}
+      </div>
     {% else %}
-        <div class="submission">
-            <p>No submissions for {{ company }} yet.</p>
-        </div>
+      <div class="alert alert-warning text-center">
+        No entries for {{ company }} yet. Be the first to share your experience!
+      </div>
     {% endif %}
+  </div>
 </body>
 </html>

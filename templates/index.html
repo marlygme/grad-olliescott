@@ -1,150 +1,327 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Gradvantage – Graduate Job Insights</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     body { 
-      font-family: 'Inter', sans-serif; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
+      font-family: 'Roboto', sans-serif; 
+      background-color: #f8f9fa;
+      margin: 0;
     }
-    .main-content {
+    
+    .header {
       background: white;
-      border-radius: 20px 20px 0 0;
-      min-height: 90vh;
-      margin-top: 10vh;
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+      border-bottom: 1px solid #e9ecef;
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
     }
-    .company-card { 
-      border-radius: 15px; 
-      border: none;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      cursor: pointer;
+    
+    .logo {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #2c5aa0;
+      text-decoration: none;
     }
-    .company-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    
+    .nav-buttons .btn {
+      margin-left: 0.5rem;
+      border-radius: 4px;
+      font-weight: 500;
+      padding: 0.5rem 1.25rem;
     }
+    
+    .btn-outline-primary {
+      border-color: #2c5aa0;
+      color: #2c5aa0;
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: #2c5aa0;
+      border-color: #2c5aa0;
+    }
+    
+    .btn-primary {
+      background-color: #2c5aa0;
+      border-color: #2c5aa0;
+    }
+    
     .hero-section {
-      background: transparent;
+      background: linear-gradient(135deg, #2c5aa0 0%, #1a4480 100%);
+      color: white;
+      padding: 4rem 0;
+    }
+    
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    
+    .hero-subtitle {
+      font-size: 1.3rem;
+      font-weight: 300;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+    }
+    
+    .hero-cta {
+      background: #ff6b35;
+      border: none;
+      padding: 0.75rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 4px;
+    }
+    
+    .hero-cta:hover {
+      background: #e55a2b;
+    }
+    
+    .stats-section {
+      background: white;
       padding: 2rem 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .stat-item {
       text-align: center;
     }
-    .hero-title {
+    
+    .stat-number {
       font-size: 2.5rem;
-      font-weight: 300;
-      color: white;
-      margin-bottom: 0.5rem;
+      font-weight: 700;
+      color: #2c5aa0;
+      display: block;
     }
-    .hero-subtitle {
-      color: rgba(255,255,255,0.8);
-      font-size: 1.1rem;
-      font-weight: 300;
-    }
-    .stat-badge {
-      background: linear-gradient(45deg, #28a745, #20c997);
-      color: white;
-      border-radius: 20px;
-      padding: 0.25rem 0.75rem;
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-    .salary-badge {
-      background: linear-gradient(45deg, #007bff, #0056b3);
-      color: white;
-      border-radius: 20px;
-      padding: 0.25rem 0.75rem;
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-    .submissions-badge {
-      background: linear-gradient(45deg, #6f42c1, #563d7c);
-      color: white;
-      border-radius: 20px;
-      padding: 0.25rem 0.75rem;
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-    .company-name {
-      font-weight: 600;
-      color: #2c3e50;
-      margin-bottom: 0.5rem;
-    }
-    .role-list {
+    
+    .stat-label {
       color: #6c757d;
       font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .companies-section {
+      padding: 3rem 0;
+    }
+    
+    .section-title {
+      font-size: 2rem;
+      font-weight: 600;
+      color: #212529;
+      margin-bottom: 0.5rem;
+    }
+    
+    .section-subtitle {
+      color: #6c757d;
+      margin-bottom: 2.5rem;
+    }
+    
+    .company-card {
+      background: white;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1.5rem;
+      height: 100%;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .company-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border-color: #2c5aa0;
+    }
+    
+    .company-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #212529;
+      margin-bottom: 0.75rem;
+    }
+    
+    .company-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .stat-badge {
+      background: #e7f3ff;
+      color: #2c5aa0;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    
+    .salary-badge {
+      background: #f0f9f0;
+      color: #198754;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    
+    .roles-section {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+    }
+    
+    .empty-icon {
+      width: 80px;
+      height: 80px;
+      background: #f8f9fa;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+    }
+    
+    .footer {
+      background: #2c5aa0;
+      color: white;
+      padding: 2rem 0;
+      margin-top: 4rem;
     }
   </style>
 </head>
 <body>
 
-  <div class="hero-section">
+  <header class="header">
     <div class="container">
-      <h1 class="hero-title">Gradvantage</h1>
-      <p class="hero-subtitle">Real insights from graduates at top companies</p>
-    </div>
-  </div>
-
-  <div class="main-content">
-    <nav class="navbar navbar-expand-lg navbar-light bg-transparent px-4 pt-4">
-      <div class="container-fluid">
-        <div class="ms-auto">
-          <a class="btn btn-outline-primary me-2" href="/stories">Browse Stories</a>
-          <a class="btn btn-outline-primary me-2" href="/law-match">Find Your Path</a>
+      <div class="d-flex justify-content-between align-items-center">
+        <a href="/" class="logo">Gradvantage</a>
+        <div class="nav-buttons">
+          <a class="btn btn-outline-primary" href="/stories">Browse Stories</a>
+          <a class="btn btn-outline-primary" href="/law-match">Career Match</a>
           <a class="btn btn-primary" href="/submit">Share Experience</a>
         </div>
       </div>
-    </nav>
+    </div>
+  </header>
 
-    <div class="container pb-5 px-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0" style="color: #2c3e50; font-weight: 400;">Companies</h2>
-        <span class="text-muted">{{ total_submissions }} total experiences</span>
+  <section class="hero-section">
+    <div class="container text-center">
+      <h1 class="hero-title">Your Graduate Career Starts Here</h1>
+      <p class="hero-subtitle">
+        Connect with real experiences from graduates at Australia's top companies.<br>
+        Get the insights you need to land your dream graduate role.
+      </p>
+      <a href="/submit" class="btn btn-primary hero-cta">Share Your Story</a>
+    </div>
+  </section>
+
+  <section class="stats-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-3 col-6">
+          <div class="stat-item">
+            <span class="stat-number">{{ total_submissions }}</span>
+            <div class="stat-label">Graduate Stories</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="stat-item">
+            <span class="stat-number">{{ companies|length }}</span>
+            <div class="stat-label">Companies</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="stat-item">
+            <span class="stat-number">50+</span>
+            <div class="stat-label">Career Fields</div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="stat-item">
+            <span class="stat-number">100%</span>
+            <div class="stat-label">Real Experiences</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="companies-section">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="section-title">Explore Companies</h2>
+        <p class="section-subtitle">Discover insights from graduates at leading organizations</p>
       </div>
 
       {% if companies %}
         <div class="row g-4">
           {% for company in companies %}
             <div class="col-lg-4 col-md-6">
-              <div class="card company-card h-100" onclick="location.href='/company/{{ company.name|urlencode }}'">
-                <div class="card-body p-4">
-                  <h5 class="company-name">{{ company.name }}</h5>
+              <div class="company-card" onclick="location.href='/company/{{ company.name|urlencode }}'">
+                <h3 class="company-name">{{ company.name }}</h3>
+                
+                <div class="company-stats">
+                  <span class="stat-badge">{{ company.total_submissions }} experiences</span>
+                  {% if company.avg_salary %}
+                    <span class="salary-badge">${{ "{:,}".format(company.avg_salary) }} avg salary</span>
+                  {% endif %}
+                </div>
 
-                  <div class="d-flex flex-wrap gap-2 mb-3">
-                    <span class="submissions-badge">{{ company.total_submissions }} stories</span>
-                    {% if company.avg_salary %}
-                      <span class="salary-badge">${{ "{:,}".format(company.avg_salary) }} avg</span>
-                    {% endif %}
-                  </div>
-
-                  <div class="role-list">
-                    <strong>Popular roles:</strong><br>
-                    {% for role in company.recent_roles %}
-                      {{ role }}{% if not loop.last %}, {% endif %}
-                    {% endfor %}
-                  </div>
+                <div class="roles-section">
+                  <strong>Popular roles:</strong><br>
+                  {% for role in company.recent_roles %}
+                    {{ role }}{% if not loop.last %}, {% endif %}
+                  {% endfor %}
                 </div>
               </div>
             </div>
           {% endfor %}
         </div>
       {% else %}
-        <div class="text-center py-5">
-          <div class="mb-4">
-            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#dee2e6" stroke-width="1">
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"></path>
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6c757d" stroke-width="2">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
             </svg>
           </div>
-          <h4 style="color: #6c757d; font-weight: 300;">No companies yet</h4>
-          <p class="text-muted mb-4">Be the first to share your graduate experience!</p>
-          <a href="/submit" class="btn btn-primary">Share Your Story</a>
+          <h4 style="color: #6c757d; font-weight: 400; margin-bottom: 1rem;">No companies yet</h4>
+          <p class="text-muted mb-4">Be the first to share your graduate experience and help build our community!</p>
+          <a href="/submit" class="btn btn-primary">Share Your Experience</a>
         </div>
       {% endif %}
     </div>
-  </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Gradvantage</h5>
+          <p class="mb-0">Connecting graduates with real career insights.</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <a href="/stories" class="text-white text-decoration-none me-3">Browse Stories</a>
+          <a href="/submit" class="text-white text-decoration-none">Share Experience</a>
+        </div>
+      </div>
+    </div>
+  </footer>
 
 </body>
 </html>

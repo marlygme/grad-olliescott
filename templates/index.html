@@ -3,86 +3,171 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Gradvantage – Graduate Job Insights</title>
+  <title>Gradvantage – Real Graduate Stories</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #f9f9f9; }
-    .card { border-radius: 12px; }
-    .navbar-brand { font-weight: 600; }
-    .badge-success { background-color: #198754; }
-    .badge-rejected { background-color: #dc3545; }
-    .badge-ghosted { background-color: #6c757d; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .main-content {
+      background: white;
+      border-radius: 20px 20px 0 0;
+      min-height: 90vh;
+      margin-top: 10vh;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+    }
+    .card { 
+      border-radius: 15px; 
+      border: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    .navbar-brand { font-weight: 600; font-size: 1.5rem; }
+    .success-badge { background: linear-gradient(45deg, #28a745, #20c997); color: white; }
+    .rejected-badge { background: linear-gradient(45deg, #dc3545, #fd7e14); color: white; }
+    .pending-badge { background: linear-gradient(45deg, #ffc107, #fd7e14); color: white; }
+    .ghosted-badge { background: linear-gradient(45deg, #6c757d, #495057); color: white; }
+    .role-title { color: #2c3e50; font-weight: 500; }
+    .company-link { color: #667eea; text-decoration: none; font-weight: 500; }
+    .company-link:hover { color: #764ba2; }
+    .stat-value { font-weight: 300; color: #6c757d; }
+    .hero-section {
+      background: transparent;
+      padding: 2rem 0;
+      text-align: center;
+    }
+    .hero-title {
+      font-size: 2.5rem;
+      font-weight: 300;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+    .hero-subtitle {
+      color: rgba(255,255,255,0.8);
+      font-size: 1.1rem;
+      font-weight: 300;
+    }
   </style>
 </head>
 <body>
 
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary px-3 mb-4">
-    <a class="navbar-brand" href="/">Gradvantage</a>
-    <div class="ms-auto">
-      <a class="btn btn-outline-light me-2" href="/law-match">Find Your Match</a>
-      <a class="btn btn-light" href="/submit">Share Experience</a>
+  <div class="hero-section">
+    <div class="container">
+      <h1 class="hero-title">Gradvantage</h1>
+      <p class="hero-subtitle">Where grad stories become your roadmap</p>
     </div>
-  </nav>
+  </div>
 
-  <div class="container mb-5">
-    <h2 class="mb-3">🎓 Graduate Job Experiences</h2>
-    <p class="text-muted">Total submissions: {{ submissions|length }}</p>
-
-    {% for entry in submissions %}
-      <div class="card shadow-sm border-0 mb-4 p-3">
-        <h5 class="card-title mb-1">{{ entry.role }}</h5>
-        <p class="mb-1 text-muted">
-          at <a href="/company/{{ entry.company|urlencode }}">{{ entry.company }}</a>
-        </p>
-
-        <div class="row mb-2">
-          <div class="col-md-4"><strong>🎓 Uni:</strong> {{ entry.university or '–' }}</div>
-          <div class="col-md-4"><strong>WAM:</strong> {{ entry.wam or '–' }}</div>
-          <div class="col-md-4"><strong>📅 Submitted:</strong> {{ entry.timestamp.split('T')[0] }}</div>
+  <div class="main-content">
+    <nav class="navbar navbar-expand-lg navbar-light bg-transparent px-4 pt-4">
+      <div class="container-fluid">
+        <div class="ms-auto">
+          <a class="btn btn-outline-primary me-2" href="/law-match">Find Your Path</a>
+          <a class="btn btn-primary" href="/submit">Share Your Story</a>
         </div>
-
-        <div class="row mb-2">
-          <div class="col-md-6"><strong>💰 Salary:</strong> {{ entry.salary or '–' }}</div>
-          <div class="col-md-6"><strong>💸 Bonus:</strong> {{ entry.bonus or '–' }}</div>
-        </div>
-
-        <div class="mb-2">
-          <strong>✅ Outcome:</strong>
-          {% if entry.outcome == 'Success' %}
-            <span class="badge badge-success">Success</span>
-          {% elif entry.outcome == 'Rejected' %}
-            <span class="badge badge-rejected">Rejected</span>
-          {% elif entry.outcome == 'Pending' %}
-            <span class="badge bg-warning">Pending</span>
-          {% else %}
-            <span class="badge badge-ghosted">{{ entry.outcome }}</span>
-          {% endif %}
-        </div>
-
-        {% if entry.application_stages %}
-        <div class="mb-2">
-          <strong>📋 Application Process:</strong> {{ entry.application_stages }}
-        </div>
-        {% endif %}
-
-        {% if entry.interview_experience %}
-        <div class="mb-2">
-          <strong>🎤 Interview Experience:</strong> {{ entry.interview_experience }}
-        </div>
-        {% endif %}
-
-        {% if entry.advice %}
-        <div class="mb-0">
-          <strong>💡 Advice:</strong> <em>{{ entry.advice }}</em>
-        </div>
-        {% endif %}
       </div>
-    {% else %}
-      <div class="alert alert-secondary text-center">
-        No submissions yet. Be the first to share your experience!
+    </nav>
+
+    <div class="container pb-5 px-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0" style="color: #2c3e50; font-weight: 400;">Latest Stories</h2>
+        <span class="stat-value">{{ submissions|length }} experiences shared</span>
       </div>
-    {% endfor %}
+
+      {% for entry in submissions %}
+        <div class="card shadow-sm mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h5 class="role-title mb-1">{{ entry.role }}</h5>
+                <p class="mb-0 text-muted">
+                  at <a href="/company/{{ entry.company|urlencode }}" class="company-link">{{ entry.company }}</a>
+                </p>
+              </div>
+              <div class="text-end">
+                {% if entry.outcome == 'Success' %}
+                  <span class="badge success-badge px-3 py-2">Got it! 🎉</span>
+                {% elif entry.outcome == 'Rejected' %}
+                  <span class="badge rejected-badge px-3 py-2">Didn't work out</span>
+                {% elif entry.outcome == 'Pending' %}
+                  <span class="badge pending-badge px-3 py-2">Still waiting...</span>
+                {% else %}
+                  <span class="badge ghosted-badge px-3 py-2">{{ entry.outcome }}</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-3">
+                <small class="text-muted d-block">University</small>
+                <span>{{ entry.university or 'Not specified' }}</span>
+              </div>
+              <div class="col-md-3">
+                <small class="text-muted d-block">WAM/GPA</small>
+                <span>{{ entry.wam or 'Not specified' }}</span>
+              </div>
+              <div class="col-md-3">
+                <small class="text-muted d-block">Salary</small>
+                <span>{{ ('$' + entry.salary|string) if entry.salary else 'Not disclosed' }}</span>
+              </div>
+              <div class="col-md-3">
+                <small class="text-muted d-block">Shared</small>
+                <span>{{ entry.timestamp.split('T')[0] }}</span>
+              </div>
+            </div>
+
+            {% if entry.bonus %}
+            <div class="mb-3">
+              <small class="text-muted d-block">Bonus/Sign-on</small>
+              <span>${{ entry.bonus }}</span>
+            </div>
+            {% endif %}
+
+            {% if entry.application_stages %}
+            <div class="mb-3">
+              <small class="text-muted d-block">How the process went</small>
+              <p class="mb-0">{{ entry.application_stages }}</p>
+            </div>
+            {% endif %}
+
+            {% if entry.interview_experience %}
+            <div class="mb-3">
+              <small class="text-muted d-block">Interview experience</small>
+              <p class="mb-0">{{ entry.interview_experience }}</p>
+            </div>
+            {% endif %}
+
+            {% if entry.advice %}
+            <div class="mb-0">
+              <small class="text-muted d-block">Their advice</small>
+              <p class="mb-0 fst-italic">"{{ entry.advice }}"</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      {% else %}
+        <div class="text-center py-5">
+          <div class="mb-4">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#dee2e6" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14,2 14,8 20,8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10,9 9,9 8,9"></polyline>
+            </svg>
+          </div>
+          <h4 style="color: #6c757d; font-weight: 300;">No stories yet</h4>
+          <p class="text-muted mb-4">Be the first to share your graduate journey!</p>
+          <a href="/submit" class="btn btn-primary">Share Your Experience</a>
+        </div>
+      {% endfor %}
+    </div>
   </div>
 
 </body>

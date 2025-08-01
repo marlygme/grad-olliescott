@@ -1,0 +1,98 @@
+✅ Step 1: Survey Form Page
+Create a new route in main.py:
+python
+Copy
+Edit
+@app.route('/law-match', methods=['GET', 'POST'])
+def law_match():
+    if request.method == 'POST':
+        uni = request.form['uni']
+        wam = float(request.form['wam'])
+        interest = request.form['interest']
+        preference = request.form['preference']
+
+        # Basic rule-based match logic
+        if wam >= 75 and preference == 'prestige':
+            match = 'Try for top-tier firms like Allens, King & Wood Mallesons, or Herbert Smith Freehills.'
+        elif interest == 'commercial':
+            match = 'Consider mid-tier firms with strong commercial rotations, like Maddocks or Hall & Wilcox.'
+        elif preference == 'worklife':
+            match = 'Check out boutique firms or in-house clerkships at government or corporates.'
+        else:
+            match = 'Start with firms known for training like Lander & Rogers or Gadens.'
+
+        return render_template('law_match_result.html', match=match)
+
+    return render_template('law_match.html')
+✅ Step 2: Add law_match.html
+Create this in your templates/ folder:
+
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Law Grad Match</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <h1 class="mb-4">🧠 Law Grad Match Survey</h1>
+    <form method="POST" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">What uni are you at?</label>
+        <input type="text" name="uni" class="form-control" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Your WAM (weighted average mark)</label>
+        <input type="number" name="wam" class="form-control" step="0.1" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Which legal area are you most interested in?</label>
+        <select name="interest" class="form-select">
+          <option value="commercial">Commercial Law</option>
+          <option value="litigation">Litigation</option>
+          <option value="ip">Intellectual Property</option>
+          <option value="family">Family Law</option>
+          <option value="public">Public/Government</option>
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label">What matters most to you?</label>
+        <select name="preference" class="form-select">
+          <option value="prestige">Top-tier firm prestige</option>
+          <option value="training">Structured training programs</option>
+          <option value="worklife">Work-life balance</option>
+          <option value="culture">Culture fit</option>
+        </select>
+      </div>
+      <div class="col-12">
+        <button class="btn btn-primary" type="submit">Find My Match</button>
+        <a href="/" class="btn btn-link">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
+✅ Step 3: Add law_match_result.html
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your Match</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+  <div class="container py-5 text-center">
+    <h1 class="mb-4">🎯 Your Law Grad Match</h1>
+    <div class="alert alert-success fs-5">
+      {{ match }}
+    </div>
+    <a class="btn btn-outline-primary" href="/law-match">Try Again</a>
+    <a class="btn btn-link" href="/">Back Home</a>
+  </div>
+</body>
+</html>

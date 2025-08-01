@@ -114,7 +114,6 @@
                   <h5 class="company-name">{{ company.name }}</h5>
 
                   <div class="d-flex flex-wrap gap-2 mb-3">
-                    <span class="stat-badge">{{ company.success_rate }}% success</span>
                     <span class="submissions-badge">{{ company.total_submissions }} stories</span>
                     {% if company.avg_salary %}
                       <span class="salary-badge">${{ "{:,}".format(company.avg_salary) }} avg</span>

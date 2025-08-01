@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for
 from datetime import datetime
 import json
@@ -8,33 +7,15 @@ app = Flask(__name__)
 
 data_file = 'submissions.json'
 
-# Load existing data or create empty
 if not os.path.exists(data_file):
     with open(data_file, 'w') as f:
         json.dump([], f)
-
 
 @app.route('/')
 def index():
     with open(data_file, 'r') as f:
         submissions = json.load(f)
-    
-    # Group submissions by company
-    companies = {}
-    for submission in submissions:
-        company = submission['company']
-        if company not in companies:
-            companies[company] = []
-        companies[company].append(submission)
-    
-    # Sort companies by name and submissions by timestamp (newest first)
-    for company in companies:
-        companies[company].sort(key=lambda x: x['timestamp'], reverse=True)
-    
-    sorted_companies = sorted(companies.items())
-    
-    return render_template('index.html', companies=sorted_companies, total_submissions=len(submissions))
-
+    return render_template('index.html', submissions=submissions[::-1])
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
@@ -60,14 +41,12 @@ def submit():
         return redirect(url_for('index'))
     return render_template('submit.html')
 
-
 @app.route('/company/<name>')
 def company_page(name):
     with open(data_file, 'r') as f:
         data = json.load(f)
     company_entries = [entry for entry in data if entry['company'].lower() == name.lower()]
     return render_template('company.html', company=name, entries=company_entries)
-
 
 @app.route('/law-match', methods=['GET', 'POST'])
 def law_match():
@@ -77,7 +56,6 @@ def law_match():
         interest = request.form['interest']
         preference = request.form['preference']
 
-        # Basic rule-based match logic
         if wam >= 75 and preference == 'prestige':
             match = 'Try for top-tier firms like Allens, King & Wood Mallesons, or Herbert Smith Freehills.'
         elif interest == 'commercial':
@@ -91,6 +69,6 @@ def law_match():
 
     return render_template('law_match.html')
 
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)

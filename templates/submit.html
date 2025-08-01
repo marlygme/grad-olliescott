@@ -3,95 +3,71 @@
 {% block title %}Share Your Experience - Gradvantage{% endblock %}
 
 {% block content %}
-<div class="hero">
-  <div class="container">
-    <h1>Share Your Graduate Experience</h1>
-    <p class="lead">Help fellow graduates by sharing your journey</p>
-  </div>
-</div>
-
 <div class="container my-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-8">
-      <div class="job-card">
-        <form method="POST">
-          <div class="row g-3">
+  <h2 class="mb-4">Share Your Graduate Experience</h2>
+  <form method="POST" class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">Company <span class="text-danger">*</span></label>
-              <input name="company" class="form-control" placeholder="e.g. Commonwealth Bank" required>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Role <span class="text-danger">*</span></label>
-              <input name="role" class="form-control" placeholder="e.g. Graduate Software Engineer" required>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label">What type of experience are you sharing? <span class="text-danger">*</span></label>
-              <select name="experience_type" class="form-select" required>
-                <option value="">Choose the main focus...</option>
-                <option value="Interview Process">Interview Process & Questions</option>
-                <option value="Salary & Benefits">Salary & Benefits Discussion</option>
-                <option value="Company Culture">Company Culture & Work Environment</option>
-                <option value="Application Tips">Application & CV Tips</option>
-                <option value="Day in the Life">Day in the Life / Role Details</option>
-                <option value="Overall Experience">Overall Experience & Advice</option>
-              </select>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">What university?</label>
-              <input name="university" class="form-control" placeholder="e.g. University of Melbourne">
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">WAM/GPA</label>
-              <input name="wam" class="form-control" placeholder="e.g. 78.5">
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Base salary (optional)</label>
-              <input name="salary" type="number" class="form-control" placeholder="e.g. 75000">
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Bonus/other benefits (optional)</label>
-              <input name="bonus" class="form-control" placeholder="e.g. $5000 signing bonus">
-            </div>
-
-            <div class="col-12">
-              <label class="form-label">Application stages</label>
-              <textarea name="application_stages" class="form-control" rows="3" placeholder="Describe the application process (online application, phone screen, interviews, etc.)"></textarea>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label">Interview experience</label>
-              <textarea name="interview_experience" class="form-control" rows="4" placeholder="What were the interviews like? Technical questions? Behavioral? Any specific advice?"></textarea>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label">Outcome <span class="text-danger">*</span></label>
-              <select name="outcome" class="form-select" required>
-                <option value="">Select outcome...</option>
-                <option value="Success">Got the job! 🎉</option>
-                <option value="Rejected">Didn't get it 😔</option>
-                <option value="Withdrew">Withdrew application</option>
-                <option value="In Progress">Still in process</option>
-              </select>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label">General advice</label>
-              <textarea name="advice" class="form-control" rows="4" placeholder="Any tips or advice for future applicants?"></textarea>
-            </div>
-
-            <div class="col-12 text-center">
-              <button type="submit" class="btn btn-success btn-lg px-5">Share Experience</button>
-            </div>
-          </div>
-        </form>
-      </div>
+      <label class="form-label">Company</label>
+      <input name="company" class="form-control" required>
     </div>
-  </div>
+    <div class="col-md-6">
+      <label class="form-label">Role</label>
+      <input name="role" class="form-control" required>
+    </div>
+    <div class="col-12">
+      <label class="form-label">What type of experience are you sharing?</label>
+      <select name="experience_type" class="form-select" required>
+        <option value="">Choose the main focus...</option>
+        <option value="Interview Process">Interview Process & Questions</option>
+        <option value="Salary & Benefits">Salary & Benefits Discussion</option>
+        <option value="Company Culture">Company Culture & Work Environment</option>
+        <option value="Application Tips">Application & CV Tips</option>
+        <option value="Day in the Life">Day in the Life / Role Details</option>
+        <option value="Overall Experience">Overall Experience & Advice</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">University</label>
+      <input name="university" class="form-control">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">WAM</label>
+      <input name="wam" class="form-control" type="number" step="0.1">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Salary</label>
+      <input name="salary" class="form-control" type="number">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Bonus/Sign-on</label>
+      <input name="bonus" class="form-control">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Outcome</label>
+      <select name="outcome" class="form-select" required>
+        <option value="">Select outcome...</option>
+        <option value="Success">Got the job! 🎉</option>
+        <option value="Rejected">Didn't get it 😔</option>
+        <option value="Withdrew">Withdrew application</option>
+        <option value="In Progress">Still in process</option>
+      </select>
+    </div>
+    <div class="col-12">
+      <label class="form-label">Application Stages</label>
+      <textarea name="application_stages" class="form-control" rows="2"></textarea>
+    </div>
+    <div class="col-12">
+      <label class="form-label">Interview Experience</label>
+      <textarea name="interview_experience" class="form-control" rows="2"></textarea>
+    </div>
+    <div class="col-12">
+      <label class="form-label">Advice</label>
+      <textarea name="advice" class="form-control" rows="3"></textarea>
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Submit</button>
+      <a href="/" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </div>
+  </form>
 </div>
 {% endblock %}

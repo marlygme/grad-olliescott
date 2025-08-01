@@ -16,7 +16,10 @@
   <nav class="navbar navbar-dark bg-primary mb-4">
     <div class="container">
       <a class="navbar-brand" href="/">Gradvantage</a>
-      <a class="btn btn-outline-light" href="{{ url_for('submit') }}">Share Your Experience</a>
+      <div>
+        <a class="btn btn-outline-light me-2" href="{{ url_for('law_match') }}">Find Your Match</a>
+        <a class="btn btn-outline-light" href="{{ url_for('submit') }}">Share Your Experience</a>
+      </div>
     </div>
   </nav>
 

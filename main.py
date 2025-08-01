@@ -69,5 +69,28 @@ def company_page(name):
     return render_template('company.html', company=name, entries=company_entries)
 
 
+@app.route('/law-match', methods=['GET', 'POST'])
+def law_match():
+    if request.method == 'POST':
+        uni = request.form['uni']
+        wam = float(request.form['wam'])
+        interest = request.form['interest']
+        preference = request.form['preference']
+
+        # Basic rule-based match logic
+        if wam >= 75 and preference == 'prestige':
+            match = 'Try for top-tier firms like Allens, King & Wood Mallesons, or Herbert Smith Freehills.'
+        elif interest == 'commercial':
+            match = 'Consider mid-tier firms with strong commercial rotations, like Maddocks or Hall & Wilcox.'
+        elif preference == 'worklife':
+            match = 'Check out boutique firms or in-house clerkships at government or corporates.'
+        else:
+            match = 'Start with firms known for training like Lander & Rogers or Gadens.'
+
+        return render_template('law_match_result.html', match=match)
+
+    return render_template('law_match.html')
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -1,0 +1,187 @@
+1. Include Bootstrap in each template
+At the top of your templates/*.html, inside <head>, add:
+
+html
+Copy
+Edit
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-…"
+  crossorigin="anonymous"
+/>
+That gives you access to containers, cards, buttons, forms, etc.
+
+2. Revised index.html
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gradvantage – Grad Job Insights</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-dark bg-primary mb-4">
+    <div class="container">
+      <a class="navbar-brand" href="/">Gradvantage</a>
+      <a class="btn btn-outline-light" href="/submit">Share Your Experience</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    {% if submissions %}
+      <div class="row gy-4">
+        {% for e in submissions %}
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">
+                  {{ e.role }} at
+                  <a href="/company/{{ e.company|urlencode }}">{{ e.company }}</a>
+                </h5>
+                <p class="card-text">
+                  <strong>Outcome:</strong> {{ e.outcome }}<br>
+                  <strong>Salary:</strong> {{ e.salary or '–' }},
+                  <strong>Bonus:</strong> {{ e.bonus or '–' }}<br>
+                  <strong>Uni:</strong> {{ e.university or '–' }}
+                  (WAM: {{ e.wam or '–' }})
+                </p>
+                <p class="card-text"><em>{{ e.advice }}</em></p>
+                <footer class="text-muted"><small>
+                  Submitted: {{ e.timestamp.split('T')[0] }}
+                </small></footer>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-secondary text-center">
+        No submissions yet. Be the first to share!
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>
+3. Revised submit.html
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Submit Experience</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <h1 class="mb-4">Share Your Grad Experience</h1>
+    <form method="POST" class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Company</label>
+        <input name="company" class="form-control" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Role</label>
+        <input name="role" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Salary</label>
+        <input name="salary" class="form-control" type="number">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Bonus/Sign-on</label>
+        <input name="bonus" class="form-control">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">University</label>
+        <input name="university" class="form-control">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">WAM</label>
+        <input name="wam" class="form-control" type="number" step="0.01">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Application Stages</label>
+        <textarea name="application_stages" class="form-control" rows="2"></textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Interview Experience</label>
+        <textarea name="interview_experience" class="form-control" rows="2"></textarea>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Outcome</label>
+        <select name="outcome" class="form-select">
+          <option>Offer</option>
+          <option>Rejected</option>
+          <option>Ghosted</option>
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Advice for Future Applicants</label>
+        <textarea name="advice" class="form-control" rows="3"></textarea>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <a href="/" class="btn btn-link">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
+4. Revised company.html
+html
+Copy
+Edit
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ company }} – Insights</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <a href="/" class="btn btn-link mb-3">← Back to all</a>
+    <h1 class="mb-4">{{ company }} Graduate Roles</h1>
+
+    {% if entries %}
+      <div class="row gy-4">
+        {% for e in entries %}
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-body">
+                <h5>{{ e.role }}</h5>
+                <p>
+                  <strong>Salary:</strong> {{ e.salary or '–' }} |
+                  <strong>Bonus:</strong> {{ e.bonus or '–' }}<br>
+                  <strong>Outcome:</strong> {{ e.outcome }}
+                </p>
+                <p><em>{{ e.advice }}</em></p>
+                <small class="text-muted">
+                  Submitted: {{ e.timestamp.split('T')[0] }}
+                </small>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-warning">No entries for {{ company }} yet.</div>
+    {% endif %}
+  </div>
+</body>
+</html>

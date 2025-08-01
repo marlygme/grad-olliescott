@@ -1,12 +1,11 @@
-{% extends "base.html" %}
 
-{% block title %}Share Your Experience - Gradvantage{% endblock %}
+{% extends "base.html" %}
 
 {% block content %}
 <div class="container my-5">
   <h2 class="mb-4">Share Your Graduate Experience</h2>
   <form method="POST" class="row g-3">
-            <div class="col-md-6">
+    <div class="col-md-6">
       <label class="form-label">Company</label>
       <input name="company" class="form-control" required>
     </div>
@@ -14,16 +13,24 @@
       <label class="form-label">Role</label>
       <input name="role" class="form-control" required>
     </div>
-    <div class="col-12">
-      <label class="form-label">What type of experience are you sharing?</label>
+    <div class="col-md-6">
+      <label class="form-label">Experience Type</label>
       <select name="experience_type" class="form-select" required>
-        <option value="">Choose the main focus...</option>
-        <option value="Interview Process">Interview Process & Questions</option>
-        <option value="Salary & Benefits">Salary & Benefits Discussion</option>
-        <option value="Company Culture">Company Culture & Work Environment</option>
-        <option value="Application Tips">Application & CV Tips</option>
-        <option value="Day in the Life">Day in the Life / Role Details</option>
-        <option value="Overall Experience">Overall Experience & Advice</option>
+        <option value="">Select type</option>
+        <option value="Graduate Program">Graduate Program</option>
+        <option value="Internship">Internship</option>
+        <option value="Clerkship">Clerkship</option>
+        <option value="Vacation Work">Vacation Work</option>
+        <option value="Entry Level">Entry Level</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Outcome</label>
+      <select name="outcome" class="form-select" required>
+        <option value="">Select outcome</option>
+        <option value="Success">Success</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Ghosted">Ghosted</option>
       </select>
     </div>
     <div class="col-md-4">
@@ -42,27 +49,17 @@
       <label class="form-label">Bonus/Sign-on</label>
       <input name="bonus" class="form-control">
     </div>
-    <div class="col-md-6">
-      <label class="form-label">Outcome</label>
-      <select name="outcome" class="form-select" required>
-        <option value="">Select outcome...</option>
-        <option value="Success">Got the job! 🎉</option>
-        <option value="Rejected">Didn't get it 😔</option>
-        <option value="Withdrew">Withdrew application</option>
-        <option value="In Progress">Still in process</option>
-      </select>
-    </div>
     <div class="col-12">
       <label class="form-label">Application Stages</label>
-      <textarea name="application_stages" class="form-control" rows="2"></textarea>
+      <textarea name="application_stages" class="form-control" rows="2" placeholder="Describe the application process (e.g., online application, phone screen, assessment centre, etc.)"></textarea>
     </div>
     <div class="col-12">
       <label class="form-label">Interview Experience</label>
-      <textarea name="interview_experience" class="form-control" rows="2"></textarea>
+      <textarea name="interview_experience" class="form-control" rows="3" placeholder="What was the interview like? What questions were asked?"></textarea>
     </div>
     <div class="col-12">
       <label class="form-label">Advice</label>
-      <textarea name="advice" class="form-control" rows="3"></textarea>
+      <textarea name="advice" class="form-control" rows="3" placeholder="Any advice for future applicants?"></textarea>
     </div>
     <div class="col-12">
       <button type="submit" class="btn btn-primary">Submit</button>

@@ -1,102 +1,107 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ company }} – Insights</title>
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-    crossorigin="anonymous"
-  />
-</head>
-<body class="bg-light">
-  <div class="container py-4">
-    <a href="{{ url_for('index') }}" class="btn btn-link mb-3">← Back to companies</a>
-    <h1 class="mb-4">{{ company }}</h1>
 
-    {% if stats %}
-      <div class="row mb-4">
-        <div class="col-md-4">
-          <div class="card text-center">
-            <div class="card-body">
-              <h3 class="text-primary">{{ stats.total_entries }}</h3>
-              <p class="text-muted mb-0">Stories Shared</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card text-center">
-            <div class="card-body">
-              <h3 class="text-info">{{ "${:,}".format(stats.avg_salary) if stats.avg_salary else "–" }}</h3>
-              <p class="text-muted mb-0">Avg Salary</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card text-center">
-            <div class="card-body">
-              <h3 class="text-warning">{{ stats.roles|length }}</h3>
-              <p class="text-muted mb-0">Different Roles</p>
-            </div>
-          </div>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+  <h1 class="hero-title">{{ company }}</h1>
+  <p class="hero-subtitle">Graduate experiences and insights</p>
+</div>
+
+<div class="container my-5">
+  <a href="/" class="btn btn-link text-decoration-none mb-4">← Back to companies</a>
+  
+  {% if stats %}
+    <div class="row mb-5">
+      <div class="col-md-3">
+        <div class="stat-item">
+          <span class="stat-number">{{ stats.total_entries }}</span>
+          <div class="stat-label">Total Experiences</div>
         </div>
       </div>
-
-      {% if stats.roles %}
-      <div class="card mb-4">
-        <div class="card-body">
-          <h5 class="card-title">Available Roles</h5>
-          <div class="d-flex flex-wrap gap-2">
-            {% for role in stats.roles %}
-              <span class="badge bg-light text-dark border">{{ role }}</span>
-            {% endfor %}
-          </div>
+      <div class="col-md-3">
+        <div class="stat-item">
+          <span class="stat-number">{{ stats.success_rate }}%</span>
+          <div class="stat-label">Success Rate</div>
         </div>
       </div>
-      {% endif %}
-    {% endif %}
+      <div class="col-md-3">
+        <div class="stat-item">
+          {% if stats.avg_salary %}
+            <span class="stat-number">${{ "{:,}".format(stats.avg_salary) }}</span>
+          {% else %}
+            <span class="stat-number">N/A</span>
+          {% endif %}
+          <div class="stat-label">Average Salary</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-item">
+          <span class="stat-number">{{ stats.roles|length }}</span>
+          <div class="stat-label">Different Roles</div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
 
-      <div class="row gy-4">
-        {% for e in entries %}
-          <div class="col-md-6">
-            <div class="card shadow-sm">
-              <div class="card-body">
-                <h5 class="card-title">{{ e.role }}</h5>
-                <p class="card-text">
-                  <span class="badge bg-{{ 'success' if e.outcome == 'Success' else 'danger' if e.outcome == 'Rejected' else 'warning' }}">
-                    {{ e.outcome }}
-                  </span><br>
-                  <strong>Salary:</strong> {{ '$' + e.salary if e.salary else '–' }} |
-                  <strong>Bonus:</strong> {{ '$' + e.bonus if e.bonus else '–' }}<br>
-                  {% if e.university %}
-                  <strong>University:</strong> {{ e.university }}
-                  {% if e.wam %}(WAM: {{ e.wam }}){% endif %}<br>
-                  {% endif %}
-                </p>
-                {% if e.application_stages %}
-                <p class="card-text"><strong>Application:</strong> {{ e.application_stages }}</p>
+  {% if entries %}
+    <h3 class="mb-4">All Experiences</h3>
+    <div class="row g-4">
+      {% for entry in entries %}
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title role-title">{{ entry.role }}</h5>
+              
+              <div class="mb-2">
+                <strong>Type:</strong> {{ entry.experience_type or 'Not specified' }}
+              </div>
+              
+              <div class="mb-2">
+                <strong>University:</strong> {{ entry.university or 'N/A' }}
+                {% if entry.wam %}(WAM: {{ entry.wam }}){% endif %}
+              </div>
+              
+              <div class="mb-2">
+                <strong>Salary:</strong> 
+                {% if entry.salary %}${{ "{:,}".format(entry.salary|int) }}{% else %}Not disclosed{% endif %}
+                {% if entry.bonus %} + {{ entry.bonus }} bonus{% endif %}
+              </div>
+              
+              <div class="mb-3">
+                <strong>Outcome:</strong>
+                {% if entry.outcome == 'Success' %}
+                  <span class="badge success-badge">Success</span>
+                {% elif entry.outcome == 'Rejected' %}
+                  <span class="badge rejected-badge">Rejected</span>
+                {% else %}
+                  <span class="badge ghosted-badge">Ghosted</span>
                 {% endif %}
-                {% if e.interview_experience %}
-                <p class="card-text"><strong>Interview:</strong> {{ e.interview_experience }}</p>
-                {% endif %}
-                {% if e.advice %}
-                <p class="card-text"><em>{{ e.advice }}</em></p>
-                {% endif %}
-                <small class="text-muted">
-                  Submitted: {{ e.timestamp.split('T')[0] }}
-                </small>
+              </div>
+
+              {% if entry.interview_experience %}
+                <div class="mb-2">
+                  <strong>Interview:</strong> {{ entry.interview_experience[:150] }}{% if entry.interview_experience|length > 150 %}...{% endif %}
+                </div>
+              {% endif %}
+
+              {% if entry.advice %}
+                <div class="fst-italic mb-2">"{{ entry.advice[:200] }}{% if entry.advice|length > 200 %}...{% endif %}"</div>
+              {% endif %}
+              
+              <div class="text-muted small">
+                Submitted {{ entry.timestamp.split('T')[0] }}
               </div>
             </div>
           </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="alert alert-warning text-center">
-        No entries for {{ company }} yet. Be the first to share your experience!
-      </div>
-    {% endif %}
-  </div>
-</body>
-</html>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <h4>No experiences yet for {{ company }}</h4>
+      <p class="text-muted mb-4">Be the first to share your experience with this company!</p>
+      <a href="/submit" class="btn btn-primary">Share Your Experience</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

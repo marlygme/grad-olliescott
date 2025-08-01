@@ -1,123 +1,61 @@
+{% extends "base.html" %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Find Your Path – Gradvantage</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    body { 
-      font-family: 'Inter', sans-serif; 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-    }
-    .main-content {
-      background: white;
-      border-radius: 20px;
-      margin: 2rem auto;
-      max-width: 700px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-    }
-    .form-label { font-weight: 500; color: #2c3e50; }
-    .form-control, .form-select { 
-      border-radius: 10px; 
-      border: 2px solid #e9ecef;
-      padding: 12px 16px;
-      transition: border-color 0.2s ease;
-    }
-    .form-control:focus, .form-select:focus { 
-      border-color: #667eea; 
-      box-shadow: 0 0 0 0.1rem rgba(102, 126, 234, 0.25);
-    }
-    .btn-primary {
-      background: linear-gradient(45deg, #667eea, #764ba2);
-      border: none;
-      border-radius: 10px;
-      padding: 12px 30px;
-      font-weight: 500;
-    }
-    .btn-outline-secondary {
-      border-radius: 10px;
-      padding: 12px 30px;
-      font-weight: 500;
-    }
-    .hero-section {
-      background: transparent;
-      padding: 2rem;
-      text-align: center;
-      color: white;
-    }
-    .hero-title {
-      font-size: 2.2rem;
-      font-weight: 300;
-      margin-bottom: 0.5rem;
-    }
-    .hero-subtitle {
-      color: rgba(255,255,255,0.8);
-      font-size: 1.1rem;
-      font-weight: 300;
-    }
-  </style>
-</head>
-<body>
+{% block content %}
+<div class="hero-section">
+  <h1 class="hero-title">Find Your Path</h1>
+  <p class="hero-subtitle">Let's figure out which law firms might be a good fit</p>
+</div>
 
-  <div class="hero-section">
-    <h1 class="hero-title">Find Your Path</h1>
-    <p class="hero-subtitle">Let's figure out which law firms might be a good fit</p>
+<div class="container my-5">
+  <a href="/" class="btn btn-link text-decoration-none mb-4">← Back to stories</a>
+
+  <div class="mb-4">
+    <p class="text-muted">This is just a rough guide based on common patterns - every firm is different and every application is unique!</p>
   </div>
 
-  <div class="main-content">
-    <div class="p-5">
-      <a href="/" class="btn btn-link text-decoration-none mb-4">← Back to stories</a>
-      
-      <div class="mb-4">
-        <p class="text-muted">This is just a rough guide based on common patterns - every firm is different and every application is unique!</p>
-      </div>
-      
-      <form method="POST" class="row g-4">
-        <div class="col-md-6">
-          <label class="form-label">Which uni are you at?</label>
-          <input type="text" name="uni" class="form-control" placeholder="e.g. Monash University" required>
-        </div>
-        
-        <div class="col-md-6">
-          <label class="form-label">What's your WAM?</label>
-          <input type="number" name="wam" class="form-control" step="0.1" placeholder="e.g. 78.5" required>
-          <div class="form-text">Your weighted average mark</div>
-        </div>
-        
-        <div class="col-12">
-          <label class="form-label">What area of law interests you most?</label>
-          <select name="interest" class="form-select" required>
-            <option value="">Pick one...</option>
-            <option value="commercial">Commercial Law</option>
-            <option value="litigation">Litigation & Disputes</option>
-            <option value="ip">Intellectual Property</option>
-            <option value="family">Family Law</option>
-            <option value="public">Government & Public Law</option>
-          </select>
-        </div>
-        
-        <div class="col-12">
-          <label class="form-label">What matters most to you right now?</label>
-          <select name="preference" class="form-select" required>
-            <option value="">What's your priority?</option>
-            <option value="prestige">Working at a prestigious firm</option>
-            <option value="training">Getting really good training</option>
-            <option value="worklife">Having a decent work-life balance</option>
-            <option value="culture">Finding the right culture fit</option>
-          </select>
-        </div>
-        
-        <div class="col-12 pt-3">
-          <button class="btn btn-primary me-3" type="submit">Show Me Some Options</button>
-          <a href="/" class="btn btn-outline-secondary">Not Right Now</a>
-        </div>
-      </form>
+  <form method="POST" class="row g-4">
+    <div class="col-md-6">
+      <label class="form-label">Which uni are you at?</label>
+      <input type="text" name="uni" class="form-control" placeholder="e.g. Monash University" required>
     </div>
-  </div>
 
-</body>
-</html>
+    <div class="col-md-6">
+      <label class="form-label">What's your WAM?</label>
+      <input type="number" name="wam" class="form-control" step="0.1" placeholder="e.g. 78.5" required>
+      <div class="form-text">Your weighted average mark</div>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">What area interests you most?</label>
+      <select name="interest" class="form-select" required>
+        <option value="">Select area</option>
+        <option value="commercial">Commercial/Corporate Law</option>
+        <option value="litigation">Litigation/Dispute Resolution</option>
+        <option value="family">Family Law</option>
+        <option value="criminal">Criminal Law</option>
+        <option value="employment">Employment Law</option>
+        <option value="property">Property/Real Estate</option>
+        <option value="tax">Tax Law</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">What's most important to you?</label>
+      <select name="preference" class="form-select" required>
+        <option value="">Select preference</option>
+        <option value="prestige">Firm prestige/brand name</option>
+        <option value="salary">High salary</option>
+        <option value="worklife">Work-life balance</option>
+        <option value="training">Quality training/mentorship</option>
+        <option value="diversity">Diversity of work</option>
+      </select>
+    </div>
+
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Get My Match</button>
+      <a href="/" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

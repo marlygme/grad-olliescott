@@ -1,0 +1,268 @@
+
+/* Global Styles */
+body { 
+  font-family: 'Roboto', sans-serif; 
+  background-color: #f8f9fa;
+  margin: 0;
+  color: #333;
+}
+
+/* Header/Navigation */
+.header {
+  background: white;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.logo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2c5aa0;
+  text-decoration: none;
+}
+
+.nav-buttons .btn {
+  margin-left: 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+}
+
+.btn-outline-primary {
+  border-color: #2c5aa0;
+  color: #2c5aa0;
+}
+
+.btn-outline-primary:hover {
+  background-color: #2c5aa0;
+  border-color: #2c5aa0;
+}
+
+.btn-primary {
+  background-color: #2c5aa0;
+  border-color: #2c5aa0;
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #2c5aa0 0%, #1a4480 100%);
+  color: white;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  font-weight: 300;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+}
+
+.hero-cta {
+  background: #ff6b35;
+  border: none;
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.hero-cta:hover {
+  background: #e55a2b;
+}
+
+/* Stats Section */
+.stats-section {
+  background: white;
+  padding: 2rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2c5aa0;
+  display: block;
+}
+
+.stat-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Companies Section */
+.companies-section {
+  padding: 3rem 0;
+}
+
+.section-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+  color: #6c757d;
+  margin-bottom: 2.5rem;
+}
+
+/* Cards */
+.company-card, .card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  height: 100%;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.company-card:hover, .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  border-color: #2c5aa0;
+}
+
+.company-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.75rem;
+}
+
+.company-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.stat-badge {
+  background: #e7f3ff;
+  color: #2c5aa0;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.salary-badge {
+  background: #f0f9f0;
+  color: #198754;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.roles-section {
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Badge Styles */
+.success-badge, .badge-offer { 
+  background: linear-gradient(45deg, #28a745, #20c997); 
+  color: white; 
+}
+
+.rejected-badge, .badge-rejected { 
+  background: linear-gradient(45deg, #dc3545, #fd7e14); 
+  color: white; 
+}
+
+.pending-badge { 
+  background: linear-gradient(45deg, #ffc107, #fd7e14); 
+  color: white; 
+}
+
+.ghosted-badge, .badge-ghosted { 
+  background: linear-gradient(45deg, #6c757d, #495057); 
+  color: white; 
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  background: #f8f9fa;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+/* Footer */
+.footer {
+  background: #2c5aa0;
+  color: white;
+  padding: 2rem 0;
+  margin-top: 4rem;
+}
+
+/* Stories Page Specific */
+.main-content {
+  background: white;
+  border-radius: 20px 20px 0 0;
+  min-height: 90vh;
+  margin-top: 10vh;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+}
+
+.role-title { 
+  color: #2c3e50; 
+  font-weight: 500; 
+}
+
+.company-link { 
+  color: #667eea; 
+  text-decoration: none; 
+  font-weight: 500; 
+}
+
+.company-link:hover { 
+  color: #764ba2; 
+}
+
+/* Form Styles */
+.form-control, .form-select {
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #2c5aa0;
+  box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+}
+
+/* Special background for stories page */
+body.stories-page {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}

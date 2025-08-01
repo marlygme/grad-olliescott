@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,36 +21,62 @@
   </nav>
 
   <div class="container">
-    {% if submissions %}
-      <div class="row gy-4">
-        {% for e in submissions %}
-          <div class="col-md-6">
-            <div class="card shadow-sm">
-              <div class="card-body">
-                <h5 class="card-title">
-                  {{ e.role }} at
-                  <a href="{{ url_for('company_page', name=e.company) }}" class="text-decoration-none">{{ e.company }}</a>
-                </h5>
-                <p class="card-text">
-                  <span class="badge bg-{{ 'success' if e.outcome == 'Success' else 'danger' if e.outcome == 'Rejected' else 'warning' }}">
-                    {{ e.outcome }}
-                  </span><br>
-                  <strong>Salary:</strong> {{ '$' + e.salary if e.salary else '–' }},
-                  <strong>Bonus:</strong> {{ '$' + e.bonus if e.bonus else '–' }}<br>
-                  <strong>Uni:</strong> {{ e.university or '–' }}
-                  (WAM: {{ e.wam or '–' }})
-                </p>
-                {% if e.advice %}
-                <p class="card-text"><em>{{ e.advice }}</em></p>
-                {% endif %}
-                <footer class="text-muted"><small>
-                  Submitted: {{ e.timestamp.split('T')[0] }}
-                </small></footer>
-              </div>
-            </div>
-          </div>
-        {% endfor %}
+    <div class="row mb-4">
+      <div class="col-12">
+        <h1>Graduate Job Experiences</h1>
+        <p class="text-muted">{{ total_submissions }} total submissions across {{ companies|length }} firms</p>
       </div>
+    </div>
+
+    {% if companies %}
+      {% for company_name, submissions in companies %}
+        <div class="mb-5">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h3">
+              <a href="{{ url_for('company_page', name=company_name) }}" class="text-decoration-none">
+                {{ company_name }}
+              </a>
+            </h2>
+            <span class="badge bg-secondary">{{ submissions|length }} submission{{ 's' if submissions|length != 1 else '' }}</span>
+          </div>
+          
+          <div class="row gy-3">
+            {% for e in submissions %}
+              <div class="col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ e.role }}</h5>
+                    <p class="card-text">
+                      <span class="badge bg-{{ 'success' if e.outcome == 'Success' else 'danger' if e.outcome == 'Rejected' else 'warning' }}">
+                        {{ e.outcome }}
+                      </span><br>
+                      <strong>Salary:</strong> {{ '$' + e.salary if e.salary else '–' }},
+                      <strong>Bonus:</strong> {{ '$' + e.bonus if e.bonus else '–' }}<br>
+                      <strong>Uni:</strong> {{ e.university or '–' }}
+                      {% if e.wam %}(WAM: {{ e.wam }}){% endif %}
+                    </p>
+                    {% if e.advice %}
+                    <p class="card-text"><em>"{{ e.advice[:100] }}{{ '...' if e.advice|length > 100 else '' }}"</em></p>
+                    {% endif %}
+                    <footer class="text-muted"><small>
+                      Submitted: {{ e.timestamp.split('T')[0] }}
+                    </small></footer>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+          
+          {% if submissions|length > 3 %}
+            <div class="text-center mt-3">
+              <a href="{{ url_for('company_page', name=company_name) }}" class="btn btn-outline-primary">
+                View all {{ submissions|length }} {{ company_name }} submissions →
+              </a>
+            </div>
+          {% endif %}
+        </div>
+        <hr class="my-4">
+      {% endfor %}
     {% else %}
       <div class="alert alert-secondary text-center">
         No submissions yet. Be the first to share your experience!

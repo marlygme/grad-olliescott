@@ -13,29 +13,58 @@
 </head>
 <body class="bg-light">
   <div class="container py-4">
-    <a href="{{ url_for('index') }}" class="btn btn-link mb-3">← Back to all submissions</a>
-    <h1 class="mb-4">{{ company }} Graduate Roles</h1>
+    <a href="{{ url_for('index') }}" class="btn btn-link mb-3">← Back to companies</a>
+    <h1 class="mb-4">{{ company }}</h1>
 
-    {% if entries %}
-      <div class="card mb-4">
-        <div class="card-body">
-          <h5 class="card-title">Summary</h5>
-          <div class="row text-center">
-            <div class="col-md-4">
-              <h3 class="text-primary">{{ entries|length }}</h3>
-              <p class="text-muted">Total Submissions</p>
+    {% if stats %}
+      <div class="row mb-4">
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h3 class="text-primary">{{ stats.total_entries }}</h3>
+              <p class="text-muted mb-0">Stories Shared</p>
             </div>
-            <div class="col-md-4">
-              <h3 class="text-success">{{ ((entries|selectattr('outcome', 'equalto', 'Success')|list|length) / entries|length * 100)|round(1) }}%</h3>
-              <p class="text-muted">Success Rate</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h3 class="text-success">{{ stats.success_rate }}%</h3>
+              <p class="text-muted mb-0">Success Rate</p>
             </div>
-            <div class="col-md-4">
-              <h3 class="text-info">{{ entries|selectattr('outcome', 'equalto', 'Pending')|list|length }}</h3>
-              <p class="text-muted">Pending</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h3 class="text-info">{{ "${:,}".format(stats.avg_salary) if stats.avg_salary else "–" }}</h3>
+              <p class="text-muted mb-0">Avg Salary</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card text-center">
+            <div class="card-body">
+              <h3 class="text-warning">{{ stats.roles|length }}</h3>
+              <p class="text-muted mb-0">Different Roles</p>
             </div>
           </div>
         </div>
       </div>
+
+      {% if stats.roles %}
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Available Roles</h5>
+          <div class="d-flex flex-wrap gap-2">
+            {% for role in stats.roles %}
+              <span class="badge bg-light text-dark border">{{ role }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    {% endif %}
 
       <div class="row gy-4">
         {% for e in entries %}

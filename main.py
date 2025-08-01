@@ -65,6 +65,7 @@ def submit():
         new_entry = {
             'company': request.form['company'],
             'role': request.form['role'],
+            'experience_type': request.form['experience_type'],
             'salary': request.form.get('salary', ''),
             'bonus': request.form.get('bonus', ''),
             'university': request.form.get('university', ''),

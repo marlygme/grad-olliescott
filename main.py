@@ -18,22 +18,7 @@ if not os.path.exists(data_file):
 def index():
     with open(data_file, 'r') as f:
         submissions = json.load(f)
-    
-    # Group submissions by company
-    companies = {}
-    for submission in submissions:
-        company = submission['company']
-        if company not in companies:
-            companies[company] = []
-        companies[company].append(submission)
-    
-    # Sort companies by name and submissions by timestamp (newest first)
-    for company in companies:
-        companies[company].sort(key=lambda x: x['timestamp'], reverse=True)
-    
-    sorted_companies = sorted(companies.items())
-    
-    return render_template('index.html', companies=sorted_companies, total_submissions=len(submissions))
+    return render_template('index.html', submissions=submissions[::-1])
 
 
 @app.route('/submit', methods=['GET', 'POST'])

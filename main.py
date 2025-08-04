@@ -8,6 +8,60 @@ app = Flask(__name__)
 
 data_file = 'submissions.json'
 
+# University distribution data for law firms
+FIRM_UNIVERSITY_DATA = {
+    'Allens': {
+        'University of Melbourne': 25, 'Monash University': 10, 'University of Sydney': 20,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 2, 'Other': 3
+    },
+    'Clayton Utz': {
+        'University of Melbourne': 20, 'Monash University': 15, 'University of Sydney': 20,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 3, 'Other': 2
+    },
+    'Herbert Smith Freehills': {
+        'University of Melbourne': 25, 'Monash University': 10, 'University of Sydney': 20,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 2, 'Other': 3
+    },
+    'Ashurst': {
+        'University of Melbourne': 20, 'Monash University': 15, 'University of Sydney': 20,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 2, 'Other': 3
+    },
+    'MinterEllison': {
+        'University of Melbourne': 15, 'Monash University': 20, 'University of Sydney': 15,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 10, 'University of Adelaide': 2, 'Other': 3
+    },
+    'King & Wood Mallesons': {
+        'University of Melbourne': 25, 'Monash University': 10, 'University of Sydney': 25,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 2, 'University of Adelaide': 1, 'Other': 2
+    },
+    'Corrs Chambers Westgarth': {
+        'University of Melbourne': 20, 'Monash University': 15, 'University of Sydney': 20,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 2, 'Other': 3
+    },
+    'Gilbert + Tobin': {
+        'University of Melbourne': 10, 'Monash University': 5, 'University of Sydney': 30,
+        'UNSW': 30, 'University of Queensland': 5, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 1, 'Other': 4
+    },
+    'Lander & Rogers': {
+        'University of Melbourne': 35, 'Monash University': 25, 'University of Sydney': 5,
+        'UNSW': 5, 'University of Queensland': 5, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 5, 'Other': 5
+    },
+    'Colin Biggers & Paisley': {
+        'University of Melbourne': 20, 'Monash University': 20, 'University of Sydney': 10,
+        'UNSW': 10, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 10, 'University of Adelaide': 5, 'Other': 5
+    }
+}
+
 # Load existing data or create empty
 if not os.path.exists(data_file):
     with open(data_file, 'w') as f:
@@ -107,11 +161,17 @@ def company_page(name):
         
         roles = list(set([e['role'] for e in company_entries]))
         
+        # Add university breakdown if available
+        university_breakdown = None
+        if name in FIRM_UNIVERSITY_DATA:
+            university_breakdown = FIRM_UNIVERSITY_DATA[name]
+        
         company_stats = {
             'success_rate': success_rate,
             'avg_salary': avg_salary,
             'roles': roles,
-            'total_entries': len(company_entries)
+            'total_entries': len(company_entries),
+            'university_breakdown': university_breakdown
         }
     else:
         company_stats = None
@@ -127,17 +187,48 @@ def law_match():
         interest = request.form['interest']
         preference = request.form['preference']
 
-        # Basic rule-based match logic
-        if wam >= 75 and preference == 'prestige':
-            match = 'Try for top-tier firms like Allens, King & Wood Mallesons, or Herbert Smith Freehills.'
-        elif interest == 'commercial':
-            match = 'Consider mid-tier firms with strong commercial rotations, like Maddocks or Hall & Wilcox.'
-        elif preference == 'worklife':
-            match = 'Check out boutique firms or in-house clerkships at government or corporates.'
-        else:
-            match = 'Start with firms known for training like Lander & Rogers or Gadens.'
+        # Find firms with good representation from user's university
+        uni_matches = []
+        for firm, uni_data in FIRM_UNIVERSITY_DATA.items():
+            # Check if user's uni has good representation (>= 15%)
+            uni_percentage = uni_data.get(uni, uni_data.get('Other', 0))
+            if uni_percentage >= 15:
+                uni_matches.append((firm, uni_percentage))
+        
+        # Sort by university representation
+        uni_matches.sort(key=lambda x: x[1], reverse=True)
 
-        return render_template('law_match_result.html', match=match)
+        # Enhanced rule-based match logic
+        if wam >= 75 and preference == 'prestige':
+            top_tier = ['Allens', 'King & Wood Mallesons', 'Herbert Smith Freehills', 'Gilbert + Tobin']
+            relevant_firms = [firm for firm, _ in uni_matches if firm in top_tier]
+            if relevant_firms:
+                match = f'Based on your {uni} background and high WAM, consider top-tier firms: {", ".join(relevant_firms[:3])}. '
+                match += f'Your university has {uni_matches[0][1]}% representation at {uni_matches[0][0]}.'
+            else:
+                match = 'Try for top-tier firms like Allens, King & Wood Mallesons, or Herbert Smith Freehills.'
+        elif interest == 'commercial':
+            if uni_matches:
+                match = f'For commercial law, consider firms where {uni} graduates are well-represented: '
+                match += f'{", ".join([firm for firm, _ in uni_matches[:3]])}. '
+                match += f'Your university has particularly strong representation at {uni_matches[0][0]} ({uni_matches[0][1]}%).'
+            else:
+                match = 'Consider mid-tier firms with strong commercial rotations, like MinterEllison or Ashurst.'
+        elif preference == 'worklife':
+            melbourne_focused = [firm for firm, _ in uni_matches if 'Melbourne' in FIRM_UNIVERSITY_DATA[firm] and FIRM_UNIVERSITY_DATA[firm]['University of Melbourne'] > 20]
+            if melbourne_focused:
+                match = f'For better work-life balance, consider Melbourne-focused firms: {", ".join(melbourne_focused[:2])}. '
+                match += 'Also explore boutique firms or in-house clerkships.'
+            else:
+                match = 'Check out boutique firms, Lander & Rogers, or in-house clerkships at government or corporates.'
+        else:
+            if uni_matches:
+                match = f'Great starting firms for {uni} graduates: {", ".join([firm for firm, _ in uni_matches[:3]])}. '
+                match += f'Your university has {uni_matches[0][1]}% representation at {uni_matches[0][0]}.'
+            else:
+                match = 'Start with firms known for training like Lander & Rogers, MinterEllison, or mid-tier firms.'
+
+        return render_template('law_match_result.html', match=match, uni_matches=uni_matches[:5])
 
     return render_template('law_match.html')
 

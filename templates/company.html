@@ -45,6 +45,28 @@
         </div>
       </div>
     </div>
+
+    {% if stats.university_breakdown %}
+      <div class="card mb-5">
+        <div class="card-body">
+          <h5 class="card-title">University Representation</h5>
+          <p class="text-muted mb-3">Historical graduate intake by university</p>
+          <div class="row">
+            {% for uni, percentage in stats.university_breakdown.items() %}
+              <div class="col-md-6 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="small">{{ uni }}</span>
+                  <span class="small fw-bold">{{ percentage }}%</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar" role="progressbar" style="width: {{ percentage }}%" aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
   {% endif %}
 
   {% if entries %}

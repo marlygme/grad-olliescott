@@ -19,6 +19,37 @@
       <h4 class="card-title mb-3">Our Recommendation</h4>
       <p class="lead">{{ match }}</p>
       
+      {% if uni_matches %}
+        <div class="mt-4">
+          <h5>University Representation at Top Firms</h5>
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Firm</th>
+                  <th>Your University Representation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for firm, percentage in uni_matches %}
+                  <tr>
+                    <td>{{ firm }}</td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="progress me-2" style="width: 100px; height: 20px;">
+                          <div class="progress-bar" role="progressbar" style="width: {{ percentage }}%" aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <span>{{ percentage }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {% endif %}
+
       <div class="mt-4">
         <p class="text-muted">Remember, this is just a starting point! Every firm is different, and the best way to find your fit is to research thoroughly and speak to current employees or recent graduates.</p>
       </div>

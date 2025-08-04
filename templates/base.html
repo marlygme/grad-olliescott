@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,42 +10,73 @@
   <meta name="description" content="Connect with real graduate experiences from Australia's top companies. Get insights to land your dream graduate role.">
   <meta name="keywords" content="graduate jobs, career insights, job applications, Australia">
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Google Fonts - Inter for modern, clean feel -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
   <!-- Custom CSS -->
   <link href="/static/style.css" rel="stylesheet">
 </head>
 <body{% block body_class %}{% endblock %}>
 
-  <header class="header">
+  <!-- Modern Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
     <div class="container">
-      <div class="d-flex justify-content-between align-items-center">
-        <a href="/" class="logo">Gradvantage</a>
-        <div class="nav-buttons">
-          <a class="btn btn-outline-primary" href="/stories">Browse Stories</a>
-          <a class="btn btn-outline-primary" href="/law-match">Career Match</a>
-          <a class="btn btn-primary" href="/submit">Share Experience</a>
+      <a class="navbar-brand fw-bold fs-3" href="/">
+        <span class="text-primary">Grad</span><span class="text-dark">vantage</span>
+      </a>
+      
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link fw-medium" href="/stories">Browse Stories</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link fw-medium" href="/law-match">Career Match</a>
+          </li>
+        </ul>
+        
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-primary btn-pill" href="/stories">
+            <i class="bi bi-search me-1"></i>Browse
+          </a>
+          <a class="btn btn-primary btn-pill" href="/submit">
+            <i class="bi bi-plus-circle me-1"></i>Share Story
+          </a>
         </div>
       </div>
     </div>
-  </header>
+  </nav>
 
   {% block content %}{% endblock %}
 
-  <footer class="footer">
+  <!-- Modern Footer -->
+  <footer class="footer-modern">
     <div class="container">
-      <div class="row">
+      <div class="row align-items-center py-4">
         <div class="col-md-6">
-          <h5>Gradvantage</h5>
-          <p class="mb-0">Connecting graduates with real career insights.</p>
+          <div class="d-flex align-items-center mb-3 mb-md-0">
+            <span class="fw-bold fs-5 text-primary me-3">Gradvantage</span>
+            <span class="text-muted">Built by students, for students</span>
+          </div>
         </div>
-        <div class="col-md-6 text-md-end">
-          <a href="/stories" class="text-white text-decoration-none me-3">Browse Stories</a>
-          <a href="/submit" class="text-white text-decoration-none">Share Experience</a>
+        <div class="col-md-6">
+          <div class="d-flex justify-content-md-end gap-4">
+            <a href="#" class="footer-link">About</a>
+            <a href="#" class="footer-link">Contact</a>
+            <a href="#" class="footer-link">
+              <i class="bi bi-linkedin"></i> LinkedIn
+            </a>
+          </div>
         </div>
       </div>
     </div>

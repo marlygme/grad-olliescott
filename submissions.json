@@ -673,5 +673,47 @@
     "outcome": "Success",
     "advice": "National firm with strong energy practice. Understand energy transition and renewable project development.",
     "timestamp": "2024-09-25T12:30:00"
+  },
+  {
+    "company": "Corrs",
+    "role": "Graduate Lawyer - Competition",
+    "experience_type": "Graduate Program",
+    "salary": "97039",
+    "bonus": "9953",
+    "university": "Monash University",
+    "wam": "73",
+    "application_stages": "Online application → Watson Glaser test → Two interview rounds",
+    "interview_experience": "Video interview followed by in-person panel discussion on commercial issues.",
+    "outcome": "Success",
+    "advice": "Prepare for technical questions but also show commercial awareness and business understanding.",
+    "timestamp": "2025-05-07T12:17:51.244005"
+  },
+  {
+    "company": "Corrs",
+    "role": "Graduate Lawyer - Property",
+    "experience_type": "Graduate Program",
+    "salary": "87446",
+    "bonus": "8656",
+    "university": "Macquarie University",
+    "wam": "69",
+    "application_stages": "Application → Online testing → Phone screening → Assessment centre",
+    "interview_experience": "Technical legal questions mixed with cultural fit assessment. Group exercise included.",
+    "outcome": "Success",
+    "advice": "Practice STAR method responses and prepare examples of leadership and teamwork.",
+    "timestamp": "2025-07-05T12:17:51.244030"
+  },
+  {
+    "company": "Corrs",
+    "role": "Summer Clerk - Disputes",
+    "experience_type": "Graduate Program",
+    "salary": "",
+    "bonus": "",
+    "university": "UTS",
+    "wam": "72",
+    "application_stages": "Online application → Aptitude testing → Group interview → Final interview",
+    "interview_experience": "Assessment centre with case study presentation and group negotiation exercise.",
+    "outcome": "Rejected",
+    "advice": "Practice STAR method responses and prepare examples of leadership and teamwork.",
+    "timestamp": "2025-01-18T12:17:51.244040"
   }
 ]

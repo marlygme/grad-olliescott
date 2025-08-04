@@ -1,4 +1,3 @@
-
 [
   {
     "company": "Allens",
@@ -68,7 +67,8 @@
   {
     "company": "Corrs Chambers Westgarth",
     "role": "Summer Clerk - Corporate",
-    "salary": "",
+    "experience_type": "Summer Clerkship",
+    "salary": "100000",
     "bonus": "",
     "university": "University of Queensland",
     "wam": "76",

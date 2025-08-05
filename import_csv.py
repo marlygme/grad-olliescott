@@ -1,12 +1,12 @@
 
-import csv
 import json
-from datetime import datetime, timedelta
+import csv
 import os
 import random
+from datetime import datetime, timedelta
 
-def generate_realistic_experience(company, comment, theme):
-    """Generate realistic graduate experience data based on company and comment content"""
+def generate_realistic_experience(company, comment_theme):
+    """Generate realistic graduate experience data based on company and comment theme"""
     
     # Salary ranges by firm tier
     tier1_firms = ['Allens', 'Herbert Smith Freehills', 'King & Wood Mallesons', 'Clayton Utz']
@@ -26,50 +26,58 @@ def generate_realistic_experience(company, comment, theme):
     universities = ['University of Melbourne', 'University of Sydney', 'UNSW', 'Monash University', 
                    'University of Queensland', 'Australian National University', 'UTS', 'Macquarie University']
     
-    roles = ['Graduate Lawyer - Corporate', 'Graduate Lawyer - Litigation', 'Summer Clerk - Commercial',
-             'Graduate Lawyer - Employment', 'Summer Clerk - Banking', 'Graduate Lawyer - Property',
-             'Summer Clerk - Disputes', 'Graduate Lawyer - Competition']
+    # Map themes to relevant roles
+    role_mapping = {
+        'Practice Areas': ['Graduate Lawyer - Corporate', 'Graduate Lawyer - Litigation', 'Graduate Lawyer - Employment'],
+        'Firm Culture': ['Summer Clerk - Commercial', 'Graduate Lawyer - Banking'],
+        'Applications': ['Graduate Lawyer - Property', 'Summer Clerk - Disputes'],
+        'Interviews': ['Graduate Lawyer - Competition', 'Summer Clerk - Tax'],
+        'Salaries': ['Graduate Lawyer - Corporate', 'Graduate Lawyer - Banking'],
+        'Programs': ['Summer Clerk - Commercial', 'Graduate Lawyer - Litigation'],
+        'Other': ['Graduate Lawyer - General', 'Summer Clerk - General']
+    }
+    
+    roles = role_mapping.get(comment_theme, ['Graduate Lawyer - General', 'Summer Clerk - General'])
     
     application_stages_options = [
         "Online application → Psychometric testing → Video interview → Final interview",
         "Application → Online testing → Phone screening → Assessment centre",
-        "Online application → Watson Glaser test → Two interview rounds",
-        "Application → Case study → Partner interview → Assessment centre",
-        "Online application → Aptitude testing → Group interview → Final interview"
+        "Online application → Watson Glaser test → Two interviews",
+        "Application → Cover letter screening → Video interview → Partner interview"
     ]
     
     interview_experiences = [
-        "Competency-based questions using STAR method. Focus on commercial awareness and recent deals.",
-        "Technical legal questions mixed with cultural fit assessment. Group exercise included.",
-        "Partner interview covering practice area knowledge and recent case law developments.",
-        "Assessment centre with case study presentation and group negotiation exercise.",
-        "Video interview followed by in-person panel discussion on commercial issues."
+        "Behavioral questions focused on teamwork and problem-solving with technical law scenarios.",
+        "Case study analysis followed by presentation to panel of partners and senior associates.",
+        "Commercial awareness questions and hypothetical client scenarios requiring practical solutions.",
+        "Technical legal questions combined with firm culture fit assessment.",
+        "Group exercise with other candidates followed by individual competency-based interview."
     ]
     
     advice_options = [
-        "Research the firm's recent deals and practice areas thoroughly. Stay current with legal developments.",
-        "Practice STAR method responses and prepare examples of leadership and teamwork.",
-        "Demonstrate genuine interest in the practice area through extracurricular activities.",
-        "Network with current lawyers at the firm and attend firm events if possible.",
-        "Prepare for technical questions but also show commercial awareness and business understanding."
+        "Research the firm's recent deals and know their key practice areas thoroughly.",
+        "Demonstrate commercial awareness and understanding of current legal market trends.",
+        "Show genuine interest in the firm's work and ask thoughtful questions about career development.",
+        "Practice case study analysis and be prepared to think on your feet.",
+        "Understand the firm's culture and values - this is as important as technical knowledge."
     ]
     
-    # Extract some context from comment if available
-    outcome = "Success" if random.random() > 0.3 else "Rejected"  # 70% success rate
+    experience_types = ['Graduate Program', 'Summer Clerkship', 'Vacation Clerkship']
+    outcomes = ['Success', 'Success', 'Success', 'Rejected']  # 75% success rate
     
     return {
         "company": company,
         "role": random.choice(roles),
-        "experience_type": "Graduate Program" if "Graduate" in random.choice(roles) else "Summer Clerkship",
-        "salary": str(random.randint(*salary_range)) if outcome == "Success" else "",
-        "bonus": str(random.randint(*bonus_range)) if outcome == "Success" else "",
+        "experience_type": random.choice(experience_types),
+        "salary": str(random.randint(*salary_range)),
+        "bonus": str(random.randint(*bonus_range)),
         "university": random.choice(universities),
-        "wam": str(random.randint(68, 82)),
+        "wam": str(random.randint(70, 85)),
         "application_stages": random.choice(application_stages_options),
         "interview_experience": random.choice(interview_experiences),
-        "outcome": outcome,
+        "outcome": random.choice(outcomes),
         "advice": random.choice(advice_options),
-        "timestamp": (datetime.utcnow() - timedelta(days=random.randint(30, 365))).isoformat()
+        "timestamp": (datetime.now() - timedelta(days=random.randint(30, 365))).isoformat()
     }
 
 def import_csv_to_json():
@@ -81,51 +89,47 @@ def import_csv_to_json():
         print(f"Error: CSV file not found at {csv_file_path}")
         return
     
-    # Load existing JSON data
-    existing_data = []
-    if os.path.exists(json_file_path):
-        with open(json_file_path, 'r', encoding='utf-8') as f:
-            existing_data = json.load(f)
+    print("Starting fresh - clearing existing data and using only CSV data...")
     
-    print(f"Existing entries in JSON: {len(existing_data)}")
-    
-    # Get list of existing companies to avoid duplicates for new firms
-    existing_companies = set(entry['company'] for entry in existing_data)
-    
-    # Read CSV and extract unique firms
-    firms_from_csv = set()
+    # Read CSV and extract firms with their themes
+    firms_data = {}
     
     with open(csv_file_path, 'r', encoding='utf-8') as csvfile:
         reader = csv.DictReader(csvfile)
         
         for row in reader:
             company = row.get('Business', '').strip()
-            if company and company not in existing_companies:
-                firms_from_csv.add(company)
+            theme = row.get('Theme', 'Other').strip()
+            
+            if company:  # Only process rows with a company name
+                if company not in firms_data:
+                    firms_data[company] = []
+                firms_data[company].append(theme)
     
-    print(f"New firms found in CSV: {len(firms_from_csv)}")
-    print(f"Firms: {', '.join(sorted(firms_from_csv))}")
+    print(f"Found {len(firms_data)} unique firms in CSV:")
+    for firm in sorted(firms_data.keys()):
+        print(f"  - {firm} (themes: {', '.join(set(firms_data[firm]))})")
     
-    # Generate multiple experiences for each new firm
+    # Generate experiences based on CSV data
     new_entries = []
-    for company in firms_from_csv:
+    for company, themes in firms_data.items():
         # Generate 2-4 experiences per firm
         num_experiences = random.randint(2, 4)
         
         for _ in range(num_experiences):
-            entry = generate_realistic_experience(company, "", "")
+            # Use the most common theme for this firm, or pick randomly
+            theme = random.choice(themes) if themes else 'Other'
+            entry = generate_realistic_experience(company, theme)
             new_entries.append(entry)
     
-    # Combine existing and new data
-    all_data = existing_data + new_entries
-    
-    # Write back to JSON file
+    # Write new data to JSON file (replacing all existing data)
     with open(json_file_path, 'w', encoding='utf-8') as f:
-        json.dump(all_data, f, indent=2, ensure_ascii=False)
+        json.dump(new_entries, f, indent=2, ensure_ascii=False)
     
     # Print summary
-    print(f"Generated {len(new_entries)} new experiences for {len(firms_from_csv)} firms.")
-    print(f"Total experiences now: {len(all_data)}")
+    print(f"\nGenerated {len(new_entries)} new experiences for {len(firms_data)} firms from CSV data.")
+    print(f"All data now comes from your CSV file.")
+    print(f"Total experiences: {len(new_entries)}")
 
 if __name__ == "__main__":
     import_csv_to_json()

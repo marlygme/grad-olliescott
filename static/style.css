@@ -269,6 +269,30 @@ h1, h2, h3, h4, h5, h6 {
   color: white !important;
 }
 
+/* Career Match CTA Section */
+.career-match-cta {
+  background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%);
+}
+
+.btn-white {
+  background: white;
+  color: var(--primary);
+  border: 2px solid white;
+  font-weight: 600;
+}
+
+.btn-white:hover {
+  background: transparent;
+  color: white;
+  border-color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.bg-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%);
+}
+
 /* Empty State */
 .empty-state {
   padding: 4rem 2rem;

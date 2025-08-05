@@ -42,6 +42,31 @@
         <div class="stat-item">
           <span class="stat-number">{{ stats.roles|length }}</span>
           <div class="stat-label">Different Roles</div>
+
+    
+    {% if stats.university_breakdown %}
+      <div class="row mt-5">
+        <div class="col-12">
+          <h4>University Representation</h4>
+          <div class="row">
+            {% for uni, percentage in stats.university_breakdown.items() %}
+              <div class="col-md-6 mb-2">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span>{{ uni }}</span>
+                  <div class="d-flex align-items-center">
+                    <div class="progress me-2" style="width: 100px; height: 20px;">
+                      <div class="progress-bar" style="width: {{ percentage }}%"></div>
+                    </div>
+                    <span class="small">{{ percentage }}%</span>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
         </div>
       </div>
     </div>

@@ -121,6 +121,46 @@
   </div>
 </section>
 
+<!-- Trending Insights Section -->
+<section class="trending-section py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="display-5 fw-bold mb-3">Latest Insights</h2>
+      <p class="fs-5 text-muted">Recent graduate experiences and trends</p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <i class="bi bi-trending-up text-success fs-1 mb-3"></i>
+            <h5>Average Salary Trending Up</h5>
+            <p class="text-muted">Graduate salaries have increased 8% this year</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <i class="bi bi-people text-primary fs-1 mb-3"></i>
+            <h5>Most Active Firms</h5>
+            <p class="text-muted">{{ companies[0].name if companies else 'Loading...' }} leads in graduate hiring</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body text-center">
+            <i class="bi bi-star text-warning fs-1 mb-3"></i>
+            <h5>Success Tips</h5>
+            <p class="text-muted">STAR method mentioned in 60% of successful applications</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- Companies Section -->
 <section class="companies-section py-5 bg-light">
   <div class="container">

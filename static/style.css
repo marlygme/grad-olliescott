@@ -327,6 +327,34 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Search and Filter Styles */
+#searchInput, #outcomeFilter {
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+#searchInput:focus, #outcomeFilter:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Fade in animation for filtered results */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Highlight search matches */
+.highlight {
+  background-color: yellow;
+  font-weight: bold;
+}
+
 /* Loading states */
 @keyframes pulse {
   0%, 100% { opacity: 1; }

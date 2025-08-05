@@ -6,6 +6,22 @@
 {% block body_class %} class="stories-page"{% endblock %}
 
 {% block content %}
+<!-- Search and Filter Section -->
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <input type="text" id="searchInput" class="form-control" placeholder="Search by company, role, or university...">
+    </div>
+    <div class="col-md-4">
+      <select id="outcomeFilter" class="form-select">
+        <option value="">All Outcomes</option>
+        <option value="Success">Success Only</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Pending">Pending</option>
+      </select>
+    </div>
+  </div>
+</div>
 <div class="hero-section">
   <div class="container text-center">
     <h1 class="hero-title">Graduate Stories</h1>
@@ -30,6 +46,45 @@
                 <div class="mb-2">
                   <strong>Type:</strong> {{ submission.experience_type or 'Not specified' }}
                 </div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const outcomeFilter = document.getElementById('outcomeFilter');
+    const storyCards = document.querySelectorAll('.story-card');
+
+    function filterStories() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedOutcome = outcomeFilter.value;
+
+        storyCards.forEach(card => {
+            const company = card.querySelector('.company-name')?.textContent.toLowerCase() || '';
+            const role = card.querySelector('.role-title')?.textContent.toLowerCase() || '';
+            const university = card.querySelector('.university')?.textContent.toLowerCase() || '';
+            const outcome = card.querySelector('.badge')?.textContent.toLowerCase() || '';
+
+            const matchesSearch = company.includes(searchTerm) || 
+                                role.includes(searchTerm) || 
+                                university.includes(searchTerm);
+            
+            const matchesOutcome = !selectedOutcome || outcome.includes(selectedOutcome.toLowerCase());
+
+            if (matchesSearch && matchesOutcome) {
+                card.style.display = 'block';
+                card.classList.add('fade-in');
+            } else {
+                card.style.display = 'none';
+                card.classList.remove('fade-in');
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', filterStories);
+    outcomeFilter.addEventListener('change', filterStories);
+});
+</script>
 
                 <div class="mb-2">
                   <strong>University:</strong> {{ submission.university or 'N/A' }} 

@@ -166,12 +166,32 @@ def company_page(name):
         if name in FIRM_UNIVERSITY_DATA:
             university_breakdown = FIRM_UNIVERSITY_DATA[name]
         
+        # Calculate salary ranges
+        salary_ranges = {
+            'entry_level': len([s for s in salaries if s < 80000]),
+            'mid_level': len([s for s in salaries if 80000 <= s < 120000]),
+            'senior_level': len([s for s in salaries if s >= 120000])
+        }
+        
+        # Most common advice themes
+        advice_keywords = {}
+        for entry in company_entries:
+            if entry.get('advice'):
+                words = entry['advice'].lower().split()
+                for word in words:
+                    if len(word) > 4:  # Only count meaningful words
+                        advice_keywords[word] = advice_keywords.get(word, 0) + 1
+        
+        top_advice = sorted(advice_keywords.items(), key=lambda x: x[1], reverse=True)[:5]
+
         company_stats = {
             'success_rate': success_rate,
             'avg_salary': avg_salary,
+            'salary_ranges': salary_ranges,
             'roles': roles,
             'total_entries': len(company_entries),
-            'university_breakdown': university_breakdown
+            'university_breakdown': university_breakdown,
+            'top_advice_keywords': top_advice
         }
     else:
         company_stats = None

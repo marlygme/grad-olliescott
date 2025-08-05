@@ -131,34 +131,7 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 500px;
 }
 
-/* Hero Visual Elements */
-.hero-visual {
-  position: relative;
-  height: 400px;
-}
 
-.floating-cards {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-}
-
-.floating-cards .card {
-  animation: float 3s ease-in-out infinite;
-  border: none !important;
-  box-shadow: var(--shadow-lg) !important;
-}
-
-.floating-cards .card:last-child {
-  animation-delay: 1.5s;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
 
 .avatar {
   width: 40px;
@@ -341,9 +314,7 @@ body.stories-page {
     font-size: 1.1rem;
   }
   
-  .floating-cards {
-    display: none;
-  }
+  
   
   .step-icon {
     width: 60px;

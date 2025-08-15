@@ -1,8 +1,9 @@
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from datetime import datetime
 import json
 import os
+from grad_data import load_cards
 
 app = Flask(__name__)
 
@@ -197,6 +198,18 @@ def company_page(name):
         company_stats = None
     
     return render_template('company.html', company=name, entries=company_entries, stats=company_stats)
+
+
+@app.route('/companies')
+def companies():
+    firms = load_cards("out/grad_program_signals.csv")
+    return render_template("companies.html", firms=firms)
+
+
+@app.route('/api/grad-data')
+def api_grad_data():
+    firms = load_cards("out/grad_program_signals.csv")
+    return jsonify({"firms": firms})
 
 
 @app.route('/law-match', methods=['GET', 'POST'])

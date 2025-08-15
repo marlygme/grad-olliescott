@@ -1,0 +1,36 @@
+
+{# templates/explore_firms_snippet.html #}
+<div class="row g-4">
+  {% for firm in firms %}
+  <div class="col-md-6">
+    <div class="card h-100 shadow-sm border-0 rounded-3">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h5 class="card-title fw-bold mb-0">{{ firm.name }}</h5>
+          <div class="d-flex flex-wrap gap-1">
+            <span class="badge bg-light text-dark small">{{ firm.experiences_count }} experiences</span>
+            {% if firm.avg_salary %}
+              <span class="badge bg-success-subtle text-success small">${{ "{:,}".format(firm.avg_salary) }} avg</span>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="text-muted small mb-2">
+          {% if firm.top_city %}{{ firm.top_city }}{% endif %}
+          {% if firm.top_intake %} • {{ firm.top_intake }}{% endif %}
+          {% if firm.next_close %} • Apps close {{ firm.next_close }}{% endif %}
+        </div>
+        
+        <div class="small fw-medium text-uppercase text-muted mb-1">Popular Programs</div>
+        <p class="text-dark small mb-0">
+          {% if firm.popular_programs %}
+            {{ firm.popular_programs | join(", ") }}
+          {% else %}
+            —
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>

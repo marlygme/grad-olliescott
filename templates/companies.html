@@ -1,0 +1,15 @@
+
+{% extends "base.html" %}
+
+{% block title %}Companies – Gradvantage{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h1 class="display-4 fw-bold mb-3">Explore Companies</h1>
+    <p class="fs-5 text-muted">Discover graduate programs and opportunities across leading firms</p>
+  </div>
+  
+  {% include "explore_firms_snippet.html" %}
+</div>
+{% endblock %}

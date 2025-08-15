@@ -43,7 +43,7 @@
                 </div>
               </div>
 
-              
+
 
                 {% if exp.city %}
                   <div class="text-muted small mb-1">
@@ -62,11 +62,11 @@
                     <i class="bi bi-calendar me-1"></i>Applications close: {{ exp.application_close_date }}
                   </div>
                 {% endif %}
-              
+
 
               {% if is_filtered and exp.content %}
                 <div class="border-start border-primary border-3 ps-3 mb-3">
-                  <p class="text-dark small mb-0">{{ exp.content[:280] }}{% if exp.content|length > 280 %}...{% endif %}</p>
+                  <p class="text-dark small mb-0">{{ exp.content }}{% if exp.content|length > 280 %}{% endif %}</p>
                 </div>
               {% elif exp.evidence_span %}
                 <div class="border-start border-primary border-3 ps-3">

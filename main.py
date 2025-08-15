@@ -208,7 +208,7 @@ def company_page(name):
 @app.route('/companies')
 def companies():
     firms = load_cards_v2("out/grad_program_signals.csv")
-    return render_template("companies_v2.html", firms=firms)
+    return render_template("companies_clean.html", firms=firms)
 
 
 @app.route('/api/grad-data')

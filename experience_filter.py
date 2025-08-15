@@ -9,29 +9,40 @@ def clean_content(content: str) -> str:
     if not content:
         return ""
 
-    # Remove forum metadata and user references at the start
-    content = re.sub(r'^User #\d+.*?posts.*?reference:.*?posted.*?(AEST|AEDT)', '', content, flags=re.IGNORECASE | re.DOTALL)
+    # Remove complete Whirlpool user metadata blocks at the start
+    # Pattern: "User #12345 123 posts username Forum Regular reference: whrl.pl/xyz posted 2024-Nov-2, 9:53 pm AEST"
+    content = re.sub(r'^User #\d+.*?(?:Forum Regular|Participant|Whirlpool Enthusiast|Forum Addict|I\'m new here, please be nice).*?reference:.*?whrl\.pl/\w+.*?posted.*?(?:AEST|AEDT)[^\n]*', '', content, flags=re.IGNORECASE | re.DOTALL)
     
-    # Remove common prefixes/suffixes
+    # Remove standalone references and timestamps
+    content = re.sub(r'ref:\s*whrl\.pl/\w+\s+posted.*?(?:AEST|AEDT)', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'reference:\s*whrl\.pl/\w+', '', content, flags=re.IGNORECASE)
+    
+    # Remove "last updated" and "posted" timestamp lines
+    content = re.sub(r'last updated.*?posted.*?(?:AEST|AEDT)', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'posted\s+\d{4}-[A-Za-z]{3}-\d{2},\s+\d{1,2}:\d{2}\s+[ap]m\s+(?:AEST|AEDT)', '', content, flags=re.IGNORECASE)
+    
+    # Remove user status and post counts
+    content = re.sub(r'\b\d+\s+posts?\b', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'\b(Forum Regular|Participant|Whirlpool Enthusiast|Forum Addict|In the penalty box)\b', '', content, flags=re.IGNORECASE)
+    
+    # Remove "I'm new here" politeness requests
+    content = re.sub(r'\b(I\'m new here,?\s*please be nice|I am new here|new to this forum|first time posting)\b', '', content, flags=re.IGNORECASE)
+    
+    # Remove common forum artifacts
     content = re.sub(r'^(Re:|RE:)\s*', '', content, flags=re.IGNORECASE)
     content = re.sub(r'\s*\[Quote.*?\]', '', content, flags=re.DOTALL)
-
-    # Remove "I'm new here" type content and politeness requests
-    content = re.sub(r'\b(I\'m new here|I am new here|new to this forum|first time posting|please be nice)\b.*?[.!,]?', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'\(adsbygoogle = window\.adsbygoogle \|\| \[\]\)\.push\(\{\}\);', '', content)
     
-    # Remove user references and metadata
-    content = re.sub(r'\buser#?\d+\b', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\b(username|user name):\s*\w+', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\b(posted by|author):\s*\w+', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\breference:\s*whrl\.pl/\w+', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\bposted\s+\d{4}-\w{3}-\d{2},\s+\d{1,2}:\d{2}\s+(am|pm)\s+(AEST|AEDT)', '', content, flags=re.IGNORECASE)
+    # Remove O.P. markers and edited timestamps
+    content = re.sub(r'\bO\.P\.\s*', '', content, flags=re.IGNORECASE)
+    content = re.sub(r'edited\s+\d{4}-[A-Za-z]{3}-\d{2},.*?(?:AEST|AEDT)', '', content, flags=re.IGNORECASE)
     
-    # Remove post counts and user status
-    content = re.sub(r'\b\d+\s+posts?\b', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\b\w+\s+(member|user|poster)\b', '', content, flags=re.IGNORECASE)
-
-    # Remove extra whitespace
+    # Clean up multiple whitespace and normalize
     content = ' '.join(content.split())
+    
+    # Remove content that's just metadata artifacts
+    if len(content) < 10 or content.lower() in ['deleted', 'edited', '']:
+        return ""
 
     return content.strip()
 

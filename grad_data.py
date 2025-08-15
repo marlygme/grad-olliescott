@@ -30,7 +30,7 @@ def load_grad_signals(csv_path):
     for row in reader:
       # Remove username/author fields for privacy
       clean_row = dict(row)
-      for field in ['author', 'username', 'user', 'Author']:
+      for field in ['author', 'username', 'user', 'Author', 'User', 'USERNAME', 'name', 'Name']:
         if field in clean_row:
           del clean_row[field]
       signals.append(clean_row)

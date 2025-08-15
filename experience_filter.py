@@ -208,12 +208,9 @@ def process_csv_files(input_files: List[str], target_firm: Optional[str] = None)
                     quality = compute_quality_score(content)
                     
                     # Remove any username/author fields for privacy
-                    if 'author' in row:
-                        del row['author']
-                    if 'username' in row:
-                        del row['username']
-                    if 'user' in row:
-                        del row['user']
+                    for field in ['author', 'username', 'user', 'Author', 'User', 'USERNAME']:
+                        if field in row:
+                            del row[field]
                     
                     # Determine reason for inclusion/exclusion
                     reasons = []
@@ -231,7 +228,6 @@ def process_csv_files(input_files: List[str], target_firm: Optional[str] = None)
                         'content': content,
                         'timestamp': row.get('timestamp', ''),
                         'thread_url': row.get('thread_url', ''),
-                        'author': row.get('author', ''),
                         'quality_score': round(quality, 3),
                         'is_question': is_q,
                         'is_meta_low': is_meta,
@@ -320,7 +316,7 @@ def main():
     # Write output
     if args.out and filtered:
         with open(args.out, 'w', newline='', encoding='utf-8') as f:
-            fieldnames = ['firm_name', 'content', 'timestamp', 'thread_url', 'author',
+            fieldnames = ['firm_name', 'content', 'timestamp', 'thread_url',
                          'quality_score', 'is_question', 'is_meta_low', 'is_too_short', 'reason']
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()

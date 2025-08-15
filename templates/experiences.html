@@ -21,6 +21,32 @@
     </div>
 
     {% if experiences %}
+      <!-- University Distribution - shown once per firm -->
+      {% if firm_name and university_data %}
+        <div class="card mb-5">
+          <div class="card-body p-4">
+            <h5 class="fw-semibold text-primary mb-3">
+              <i class="bi bi-mortarboard me-1"></i>Graduate University Representation
+            </h5>
+            <div class="row g-2">
+              {% for uni, percentage in university_data.items() %}
+                <div class="col-md-6 col-lg-4 mb-2">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="small">{{ uni }}</span>
+                    <div class="d-flex align-items-center">
+                      <div class="progress me-2" style="width: 80px; height: 12px;">
+                        <div class="progress-bar bg-primary" style="width: {{ percentage }}%"></div>
+                      </div>
+                      <span class="small fw-medium text-primary">{{ percentage }}%</span>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
       <div class="row g-4">
         {% for exp in experiences %}
         <div class="col-md-6 col-lg-4">
@@ -62,31 +88,6 @@
                     <i class="bi bi-calendar me-1"></i>Applications close: {{ exp.application_close_date }}
                   </div>
                 {% endif %}
-
-
-              <!-- University Distribution -->
-              {% if firm_name and university_data %}
-                <div class="mt-4 mb-4">
-                  <h6 class="fw-semibold text-primary mb-3">
-                    <i class="bi bi-mortarboard me-1"></i>Graduate University Representation
-                  </h6>
-                  <div class="row g-2">
-                    {% for uni, percentage in university_data.items() %}
-                      <div class="col-md-6 mb-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                          <span class="small">{{ uni }}</span>
-                          <div class="d-flex align-items-center">
-                            <div class="progress me-2" style="width: 80px; height: 12px;">
-                              <div class="progress-bar bg-primary" style="width: {{ percentage }}%"></div>
-                            </div>
-                            <span class="small fw-medium text-primary">{{ percentage }}%</span>
-                          </div>
-                        </div>
-                      </div>
-                    {% endfor %}
-                  </div>
-                </div>
-              {% endif %}
 
               {% if is_filtered and exp.content %}
                 <div class="border-start border-primary border-3 ps-3 mb-3">

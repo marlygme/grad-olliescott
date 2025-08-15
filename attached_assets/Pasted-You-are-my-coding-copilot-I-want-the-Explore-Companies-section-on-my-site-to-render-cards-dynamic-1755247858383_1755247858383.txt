@@ -1,0 +1,152 @@
+You are my coding copilot. I want the “Explore Companies” section on my site to render
+cards dynamically from the CSV created by `extract_grad_programs.py`:
+`out/grad_program_signals.csv`.
+
+Do the following EXACTLY and be idempotent (safe to run again):
+
+1) VERIFY DATA EXISTS
+- In the Shell, run this and paste the output to the console:
+  python - <<'PY'
+import csv, os
+p = "out/grad_program_signals.csv"
+print("exists:", os.path.exists(p))
+n=0
+if os.path.exists(p):
+  with open(p, newline='', encoding='utf-8') as f:
+    n = sum(1 for _ in csv.DictReader(f))
+print("rows:", n)
+PY
+
+2) CREATE/OVERWRITE grad_data.py
+Write this file exactly; it must have no extra dependencies and read the CSV:
+
+from collections import Counter
+from statistics import mean
+from datetime import datetime, date
+import csv
+
+PROGRAM_LABELS = {
+  "graduate":"Graduate Program","clerkship":"Clerkship","summer_clerkship":"Summer Clerkship",
+  "winter_clerkship":"Winter Clerkship","seasonal_clerkship":"Seasonal Clerkship",
+  "vacation":"Vacation Program","internship":"Internship","ambiguous":"Other"
+}
+
+def _f(x):
+  try: return float(x)
+  except: return None
+
+def _d(x):
+  try:
+    if not x or not x.strip(): return None
+    return datetime.strptime(x.strip(), "%Y-%m-%d").date()
+  except: return None
+
+def load_grad_signals(csv_path):
+  rows=[]
+  try:
+    with open(csv_path, newline='', encoding='utf-8') as f:
+      for r in csv.DictReader(f):
+        rows.append({
+          "firm_name": r.get("firm_name","").strip(),
+          "program_type": r.get("program_type","").strip(),
+          "city": r.get("city","").strip(),
+          "intake_year": r.get("intake_year","").strip(),
+          "application_close_date": r.get("application_close_date","").strip(),
+          "salary_annual_aud": r.get("salary_annual_aud","").strip(),
+          "evidence_span": r.get("evidence_span","").strip(),
+        })
+  except FileNotFoundError:
+    return []
+  return rows
+
+def aggregate_by_firm(rows):
+  today = date.today()
+  firms={}
+  for r in rows:
+    name = r["firm_name"] or "Unknown"
+    f = firms.setdefault(name,{
+      "name":name,"experiences_count":0,"program_counts":Counter(),
+      "cities":Counter(),"intake_years":Counter(),"salaries":[],
+      "next_close":None,"evidence_samples":[]
+    })
+    f["experiences_count"] += 1
+    if r["program_type"]: f["program_counts"][r["program_type"]] += 1
+    if r["city"]: f["cities"][r["city"]] += 1
+    if (r["intake_year"] or "").isdigit(): f["intake_years"][int(r["intake_year"])] += 1
+    s = _f(r["salary_annual_aud"])
+    if s: f["salaries"].append(s)
+    cd = _d(r["application_close_date"])
+    if cd and cd >= today and (f["next_close"] is None or cd < f["next_close"]):
+      f["next_close"] = cd
+    if r["evidence_span"] and len(f["evidence_samples"]) < 2:
+      f["evidence_samples"].append(r["evidence_span"])
+  cards=[]
+  for name,f in firms.items():
+    popular = [PROGRAM_LABELS.get(k,k) for k,_ in f["program_counts"].most_common(3)]
+    avg_salary = round(mean(f["salaries"])) if f["salaries"] else None
+    top_city = f["cities"].most_common(1)[0][0] if f["cities"] else None
+    top_intake = f["intake_years"].most_common(1)[0][0] if f["intake_years"] else None
+    cards.append({
+      "name":name,"experiences_count":f["experiences_count"],"avg_salary":avg_salary,
+      "popular_programs":popular,"top_city":top_city,"top_intake":top_intake,
+      "next_close": f["next_close"].isoformat() if f["next_close"] else None
+    })
+  cards.sort(key=lambda x:(-x["experiences_count"], x["name"]))
+  return cards
+
+def load_cards(csv_path="out/grad_program_signals.csv"):
+  return aggregate_by_firm(load_grad_signals(csv_path))
+
+3) WIRE THE SERVER ROUTE THAT RENDERS “Explore Companies”
+- Search the repo for the exact text "Explore Companies" to locate the template that shows that section
+  (likely templates/index.html or templates/companies.html).
+- In main.py (or the Flask entry file), ensure:
+    from flask import render_template, jsonify
+    from grad_data import load_cards
+- If Explore Companies is on "/", update that route to:
+    @app.route("/")
+    def index():
+        firms = load_cards("out/grad_program_signals.csv")
+        return render_template("index.html", firms=firms)
+  If it’s at "/companies", do the same for that route instead.
+- Also add a JSON endpoint (optional):
+    @app.route("/api/grad-data")
+    def api_grad_data():
+        return jsonify({"firms": load_cards("out/grad_program_signals.csv")})
+
+4) REPLACE STATIC CARDS WITH A LOOP
+- In the template that contains "Explore Companies", replace the hard-coded firm cards
+  with this Jinja loop EXACTLY:
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  {% for firm in firms %}
+  <div class="rounded-2xl shadow p-5 bg-white">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-xl font-semibold">{{ firm.name }}</h3>
+      <div class="flex gap-2">
+        <span class="text-xs px-2 py-1 rounded-full bg-gray-100">{{ firm.experiences_count }} experiences</span>
+        {% if firm.avg_salary %}
+          <span class="text-xs px-2 py-1 rounded-full bg-green-100">${{ "{:,}".format(firm.avg_salary) }} avg</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="text-xs text-gray-500 mb-1">
+      {% if firm.top_city %}{{ firm.top_city }}{% endif %}
+      {% if firm.top_intake %} • {{ firm.top_intake }}{% endif %}
+      {% if firm.next_close %} • Apps close {{ firm.next_close }}{% endif %}
+    </div>
+    <div class="text-sm font-medium text-gray-600 mb-1">POPULAR PROGRAMS</div>
+    <p class="text-sm text-gray-700">
+      {% if firm.popular_programs %}{{ firm.popular_programs | join(", ") }}{% else %}—{% endif %}
+    </p>
+  </div>
+  {% endfor %}
+</div>
+
+5) VALIDATE IT’S USING LIVE DATA
+- Restart the server.
+- Open the route you edited ("/" or "/companies").
+- Also print to console inside the route (temporarily) the count of firms loaded.
+
+If the CSV has rows (Step 1 shows rows > 0) and you replaced the static cards with the loop,
+the section must update. If not, fix the template that actually renders "Explore Companies".

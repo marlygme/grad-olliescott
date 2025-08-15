@@ -1,0 +1,174 @@
+You are my coding copilot. I want my website to render cards from the CSV out/grad_program_signals.csv produced by extract_grad_programs.py. Do the following exactly and be idempotent (safe to re-run):
+
+1) Create/overwrite grad_data.py
+
+Write this file verbatim (no extra deps):
+
+import csv
+from collections import Counter
+from statistics import mean
+from datetime import datetime, date
+
+PROGRAM_LABELS = {
+    "graduate": "Graduate Program",
+    "clerkship": "Clerkship",
+    "summer_clerkship": "Summer Clerkship",
+    "winter_clerkship": "Winter Clerkship",
+    "seasonal_clerkship": "Seasonal Clerkship",
+    "vacation": "Vacation Program",
+    "internship": "Internship",
+    "ambiguous": "Other",
+}
+
+def _f(x):
+    try: return float(x)
+    except: return None
+
+def _d(x):
+    try:
+        if not x or not x.strip(): return None
+        return datetime.strptime(x.strip(), "%Y-%m-%d").date()
+    except:
+        return None
+
+def load_grad_signals(csv_path):
+    rows = []
+    try:
+        with open(csv_path, newline="", encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                rows.append({
+                    "firm_name": r.get("firm_name","").strip(),
+                    "program_type": r.get("program_type","").strip(),
+                    "city": r.get("city","").strip(),
+                    "intake_year": r.get("intake_year","").strip(),
+                    "application_close_date": r.get("application_close_date","").strip(),
+                    "salary_annual_aud": r.get("salary_annual_aud","").strip(),
+                    "evidence_span": r.get("evidence_span","").strip(),
+                })
+    except FileNotFoundError:
+        return []
+    return rows
+
+def aggregate_by_firm(rows):
+    today = date.today()
+    firms = {}
+    for r in rows:
+        name = r["firm_name"] or "Unknown"
+        firm = firms.setdefault(name, {
+            "name": name,
+            "experiences_count": 0,
+            "program_counts": Counter(),
+            "cities": Counter(),
+            "intake_years": Counter(),
+            "salaries": [],
+            "next_close": None,
+            "evidence_samples": [],
+        })
+        firm["experiences_count"] += 1
+        if r["program_type"]: firm["program_counts"][r["program_type"]] += 1
+        if r["city"]: firm["cities"][r["city"]] += 1
+        if (r["intake_year"] or "").isdigit(): firm["intake_years"][int(r["intake_year"])] += 1
+        s = _f(r["salary_annual_aud"])
+        if s: firm["salaries"].append(s)
+        cd = _d(r["application_close_date"])
+        if cd and cd >= today and (firm["next_close"] is None or cd < firm["next_close"]):
+            firm["next_close"] = cd
+        if r["evidence_span"] and len(firm["evidence_samples"]) < 2:
+            firm["evidence_samples"].append(r["evidence_span"])
+
+    cards = []
+    for name, f in firms.items():
+        popular_programs = [PROGRAM_LABELS.get(k, k) for k, _ in f["program_counts"].most_common(3)]
+        avg_salary = round(mean(f["salaries"])) if f["salaries"] else None
+        top_city = f["cities"].most_common(1)[0][0] if f["cities"] else None
+        top_intake = f["intake_years"].most_common(1)[0][0] if f["intake_years"] else None
+        cards.append({
+            "name": name,
+            "experiences_count": f["experiences_count"],
+            "avg_salary": avg_salary,
+            "popular_programs": popular_programs,
+            "top_city": top_city,
+            "top_intake": top_intake,
+            "next_close": f["next_close"].isoformat() if f["next_close"] else None,
+            "evidence_samples": f["evidence_samples"],
+        })
+    cards.sort(key=lambda x: (-x["experiences_count"], x["name"]))
+    return cards
+
+def load_cards(csv_path="out/grad_program_signals.csv"):
+    return aggregate_by_firm(load_grad_signals(csv_path))
+
+2) Create/overwrite templates/companies.html
+
+This must extend my current base layout and render the cards:
+
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-2">Explore Companies</h1>
+<p class="text-gray-600 mb-6">Discover insights from graduates at leading organizations</p>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  {% for firm in firms %}
+  <div class="rounded-2xl shadow p-5 bg-white">
+    <div class="flex items-center justify-between mb-2">
+      <h3 class="text-xl font-semibold">{{ firm.name }}</h3>
+      <div class="flex gap-2">
+        <span class="text-xs px-2 py-1 rounded-full bg-gray-100">{{ firm.experiences_count }} experiences</span>
+        {% if firm.avg_salary %}
+          <span class="text-xs px-2 py-1 rounded-full bg-green-100">${{ "{:,}".format(firm.avg_salary) }} avg</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="text-xs text-gray-500 mb-1">
+      {% if firm.top_city %}{{ firm.top_city }}{% endif %}
+      {% if firm.top_intake %} • {{ firm.top_intake }}{% endif %}
+      {% if firm.next_close %} • Apps close {{ firm.next_close }}{% endif %}
+    </div>
+    <div class="text-sm font-medium text-gray-600 mb-1">POPULAR PROGRAMS</div>
+    <p class="text-sm text-gray-700">
+      {% if firm.popular_programs %}{{ firm.popular_programs | join(", ") }}{% else %}—{% endif %}
+    </p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+3) Patch main.py
+
+Import the loader: from grad_data import load_cards
+
+Add routes (create if missing; update if different):
+
+from flask import render_template, jsonify  # ensure imported
+
+@app.route("/companies")
+def companies():
+    firms = load_cards("out/grad_program_signals.csv")
+    return render_template("companies.html", firms=firms)
+
+@app.route("/api/grad-data")
+def api_grad_data():
+    return jsonify({"firms": load_cards("out/grad_program_signals.csv")})
+
+4) Add a nav link to /companies
+
+Open templates/base.html and add a visible link in the header/nav to /companies (e.g., “Companies”). Keep styling consistent with the existing nav.
+
+5) Verify the CSV exists; otherwise generate it
+
+If out/grad_program_signals.csv does not exist or is empty, run:
+
+python extract_grad_programs.py
+
+
+Then re-load /companies.
+
+6) Run & confirm
+
+Restart the app.
+
+Open /companies.
+
+Confirm firm cards are visible (experiences count, avg salary badge, program list, city/year, close date if found).
+
+If the Explore Companies content was previously hard-coded elsewhere, remove the old static cards so only the dynamic cards remain.

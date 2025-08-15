@@ -1,15 +1,41 @@
 
 {% extends "base.html" %}
-
-{% block title %}Companies – Gradvantage{% endblock %}
-
 {% block content %}
 <div class="container py-5">
-  <div class="text-center mb-5">
-    <h1 class="display-4 fw-bold mb-3">Explore Companies</h1>
-    <p class="fs-5 text-muted">Discover graduate programs and opportunities across leading firms</p>
+  <h1 class="display-4 fw-bold mb-2">Explore Companies</h1>
+  <p class="text-muted mb-5 fs-5">Discover insights from graduates at leading organizations</p>
+
+  <div class="row g-4">
+    {% for firm in firms %}
+    <div class="col-lg-6">
+      <div class="card h-100 shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <h3 class="card-title h5 fw-bold mb-0">{{ firm.name }}</h3>
+            <div class="d-flex gap-2 flex-wrap">
+              <span class="badge bg-light text-dark">{{ firm.experiences_count }} experiences</span>
+              {% if firm.avg_salary %}
+                <span class="badge bg-success">${{ "{:,}".format(firm.avg_salary) }} avg</span>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="small text-muted mb-2">
+            {% if firm.top_city %}{{ firm.top_city }}{% endif %}
+            {% if firm.top_intake %} • {{ firm.top_intake }}{% endif %}
+            {% if firm.next_close %} • Apps close {{ firm.next_close }}{% endif %}
+          </div>
+          
+          <div class="mb-2">
+            <small class="text-uppercase text-muted fw-medium">Popular Programs</small>
+          </div>
+          <p class="text-dark mb-0">
+            {% if firm.popular_programs %}{{ firm.popular_programs | join(", ") }}{% else %}—{% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
   </div>
-  
-  {% include "explore_firms_snippet.html" %}
 </div>
 {% endblock %}

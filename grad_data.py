@@ -1,4 +1,3 @@
-
 from collections import Counter
 from statistics import mean
 from datetime import datetime, date
@@ -22,35 +21,27 @@ def _d(x):
   except: return None
 
 def load_grad_signals(csv_path):
-  rows=[]
-  try:
-    with open(csv_path, newline='', encoding='utf-8') as f:
-      for r in csv.DictReader(f):
-        rows.append({
-          "firm_name": r.get("firm_name","").strip(),
-          "program_type": r.get("program_type","").strip(),
-          "city": r.get("city","").strip(),
-          "intake_year": r.get("intake_year","").strip(),
-          "application_open_date": r.get("application_open_date","").strip(),
-          "application_close_date": r.get("application_close_date","").strip(),
-          "program_length_months": r.get("program_length_months","").strip(),
-          "rotations_count": r.get("rotations_count","").strip(),
-          "salary_annual_aud": r.get("salary_annual_aud","").strip(),
-          "evidence_span": r.get("evidence_span","").strip(),
-          "thread_title": r.get("thread_title","").strip(),
-          "thread_url": r.get("thread_url","").strip(),
-          "confidence": r.get("confidence","").strip(),
-        })
-  except FileNotFoundError:
+  if not os.path.exists(csv_path):
     return []
-  return rows
+
+  signals = []
+  with open(csv_path, 'r', encoding='utf-8') as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+      # Remove username/author fields for privacy
+      clean_row = dict(row)
+      for field in ['author', 'username', 'user', 'Author']:
+        if field in clean_row:
+          del clean_row[field]
+      signals.append(clean_row)
+  return signals
 
 def aggregate_by_firm(rows):
   firms = {}
   for row in rows:
     name = row["firm_name"]
     if not name: continue
-    
+
     if name not in firms:
       firms[name] = {
         "name": name,
@@ -82,10 +73,10 @@ def aggregate_by_firm(rows):
         "conversion_rate": "High conversion rate for strong performers",
         "offer_timeline": "Offers typically within 2-4 weeks of interviews"
       }
-    
+
     firm = firms[name]
     firm["experiences_count"] += 1
-    
+
     if row["program_type"]: firm["program_types"].append(row["program_type"])
     if row["city"]: firm["cities"].append(row["city"])
     if row["intake_year"]: 
@@ -111,22 +102,22 @@ def aggregate_by_firm(rows):
     if firm["salaries"]:
       firm["avg_salary"] = int(mean(firm["salaries"]))
       firm["salary_range"] = f"${min(firm['salaries']):,.0f} - ${max(firm['salaries']):,.0f}"
-    
+
     # Location info
     if firm["cities"]:
       city_counts = Counter(firm["cities"])
       firm["top_city"] = city_counts.most_common(1)[0][0]
       firm["locations_count"] = len(set(firm["cities"]))
-    
+
     # Program info
     if firm["program_types"]:
       type_counts = Counter(firm["program_types"])
       firm["popular_programs"] = [PROGRAM_LABELS.get(t, t) for t, _ in type_counts.most_common(3)]
-    
+
     # Timeline info
     if firm["intake_years"]:
       firm["top_intake"] = max(set(firm["intake_years"]), key=firm["intake_years"].count)
-    
+
     if firm["close_dates"]:
       # Find the next upcoming close date
       today = datetime.now().date()
@@ -140,15 +131,15 @@ def aggregate_by_firm(rows):
           pass
       if future_dates:
         firm["next_close"] = min(future_dates).strftime("%b %d")
-    
+
     # Program structure
     if firm["program_lengths"]:
       firm["typical_length"] = f"{int(mean(firm['program_lengths']))} months"
-    
+
     if firm["rotation_counts"]:
       avg_rotations = int(mean(firm["rotation_counts"]))
       firm["rotation_info"] = f"{avg_rotations} rotations typically"
-    
+
     # Enhanced info based on firm type and evidence
     firm["application_timeline"] = get_application_timeline(firm)
     firm["selection_process"] = get_selection_process(firm)
@@ -169,7 +160,7 @@ def get_application_timeline(firm):
 def get_selection_process(firm):
   """Generate selection process info"""
   evidence_text = " ".join(firm["evidence_snippets"]).lower()
-  
+
   processes = []
   if "application" in evidence_text:
     processes.append("Application")
@@ -181,7 +172,7 @@ def get_selection_process(firm):
     processes.append("Interview/AC")
   if "partner" in evidence_text:
     processes.append("Partner Interview")
-  
+
   if processes:
     return " → ".join(processes)
   return "Application → Assessment → Interview → Offer"
@@ -189,14 +180,14 @@ def get_selection_process(firm):
 def get_eligibility_info(firm):
   """Generate eligibility information"""
   evidence_text = " ".join(firm["evidence_snippets"]).lower()
-  
+
   if "penult" in evidence_text:
     return "Penultimate year law students"
   elif "final" in evidence_text:
     return "Final year law students & graduates"
   elif "wam" in evidence_text or "gpa" in evidence_text:
     return "Law students with strong academic record"
-  
+
   return "Law students in penultimate/final year"
 
 def get_training_info(firm):
@@ -208,21 +199,21 @@ def get_training_info(firm):
 def get_culture_info(firm):
   """Generate culture information"""
   evidence_text = " ".join(firm["evidence_snippets"]).lower()
-  
+
   if any(word in evidence_text for word in ["culture", "team", "collaborative"]):
     return "Collaborative team environment"
   elif "international" in evidence_text or "global" in evidence_text:
     return "Global firm with international opportunities"
-  
+
   return "Professional services environment"
 
 def get_conversion_info(firm):
   """Generate conversion rate info"""
   evidence_text = " ".join(firm["evidence_snippets"]).lower()
-  
+
   if any(word in evidence_text for word in ["offer", "grad", "conversion"]):
     return "Strong conversion rate for high performers"
-  
+
   return "Competitive conversion to graduate roles"
 
 def get_offer_timeline(firm):

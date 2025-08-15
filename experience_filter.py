@@ -207,6 +207,14 @@ def process_csv_files(input_files: List[str], target_firm: Optional[str] = None)
                     is_short = is_too_short(content)
                     quality = compute_quality_score(content)
                     
+                    # Remove any username/author fields for privacy
+                    if 'author' in row:
+                        del row['author']
+                    if 'username' in row:
+                        del row['username']
+                    if 'user' in row:
+                        del row['user']
+                    
                     # Determine reason for inclusion/exclusion
                     reasons = []
                     if quality >= 0.6:

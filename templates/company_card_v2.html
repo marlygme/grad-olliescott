@@ -1,0 +1,25 @@
+
+<div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow">
+  <div class="flex items-center justify-between mb-1">
+    <h3 class="text-lg font-semibold text-gray-900">{{ firm.name }}</h3>
+    <div class="flex items-center gap-2">
+      <span class="text-[11px] px-2 py-1 rounded-full bg-gray-100 text-gray-700">{{ firm.insights_count }} posts</span>
+      {% if firm.cities_count and firm.cities_count > 1 %}
+        <span class="text-[11px] px-2 py-1 rounded-full bg-gray-100 text-gray-700">{{ firm.top_city }} + {{ firm.cities_count - 1 }} more</span>
+      {% elif firm.top_city %}
+        <span class="text-[11px] px-2 py-1 rounded-full bg-gray-100 text-gray-700">{{ firm.top_city }}</span>
+      {% endif %}
+      {% if firm.avg_salary %}
+        <span class="text-[11px] px-2 py-1 rounded-full bg-green-100 text-green-800">${{ "{:,}".format(firm.avg_salary) }} avg</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="text-xs text-gray-500 mb-3">
+    {% if firm.top_intake %}Intake {{ firm.top_intake }}{% endif %}
+    {% if firm.next_close %} • Apps close {{ firm.next_close }}{% endif %}
+  </div>
+  {% if firm.popular_programs %}
+    <div class="text-xs font-medium text-gray-700 mb-1">Popular programs</div>
+    <div class="text-sm text-gray-800">{{ firm.popular_programs | join(", ") }}</div>
+  {% endif %}
+</div>

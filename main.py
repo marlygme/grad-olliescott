@@ -4,6 +4,7 @@ from datetime import datetime
 import json
 import os
 from grad_data import load_cards, load_grad_signals
+from grad_data_v2 import load_cards as load_cards_v2
 
 app = Flask(__name__)
 
@@ -206,8 +207,8 @@ def company_page(name):
 
 @app.route('/companies')
 def companies():
-    firms = load_cards("out/grad_program_signals.csv")
-    return render_template("companies.html", firms=firms)
+    firms = load_cards_v2("out/grad_program_signals.csv")
+    return render_template("companies_v2.html", firms=firms)
 
 
 @app.route('/api/grad-data')

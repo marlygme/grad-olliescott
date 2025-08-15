@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from datetime import datetime
 import json
 import os
-from grad_data import load_cards
+from grad_data import load_cards, load_grad_signals
 
 app = Flask(__name__)
 
@@ -213,6 +213,19 @@ def companies():
 @app.route('/api/grad-data')
 def api_grad_data():
     return jsonify({"firms": load_cards("out/grad_program_signals.csv")})
+
+
+@app.route('/experiences')
+def experiences():
+    experiences = load_grad_signals("out/grad_program_signals.csv")
+    return render_template("experiences.html", experiences=experiences)
+
+
+@app.route('/experiences/<firm_name>')
+def firm_experiences(firm_name):
+    experiences = load_grad_signals("out/grad_program_signals.csv")
+    firm_experiences = [exp for exp in experiences if exp['firm_name'].lower() == firm_name.lower()]
+    return render_template("experiences.html", experiences=firm_experiences, firm_name=firm_name)
 
 
 @app.route('/law-match', methods=['GET', 'POST'])

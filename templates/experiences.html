@@ -1,0 +1,94 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+{% if firm_name %}{{ firm_name }} Experiences{% else %}All Experiences{% endif %} – Gradvantage
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold mb-3">
+        {% if firm_name %}{{ firm_name }} Experiences{% else %}Graduate Experiences{% endif %}
+      </h1>
+      <p class="fs-5 text-muted">
+        {% if firm_name %}
+        Real experiences from graduates at {{ firm_name }}
+        {% else %}
+        Browse real graduate experiences from leading firms
+        {% endif %}
+      </p>
+    </div>
+
+    {% if experiences %}
+      <div class="row g-4">
+        {% for exp in experiences %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 rounded-3">
+            <div class="card-body p-4">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <h5 class="card-title fw-bold mb-0">{{ exp.firm_name }}</h5>
+                <div class="d-flex flex-wrap gap-1">
+                  {% if exp.program_type %}
+                    <span class="badge bg-primary-subtle text-primary small">{{ exp.program_type }}</span>
+                  {% endif %}
+                  {% if exp.intake_year %}
+                    <span class="badge bg-light text-dark small">{{ exp.intake_year }}</span>
+                  {% endif %}
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                {% if exp.city %}
+                  <div class="text-muted small mb-1">
+                    <i class="bi bi-geo-alt me-1"></i>{{ exp.city }}
+                  </div>
+                {% endif %}
+                
+                {% if exp.salary_annual_aud %}
+                  <div class="text-success small mb-1">
+                    <i class="bi bi-currency-dollar me-1"></i>${{ "{:,}".format(exp.salary_annual_aud|int) }} AUD
+                  </div>
+                {% endif %}
+                
+                {% if exp.application_close_date %}
+                  <div class="text-warning small mb-1">
+                    <i class="bi bi-calendar me-1"></i>Applications close: {{ exp.application_close_date }}
+                  </div>
+                {% endif %}
+              </div>
+              
+              {% if exp.evidence_span %}
+                <div class="border-start border-primary border-3 ps-3">
+                  <p class="text-muted small mb-0">{{ exp.evidence_span[:200] }}{% if exp.evidence_span|length > 200 %}...{% endif %}</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <div class="text-center mt-5">
+        <p class="text-muted">Showing {{ experiences|length }} experience{{ 's' if experiences|length != 1 else '' }}</p>
+      </div>
+    {% else %}
+      <div class="text-center py-5">
+        <div class="empty-icon mb-4">
+          <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h4 class="fw-medium mb-3">No experiences found</h4>
+        <p class="text-muted mb-4">
+          {% if firm_name %}
+          No experiences found for {{ firm_name }}.
+          {% else %}
+          No experiences available yet.
+          {% endif %}
+        </p>
+        <a href="/" class="btn btn-primary btn-pill px-4">Back to Home</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

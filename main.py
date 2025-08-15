@@ -224,18 +224,29 @@ def experiences():
 
 @app.route('/experiences/<firm_name>')
 def firm_experiences(firm_name):
+    # Get university data for this firm
+    university_data = FIRM_UNIVERSITY_DATA.get(firm_name, None)
+    
     # Try to load filtered experiences first
     try:
         from experience_filter import load_filtered_for_firm
         filtered_experiences = load_filtered_for_firm(firm_name, min_score=0.6, exclude_questions=True)
         print(f"Loaded {len(filtered_experiences)} filtered experiences for {firm_name}")
-        return render_template("experiences.html", experiences=filtered_experiences, firm_name=firm_name, is_filtered=True)
+        return render_template("experiences.html", 
+                             experiences=filtered_experiences, 
+                             firm_name=firm_name, 
+                             is_filtered=True,
+                             university_data=university_data)
     except Exception as e:
         print(f"Error loading filtered experiences: {e}")
         # Fall back to grad signals
         experiences = load_grad_signals("out/grad_program_signals.csv")
         firm_experiences = [exp for exp in experiences if exp['firm_name'].lower() == firm_name.lower()]
-        return render_template("experiences.html", experiences=firm_experiences, firm_name=firm_name, is_filtered=False)
+        return render_template("experiences.html", 
+                             experiences=firm_experiences, 
+                             firm_name=firm_name, 
+                             is_filtered=False,
+                             university_data=university_data)
 
 
 @app.route('/law-match', methods=['GET', 'POST'])

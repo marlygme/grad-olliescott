@@ -1,0 +1,79 @@
+You are my coding copilot. I want to show only high-quality, answer-style experiences on firm pages (e.g. /experiences/<firm>). Build a rule-based filter (no new heavy deps) and integrate it.
+
+1) Create experience_filter.py
+
+Read one or more CSVs with at least: thread_title, thread_url, post_number, author, timestamp, content.
+
+Use FIRM_ALIASES from extractors.py to match posts to a firm (case-insensitive; alias list + canonical name).
+
+For each post, compute:
+
+is_question: true if it looks like a question (ends with ? or starts with phrases like anyone know|does anyone|has anyone|is it true|should I|where can I|what are|when do|how long|how do, or contains many ?).
+
+is_meta_low: true if it’s meta/filler: bump|following|subscribing|any updates|thanks|lol|lmao|haha|dm me|pm me|off-topic.
+
+is_too_short: true if len(content_clean) < 180 or unique words < 25.
+
+has_program_signals: true if it contains useful signals: offer|rejected|accepted|clerkship|graduate program|rotation|AC|assessment centre|superday|paralegal|salary|pay|remuneration|benefits|billable|hours|culture|mentor|secondment|seat|practice group|training.
+
+has_numbers: true if it contains a date, $, or digits (often correlates with concrete info).
+
+past_tense_hint: true if it has obvious past-tense verbs like received|accepted|completed|did|worked|went|rotated.
+
+Compute a quality_score (0–1): start 0.5;
++0.25 has_program_signals, +0.1 has_numbers, +0.1 past_tense_hint, +0.1 long_enough (not too short);
+-0.5 if is_question, -0.2 if is_meta_low, -0.2 if is_too_short. Clamp 0..1.
+
+Output a filtered CSV with columns:
+firm_name, content, timestamp, thread_url, author, quality_score, is_question, is_meta_low, is_too_short, reason.
+
+Provide a CLI:
+
+python experience_filter.py --in law_raw.csv law_whirlpool_2018_2025.csv raw_all.csv \
+                            --firm "King & Wood Mallesons" \
+                            --out out/experiences_KWM.csv \
+                            --minscore 0.6 \
+                            --exclude-questions 1
+
+
+Defaults: --minscore 0.6, --exclude-questions 1.
+
+2) Update the firm experiences route to use the filtered data
+
+In main.py (or wherever the experiences route is), import the filter:
+from experience_filter import load_filtered_for_firm
+
+Change the route handler for /experiences/<firm> so it:
+
+Looks for out/experiences_<slug>.csv (slug the firm name: lowercase, hyphens, strip &+ etc.).
+
+If not found, load the raw CSVs, filter in-memory, then render.
+
+Pass only rows where quality_score >= 0.6 and (if exclude-questions) is_question == False.
+
+Keep everything idempotent and don’t add new dependencies.
+
+3) In the experiences template
+
+Replace the current loop data source with the filtered rows passed from the route.
+
+Each card should show:
+
+First 240–300 chars of content (ellipsis after).
+
+A small badge with quality_score (optional).
+
+Timestamp (formatted), and a link to thread_url.
+
+4) Quick tests
+
+Run:
+
+python experience_filter.py --in law_raw.csv --firm "King & Wood Mallesons" --out out/experiences_KWM.csv
+head -n 5 out/experiences_KWM.csv
+
+
+Open /experiences/King%20&%20Wood%20Mallesons and confirm fewer, higher-signal cards (no question-style posts).
+
+Make minimal changes, keep code small, and print a summary:
+“kept X / total Y for <firm>; reasons top-3: …”.

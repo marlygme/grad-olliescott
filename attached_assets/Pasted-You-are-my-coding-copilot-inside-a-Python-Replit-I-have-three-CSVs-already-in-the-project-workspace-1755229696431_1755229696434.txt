@@ -1,0 +1,186 @@
+You are my coding copilot inside a Python Replit.
+I have three CSVs already in the project workspace:
+
+/mnt/data/law_whirlpool_2018_2025.csv with columns: thread_title, thread_url, post_number, author, timestamp, content
+
+/mnt/data/law_raw.csv with columns: thread_title, thread_url, post_number, author, timestamp, content, year
+
+/mnt/data/raw_all.csv with columns: thread_title, thread_url, post_number, author, timestamp, content
+
+Goal
+Create a script extract_grad_programs.py that parses those CSVs and adds structured data about each business’s graduate/clerkship programs mentioned in the posts. The output should be a tidy dataset where each row = one program signal (e.g., a firm + program type + location + application window gleaned from a specific post).
+
+What to detect & extract (fields to produce)
+Create a DataFrame with exactly these columns:
+
+firm_name – normalised firm (e.g., “Clayton Utz”, “Allens”)
+
+firm_alias – the alias/variant actually matched in text (e.g., “Clutz”, “Minters”, “HSF”)
+
+program_type – one of: graduate, clerkship, vacation, seasonal_clerkship, summer_clerkship, winter_clerkship, internship, ambiguous
+
+city – one of: Sydney, Melbourne, Brisbane, Perth, Adelaide, Canberra, Hobart, Other/Unknown
+
+intake_year – integer if you can infer (from thread title like “Sydney Clerkship 2025” or from text); else null
+
+application_open_date – ISO date if detected; else null
+
+application_close_date – ISO date if detected; else null
+
+program_length_months – integer if text says e.g. “18-month program”; else null
+
+rotations_count – integer if text says e.g. “3 rotations”; else null
+
+salary_annual_aud – numeric if a $ amount per year appears; else null
+
+evidence_span – short snippet (<= 240 chars) of the post section that triggered the extraction
+
+thread_title
+
+thread_url
+
+post_number
+
+post_timestamp – parsed to UTC if possible; else raw string
+
+source_file – which CSV this came from
+
+confidence – float 0–1 based on rule quality (see below)
+
+created_at – timestamp when the script ran
+
+Firm dictionary (with common aliases) to use for matching
+Seed a Python dict that maps canonical names to aliases (case-insensitive). Include at least these (you can add more if you see them in text):
+
+FIRM_ALIASES = {
+  "Clayton Utz": ["clayton utz", "clutz", "claytons"],
+  "Allens": ["allens"],
+  "Herbert Smith Freehills": ["herbert smith freehills", "hsf", "herbies"],
+  "Ashurst": ["ashurst"],
+  "MinterEllison": ["minterellison", "minter ellison", "minters"],
+  "Colin Biggers & Paisley": ["colin biggers", "cbp", "cb&p"],
+  "Lander & Rogers": ["lander & rogers", "landers"],
+  "Addisons": ["addisons"],
+  "Clifford Chance": ["clifford chance", "cc"],
+  "King & Wood Mallesons": ["king & wood mallesons", "kwm", "mallesons"],
+  "Corrs Chambers Westgarth": ["corrs", "corrs chambers"],
+  "Gilbert + Tobin": ["gilbert + tobin", "g+t", "gtobin", "g+tobin"],
+  "HWL Ebsworth": ["hwl", "hwl ebsworth"],
+  "Maddocks": ["maddocks"],
+  "Sparke Helmore": ["sparke helmore", "sparke"],
+  "Hall & Wilcox": ["hall & wilcox", "h&w"],
+  "Baker McKenzie": ["baker mckenzie", "bakers"],
+  "Norton Rose Fulbright": ["norton rose fulbright", "nrf"],
+  "DLA Piper": ["dla piper", "dla"]
+}
+
+
+Use exact phrase and fuzzy matching (rapidfuzz) with sensible thresholds; prefer exact/alias hits over fuzzy. If multiple firms are mentioned in the same span, create one row per firm match.
+
+Program type heuristics
+
+If text contains clerkship, classify as clerkship. If it also contains seasonal or the months Jun–Aug (winter) vs Nov–Feb (summer), label more specifically where obvious.
+
+If text contains graduate program, grad role, graduate intake, classify as graduate.
+
+If text contains vacationer/vacation program, classify as vacation.
+
+Otherwise ambiguous.
+
+City detection
+Look for city names and common abbreviations (e.g., “Syd”, “Melb”, “Bris”). If thread title has “Sydney”, prefer that.
+
+Dates & windows
+
+Detect “applications open/close” patterns:
+
+open(s|ing)? (on|from)? <date>
+
+close(s|ing)? (on|by|at)? <date>
+
+Parse dates like 15 Aug 2025, Aug 15, 2025, 15/08/2025, 2025-Aug-15, plus month-only (assume last day for close, first day for open).
+
+Normalise to ISO YYYY-MM-DD. Use dateparser or a custom parser (python-dateutil is fine).
+
+If only a month is given, set the day to 01 for opens and 28 for closes, and reduce confidence slightly.
+
+Intake year
+
+Pull from thread title patterns like Clerkship 2025, Grad 2026, or in-text 2026 intake.
+
+If none found but the post timestamp exists, use that year as a fallback (low confidence).
+
+Salary / length / rotations
+
+Salary: look for $65k, $70,000, $85k+super; convert to a numeric annual AUD (strip “+ super”).
+
+Length: (\d+)[-\s]?(month|months|yr|year|years) → months, normalise years × 12.
+
+Rotations: (\d+)\s+rotations.
+
+Confidence scoring (0–1)
+Start at 0.5.
+
++0.2 if firm match is exact alias; +0.1 if fuzzy.
+
++0.1 if program_type is explicit (e.g., word “clerkship” present).
+
++0.05 if city found; +0.05 if intake_year found.
+
+−0.1 for month-only dates; −0.1 if multiple firms detected in same span.
+Clamp to [0, 1].
+
+Evidence span
+Return the shortest substring of content that includes the firm alias and the keyword(s) that led to extraction (max 240 chars, clean whitespace).
+
+Implementation requirements
+
+Create extract_grad_programs.py with a main() that:
+
+Reads all three CSVs (ignore missing ones gracefully).
+
+Normalises text (lowercase copy, strip quotes/emoji, collapse whitespace).
+
+Generates a single tidy DataFrame with the exact schema above.
+
+Parses timestamps: handle strings like 2025-Aug-15, 1:25 pm AEST; convert to UTC if possible (assume AEST/AEDT based on date; pytz ok). If parsing fails, keep raw in post_timestamp.
+
+Writes outputs to:
+
+out/grad_program_signals.csv
+
+out/grad_program_signals.parquet
+
+Put reusable logic in extractors.py (firm matching, date parsing, evidence span, confidence).
+
+Add a small tests/test_extractors.py with unit tests for: firm alias match, date parsing (15 Aug 2025, 2025-Aug-15, 1:25 pm AEST), program type classification, salary/length/rotations. Use pytest.
+
+Add a CLI:
+
+python extract_grad_programs.py --in /mnt/data/law_raw.csv /mnt/data/raw_all.csv /mnt/data/law_whirlpool_2018_2025.csv --out out/grad_program_signals.csv
+
+
+Defaults: if --in omitted, use the three paths above if present; ensure out/ is created.
+
+Libraries allowed
+pandas, python-dateutil, pytz, regex, rapidfuzz (for fuzzy), dateparser (optional if dateutil is enough). No external APIs required.
+
+Quality checks (print to console)
+
+Top 20 firms by mention count with program_type breakdown.
+
+Sample 10 rows with confidence >= 0.75.
+
+For each city, count of clerkship vs graduate.
+
+Acceptance criteria
+
+Script runs without manual edits, produces both CSV and Parquet.
+
+All required columns exist with correct dtypes.
+
+At least some rows extracted from each source file if relevant threads exist.
+
+Tests pass (pytest -q).
+
+Finally, generate the files and show how to run it in the Replit shell.

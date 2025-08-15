@@ -1,0 +1,20 @@
+
+# ---- Add to main.py (or your Flask app file) ----
+from flask import Flask, render_template, jsonify
+from grad_data import load_cards
+
+app = Flask(__name__)
+
+@app.route("/companies")
+def companies():
+    # Load fresh on each request so it picks up new CSV output after you re-run the extractor
+    firms = load_cards("out/grad_program_signals.csv")
+    return render_template("companies.html", firms=firms)
+
+@app.route("/api/grad-data")
+def api_grad_data():
+    firms = load_cards("out/grad_program_signals.csv")
+    return jsonify({"firms": firms})
+
+# In templates/companies.html, include the snippet:
+# {% include "explore_firms_snippet.html" %}

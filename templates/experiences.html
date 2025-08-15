@@ -28,8 +28,13 @@
           <div class="card h-100 shadow-sm border-0 rounded-3">
             <div class="card-body p-4">
               <div class="d-flex justify-content-between align-items-start mb-3">
-                <h5 class="card-title fw-bold mb-0">{{ exp.firm_name }}</h5>
+                <h5 class="card-title fw-bold mb-0">
+                  {% if is_filtered %}{{ exp.firm_name }}{% else %}{{ exp.firm_name }}{% endif %}
+                </h5>
                 <div class="d-flex flex-wrap gap-1">
+                  {% if is_filtered and exp.quality_score %}
+                    <span class="badge bg-success-subtle text-success small">Q: {{ "%.1f"|format(exp.quality_score|float) }}</span>
+                  {% endif %}
                   {% if exp.program_type %}
                     <span class="badge bg-primary-subtle text-primary small">{{ exp.program_type }}</span>
                   {% endif %}
@@ -40,26 +45,49 @@
               </div>
               
               <div class="mb-3">
-                {% if exp.city %}
+                {% if is_filtered and exp.author %}
                   <div class="text-muted small mb-1">
-                    <i class="bi bi-geo-alt me-1"></i>{{ exp.city }}
+                    <i class="bi bi-person me-1"></i>{{ exp.author }}
                   </div>
                 {% endif %}
                 
-                {% if exp.salary_annual_aud %}
-                  <div class="text-success small mb-1">
-                    <i class="bi bi-currency-dollar me-1"></i>${{ "{:,}".format(exp.salary_annual_aud|int) }} AUD
+                {% if is_filtered and exp.timestamp %}
+                  <div class="text-muted small mb-1">
+                    <i class="bi bi-clock me-1"></i>{{ exp.timestamp[:10] if exp.timestamp else '' }}
                   </div>
                 {% endif %}
                 
-                {% if exp.application_close_date %}
-                  <div class="text-warning small mb-1">
-                    <i class="bi bi-calendar me-1"></i>Applications close: {{ exp.application_close_date }}
-                  </div>
+                {% if not is_filtered %}
+                  {% if exp.city %}
+                    <div class="text-muted small mb-1">
+                      <i class="bi bi-geo-alt me-1"></i>{{ exp.city }}
+                    </div>
+                  {% endif %}
+                  
+                  {% if exp.salary_annual_aud %}
+                    <div class="text-success small mb-1">
+                      <i class="bi bi-currency-dollar me-1"></i>${{ "{:,}".format(exp.salary_annual_aud|int) }} AUD
+                    </div>
+                  {% endif %}
+                  
+                  {% if exp.application_close_date %}
+                    <div class="text-warning small mb-1">
+                      <i class="bi bi-calendar me-1"></i>Applications close: {{ exp.application_close_date }}
+                    </div>
+                  {% endif %}
                 {% endif %}
               </div>
               
-              {% if exp.evidence_span %}
+              {% if is_filtered and exp.content %}
+                <div class="border-start border-primary border-3 ps-3 mb-3">
+                  <p class="text-dark small mb-0">{{ exp.content[:280] }}{% if exp.content|length > 280 %}...{% endif %}</p>
+                </div>
+                {% if exp.thread_url %}
+                  <a href="{{ exp.thread_url }}" target="_blank" class="btn btn-outline-primary btn-sm btn-pill">
+                    View Thread <i class="bi bi-external-link ms-1"></i>
+                  </a>
+                {% endif %}
+              {% elif exp.evidence_span %}
                 <div class="border-start border-primary border-3 ps-3">
                   <p class="text-muted small mb-0">{{ exp.evidence_span[:200] }}{% if exp.evidence_span|length > 200 %}...{% endif %}</p>
                 </div>

@@ -145,11 +145,7 @@ def submit():
     return render_template('submit.html')
 
 
-@app.route('/stories')
-def stories():
-    with open(data_file, 'r') as f:
-        submissions = json.load(f)
-    return render_template('stories.html', submissions=submissions[::-1])
+
 
 @app.route('/company/<name>')
 def company_page(name):

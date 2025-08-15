@@ -9,26 +9,15 @@ def clean_content(content: str) -> str:
     if not content:
         return ""
 
-    # Remove forum metadata and user references at the start
-    content = re.sub(r'^User #\d+.*?posts.*?reference:.*?posted.*?(AEST|AEDT)', '', content, flags=re.IGNORECASE | re.DOTALL)
-    
     # Remove common prefixes/suffixes
     content = re.sub(r'^(Re:|RE:)\s*', '', content, flags=re.IGNORECASE)
     content = re.sub(r'\s*\[Quote.*?\]', '', content, flags=re.DOTALL)
 
-    # Remove "I'm new here" type content and politeness requests
-    content = re.sub(r'\b(I\'m new here|I am new here|new to this forum|first time posting|please be nice)\b.*?[.!,]?', '', content, flags=re.IGNORECASE)
-    
-    # Remove user references and metadata
+    # Remove "I'm new here" type content and user references
+    content = re.sub(r'\b(I\'m new here|I am new here|new to this forum|first time posting)\b.*?[.!]', '', content, flags=re.IGNORECASE)
     content = re.sub(r'\buser#?\d+\b', '', content, flags=re.IGNORECASE)
     content = re.sub(r'\b(username|user name):\s*\w+', '', content, flags=re.IGNORECASE)
     content = re.sub(r'\b(posted by|author):\s*\w+', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\breference:\s*whrl\.pl/\w+', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\bposted\s+\d{4}-\w{3}-\d{2},\s+\d{1,2}:\d{2}\s+(am|pm)\s+(AEST|AEDT)', '', content, flags=re.IGNORECASE)
-    
-    # Remove post counts and user status
-    content = re.sub(r'\b\d+\s+posts?\b', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\b\w+\s+(member|user|poster)\b', '', content, flags=re.IGNORECASE)
 
     # Remove extra whitespace
     content = ' '.join(content.split())

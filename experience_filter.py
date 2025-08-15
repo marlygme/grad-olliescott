@@ -2,24 +2,7 @@ import csv
 import re
 import argparse
 from typing import List, Dict, Optional
-
-# Assume HAVE_DATEUTIL and du_parser are defined elsewhere or imported if necessary
-# For this example, we'll define dummy values if they are not available from context
-try:
-    import dateutil.parser as du_parser
-    HAVE_DATEUTIL = True
-except ImportError:
-    HAVE_DATEUTIL = False
-    du_parser = None # Define as None if dateutil is not available
-
-# Placeholder for FIRM_ALIASES, assuming it's defined in extractors module
-# If extractors module is not provided, this needs to be defined or imported properly.
-# For demonstration, we'll use a dummy definition:
-FIRM_ALIASES = {
-    "Firm A": ["FirmA", "FA"],
-    "Firm B": ["FirmB", "FB"]
-}
-
+from extractors import FIRM_ALIASES
 
 def clean_content(content: str) -> str:
     """Clean and normalize content"""
@@ -205,37 +188,6 @@ def match_firm(content: str, thread_title: str = "") -> Optional[str]:
 
     return None
 
-def parse_timestamp_to_utcish(raw: str) -> str:
-    """Clean timestamp to remove content before AEST/AEDT and return the time in a cleaner format."""
-    if not isinstance(raw, str) or not raw.strip():
-        return raw
-
-    # Remove everything before AEST/AEDT
-    tz_match = re.search(r'(AEST|AEDT)', raw, re.IGNORECASE)
-    if tz_match:
-        # Find the position of AEST/AEDT and extract from there
-        tz_pos = tz_match.start()
-        # Look backwards to find the start of the time portion
-        # Adjust the look-back window if needed, 20 characters is a heuristic
-        time_start = max(0, tz_pos - 30)  # Increased look-back for more flexibility
-        time_portion = raw[time_start:]
-
-        # Try to extract just the time and timezone
-        # This regex tries to capture HH:MM, HH:MM:SS, with optional AM/PM and the timezone
-        time_match = re.search(r'(\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM)?\s*(?:AEST|AEDT))', time_portion, re.IGNORECASE)
-        if time_match:
-            return time_match.group(1).strip() # Return the matched time part
-
-    # If no timezone found or extraction failed, try a more general cleanup
-    # This regex aims to capture a time format like HH:MM or HH:MM:SS followed by AEST/AEDT
-    # It will take the last occurrence if multiple are present
-    clean = re.sub(r".*?(\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM)?\s*(?:AEST|AEDT))", r"\1", raw, flags=re.IGNORECASE)
-    if clean != raw:
-        return clean.strip()
-
-    # If no AEST/AEDT or time pattern is found, return the original raw string
-    return raw
-
 def process_csv_files(input_files: List[str], target_firm: Optional[str] = None) -> List[Dict]:
     """Process CSV files and extract firm-related posts"""
     results = []
@@ -291,7 +243,7 @@ def process_csv_files(input_files: List[str], target_firm: Optional[str] = None)
                         'firm_name': firm,
                         'content': content, # Store original content
                         'cleaned_content': cleaned_content, # Store cleaned content
-                        'timestamp': parse_timestamp_to_utcish(row.get('timestamp', '')), # Apply timestamp cleaning
+                        'timestamp': row.get('timestamp', ''),
                         'thread_url': row.get('thread_url', ''),
                         'quality_score': round(quality, 3),
                         'is_question': is_q,

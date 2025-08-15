@@ -35,8 +35,6 @@
           </div>
         </div>
       </div>
-      
-      
     </div>
   </div>
 </section>
@@ -143,50 +141,133 @@
   </div>
 </section>
 
-
-
 <!-- Companies Section -->
 <section class="companies-section py-5 bg-light">
   <div class="container">
     <div class="text-center mb-5">
       <h2 class="display-5 fw-bold mb-3">Explore Companies</h2>
-      <p class="fs-5 text-muted">Discover insights from graduates at leading organizations</p>
+      <p class="fs-5 text-muted">Comprehensive insights into graduate programs at leading firms</p>
     </div>
 
     {% if firms %}
       <div class="row g-4">
         {% for firm in firms %}
-        <div class="col-md-6">
+        <div class="col-lg-6">
           <div class="card h-100 shadow-sm border-0 rounded-3">
             <div class="card-body p-4">
+              <!-- Header -->
               <div class="d-flex justify-content-between align-items-start mb-3">
                 <h5 class="card-title fw-bold mb-0">{{ firm.name }}</h5>
                 <div class="d-flex flex-wrap gap-1">
-                  <span class="badge bg-light text-dark small">{{ firm.experiences_count }} experiences</span>
-                  {% if firm.avg_salary %}
-                    <span class="badge bg-success-subtle text-success small">${{ "{:,}".format(firm.avg_salary) }} avg</span>
+                  <span class="badge bg-primary text-white small">{{ firm.experiences_count }} insights</span>
+                  {% if firm.locations_count > 1 %}
+                    <span class="badge bg-info text-white small">{{ firm.locations_count }} cities</span>
                   {% endif %}
                 </div>
               </div>
               
-              <div class="text-muted small mb-2">
-                {% if firm.top_city %}{{ firm.top_city }}{% endif %}
-                {% if firm.top_intake %} • {{ firm.top_intake }}{% endif %}
-                {% if firm.next_close %} • Apps close {{ firm.next_close }}{% endif %}
+              <!-- Timeline & Applications -->
+              <div class="mb-3">
+                <div class="row g-2">
+                  <div class="col-6">
+                    <div class="small fw-medium text-primary mb-1">📅 Application Timeline</div>
+                    <div class="small text-muted">{{ firm.application_timeline }}</div>
+                  </div>
+                  {% if firm.next_close %}
+                  <div class="col-6">
+                    <div class="small fw-medium text-danger mb-1">⏰ Next Deadline</div>
+                    <div class="small text-danger fw-medium">{{ firm.next_close }}</div>
+                  </div>
+                  {% endif %}
+                </div>
               </div>
+
+              <!-- Eligibility & Process -->
+              <div class="mb-3">
+                <div class="small fw-medium text-success mb-1">✅ Eligibility</div>
+                <div class="small text-muted mb-2">{{ firm.eligibility }}</div>
+                
+                <div class="small fw-medium text-info mb-1">🔍 Selection Process</div>
+                <div class="small text-muted">{{ firm.selection_process }}</div>
+              </div>
+
+              <!-- Compensation -->
+              {% if firm.avg_salary %}
+              <div class="mb-3">
+                <div class="small fw-medium text-warning mb-1">💰 Compensation</div>
+                <div class="small text-muted">
+                  Avg: ${{ "{:,}".format(firm.avg_salary) }}
+                  {% if firm.salary_range %}
+                    <br>Range: {{ firm.salary_range }}
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Program Structure -->
+              <div class="mb-3">
+                <div class="small fw-medium text-purple mb-1">🎯 Program Structure</div>
+                <div class="small text-muted">
+                  {{ firm.training_info }}
+                  {% if firm.typical_length %}
+                    <br>Duration: {{ firm.typical_length }}
+                  {% endif %}
+                  {% if firm.rotation_info %}
+                    <br>{{ firm.rotation_info }}
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Culture & Environment -->
+              <div class="mb-3">
+                <div class="small fw-medium text-secondary mb-1">🏢 Work Environment</div>
+                <div class="small text-muted">{{ firm.work_culture }}</div>
+              </div>
+
+              <!-- Conversion & Offers -->
+              <div class="mb-3">
+                <div class="row g-2">
+                  <div class="col-6">
+                    <div class="small fw-medium text-success mb-1">📈 Conversion</div>
+                    <div class="small text-muted">{{ firm.conversion_rate }}</div>
+                  </div>
+                  <div class="col-6">
+                    <div class="small fw-medium text-primary mb-1">⚡ Offer Timeline</div>
+                    <div class="small text-muted">{{ firm.offer_timeline }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Popular Programs -->
+              {% if firm.popular_programs %}
+              <div class="mb-3">
+                <div class="small fw-medium text-muted mb-1">Popular Programs</div>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for program in firm.popular_programs %}
+                    <span class="badge bg-light text-dark small">{{ program }}</span>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Location Info -->
+              {% if firm.top_city %}
+              <div class="mb-3">
+                <div class="small text-muted">
+                  <i class="bi bi-geo-alt me-1"></i>{{ firm.top_city }}
+                  {% if firm.locations_count > 1 %}
+                    + {{ firm.locations_count - 1 }} other location{{ 's' if firm.locations_count > 2 else '' }}
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
               
-              <div class="small fw-medium text-uppercase text-muted mb-1">Popular Programs</div>
-              <p class="text-dark small mb-3">
-                {% if firm.popular_programs %}
-                  {{ firm.popular_programs | join(", ") }}
-                {% else %}
-                  —
-                {% endif %}
-              </p>
-              
-              <a href="/experiences/{{ firm.name | urlencode }}" class="btn btn-outline-primary btn-sm btn-pill">
-                View Experiences <i class="bi bi-arrow-right ms-1"></i>
-              </a>
+              <!-- Action Button -->
+              <div class="d-grid">
+                <a href="/experiences/{{ firm.name | urlencode }}" class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-arrow-right me-1"></i>View Detailed Experiences
+                </a>
+              </div>
             </div>
           </div>
         </div>

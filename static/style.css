@@ -1,4 +1,3 @@
-
 /* Modern CSS Variables */
 :root {
   --primary: #2563eb;
@@ -333,13 +332,13 @@ body.stories-page {
   .hero-title {
     font-size: 2.5rem;
   }
-  
+
   .hero-subtitle {
     font-size: 1.1rem;
   }
-  
-  
-  
+
+
+
   .step-icon {
     width: 60px;
     height: 60px;
@@ -387,4 +386,51 @@ html {
 
 .loading {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Enhanced Company Cards */
+.companies-section .card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.companies-section .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.text-purple {
+  color: #6f42c1 !important;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+
+.small {
+  font-size: 0.85rem;
+}
+
+/* Card section spacing */
+.card-body > div:not(:last-child) {
+  border-bottom: 1px solid #f8f9fa;
+  padding-bottom: 0.75rem;
+}
+
+.card-body > div:last-child {
+  padding-bottom: 0;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .companies-section .col-lg-6 {
+    margin-bottom: 1rem;
+  }
+
+  .card-body {
+    padding: 1rem !important;
+  }
+
+  .small {
+    font-size: 0.8rem;
+  }
 }

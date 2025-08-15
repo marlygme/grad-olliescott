@@ -111,7 +111,11 @@ def index():
     # Sort by number of submissions
     sorted_companies = sorted(companies.values(), key=lambda x: x['total_submissions'], reverse=True)
     
-    return render_template('index.html', companies=sorted_companies, total_submissions=len(submissions))
+    # Load firms from CSV for Explore Companies section
+    firms = load_cards("out/grad_program_signals.csv")
+    print(f"Loaded {len(firms)} firms from CSV")
+    
+    return render_template('index.html', companies=sorted_companies, total_submissions=len(submissions), firms=firms)
 
 
 @app.route('/submit', methods=['GET', 'POST'])
@@ -208,8 +212,7 @@ def companies():
 
 @app.route('/api/grad-data')
 def api_grad_data():
-    firms = load_cards("out/grad_program_signals.csv")
-    return jsonify({"firms": firms})
+    return jsonify({"firms": load_cards("out/grad_program_signals.csv")})
 
 
 @app.route('/law-match', methods=['GET', 'POST'])

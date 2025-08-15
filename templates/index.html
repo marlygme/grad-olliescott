@@ -153,36 +153,29 @@
       <p class="fs-5 text-muted">Discover insights from graduates at leading organizations</p>
     </div>
 
-    {% if companies %}
-      <div class="row g-4">
-        {% for company in companies %}
-          <div class="col-lg-4 col-md-6">
-            <div class="company-card-modern h-100" onclick="location.href='/company/{{ company.name|urlencode }}'">
-              <div class="card-body p-4">
-                <h5 class="company-name fw-bold mb-3">{{ company.name }}</h5>
-
-                <div class="company-stats d-flex flex-wrap gap-2 mb-3">
-                  <span class="badge bg-primary bg-opacity-10 text-primary">
-                    {{ company.total_submissions }} experiences
-                  </span>
-                  {% if company.avg_salary %}
-                    <span class="badge bg-success bg-opacity-10 text-success">
-                      ${{ "{:,}".format(company.avg_salary) }} avg
-                    </span>
-                  {% endif %}
-                </div>
-
-                <div class="roles-section">
-                  <small class="text-muted text-uppercase fw-medium">Popular roles</small>
-                  <div class="mt-1">
-                    {% for role in company.recent_roles %}
-                      <small class="text-dark">{{ role }}{% if not loop.last %}, {% endif %}</small>
-                    {% endfor %}
-                  </div>
-                </div>
-              </div>
+    {% if firms %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for firm in firms %}
+        <div class="rounded-2xl shadow p-5 bg-white">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xl font-semibold">{{ firm.name }}</h3>
+            <div class="flex gap-2">
+              <span class="text-xs px-2 py-1 rounded-full bg-gray-100">{{ firm.experiences_count }} experiences</span>
+              {% if firm.avg_salary %}
+                <span class="text-xs px-2 py-1 rounded-full bg-green-100">${{ "{:,}".format(firm.avg_salary) }} avg</span>
+              {% endif %}
             </div>
           </div>
+          <div class="text-xs text-gray-500 mb-1">
+            {% if firm.top_city %}{{ firm.top_city }}{% endif %}
+            {% if firm.top_intake %} • {{ firm.top_intake }}{% endif %}
+            {% if firm.next_close %} • Apps close {{ firm.next_close }}{% endif %}
+          </div>
+          <div class="text-sm font-medium text-gray-600 mb-1">POPULAR PROGRAMS</div>
+          <p class="text-sm text-gray-700">
+            {% if firm.popular_programs %}{{ firm.popular_programs | join(", ") }}{% else %}—{% endif %}
+          </p>
+        </div>
         {% endfor %}
       </div>
     {% else %}

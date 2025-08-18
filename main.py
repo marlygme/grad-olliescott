@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from datetime import datetime
 import json
 import os
+import re
 from grad_data import load_cards, load_grad_signals
 from grad_data_v2 import load_cards as load_cards_v2
 
@@ -184,6 +185,16 @@ def company_page(name):
                     p, cats, details = classify_text(content, threshold=1.0, top_k=3)
                     exp["primary_cat"] = p
                     exp["cat_labels"] = [label(c) for c in cats]
+                
+                # Clean any remaining usernames or identifiers
+                for field in ['evidence_span', 'content']:
+                    if exp.get(field):
+                        # Remove any @mentions or user references
+                        exp[field] = re.sub(r'@\w+', '', exp[field])
+                        exp[field] = re.sub(r'User #\d+', '', exp[field])
+                        exp[field] = re.sub(r'\busername:\s*\w+', '', exp[field], flags=re.IGNORECASE)
+                        # Clean up multiple spaces
+                        exp[field] = ' '.join(exp[field].split())
             
             firm_data['experiences'] = firm_experiences[:5]
             firm_data['total_experiences'] = len(firm_experiences)

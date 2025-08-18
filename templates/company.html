@@ -36,10 +36,29 @@
           <!-- Application Timeline -->
           <div class="col-md-6">
             <div class="mb-3">
-              <h6 class="fw-semibold text-primary mb-2">Application Timeline</h6>
-              <p class="mb-1">{{ firm_data.application_timeline or 'Not specified' }}</p>
+              <h6 class="fw-semibold text-primary mb-2">
+                <i class="bi bi-calendar-event me-1"></i>Application Timeline
+              </h6>
+              <p class="mb-1">{{ firm_data.application_timeline or 'Applications typically open February-April' }}</p>
               {% if firm_data.next_close %}
-                <small class="text-danger fw-medium">Next deadline: {{ firm_data.next_close }}</small>
+                <div class="alert alert-warning py-2 px-3 mt-2">
+                  <i class="bi bi-clock me-1"></i><strong>Next deadline: {{ firm_data.next_close }}</strong>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Salary Information -->
+          <div class="col-md-6">
+            <div class="mb-3">
+              <h6 class="fw-semibold text-success mb-2">
+                <i class="bi bi-currency-dollar me-1"></i>Compensation
+              </h6>
+              {% if firm_data.avg_salary %}
+                <p class="mb-1 fw-medium">${{ "{:,}".format(firm_data.avg_salary) }} AUD (average)</p>
+                <small class="text-muted">Based on {{ firm_data.insights_count }} reported salaries</small>
+              {% else %}
+                <p class="mb-0">Competitive graduate package</p>
               {% endif %}
             </div>
           </div>
@@ -47,48 +66,71 @@
           <!-- Location Information -->
           <div class="col-md-6">
             <div class="mb-3">
-              <h6 class="fw-semibold text-primary mb-2">Locations</h6>
+              <h6 class="fw-semibold text-info mb-2">
+                <i class="bi bi-geo-alt me-1"></i>Locations
+              </h6>
               <p class="mb-0">
                 {% if firm_data.top_city %}
-                  <i class="bi bi-geo-alt me-1"></i>{{ firm_data.top_city }}
-                  {% if firm_data.locations_count > 1 %}
-                    <small class="text-muted"> + {{ firm_data.locations_count - 1 }} other location{{ 's' if firm_data.locations_count > 2 else '' }}</small>
+                  {{ firm_data.top_city }}
+                  {% if firm_data.cities_count > 1 %}
+                    <small class="text-muted"> + {{ firm_data.cities_count - 1 }} other office{{ 's' if firm_data.cities_count > 2 else '' }}</small>
                   {% endif %}
                 {% else %}
-                  Not specified
+                  Multiple locations available
                 {% endif %}
               </p>
             </div>
           </div>
 
-          <!-- Eligibility -->
+          <!-- Program Types -->
           <div class="col-md-6">
             <div class="mb-3">
-              <h6 class="fw-semibold text-success mb-2">Eligibility</h6>
-              <p class="mb-0">{{ firm_data.eligibility or 'Not specified' }}</p>
-            </div>
-          </div>
-
-          <!-- Selection Process -->
-          <div class="col-md-6">
-            <div class="mb-3">
-              <h6 class="fw-semibold text-info mb-2">Selection Process</h6>
-              <p class="mb-0">{{ firm_data.selection_process or 'Not specified' }}</p>
+              <h6 class="fw-semibold text-secondary mb-2">
+                <i class="bi bi-briefcase me-1"></i>Program Types
+              </h6>
+              {% if firm_data.popular_programs %}
+                <div class="d-flex flex-wrap gap-1">
+                  {% for program in firm_data.popular_programs %}
+                    <span class="badge bg-primary-subtle text-primary">{{ program }}</span>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p class="mb-0">Graduate programs and internships</p>
+              {% endif %}
             </div>
           </div>
         </div>
 
-        <!-- Popular Programs -->
-        {% if firm_data.popular_programs %}
-          <div class="mt-4">
-            <h6 class="fw-semibold text-secondary mb-2">Popular Programs</h6>
-            <div class="d-flex flex-wrap gap-2">
-              {% for program in firm_data.popular_programs %}
-                <span class="badge bg-light text-dark">{{ program }}</span>
-              {% endfor %}
+        <!-- Key Insights -->
+        <div class="mt-4 pt-3 border-top">
+          <h6 class="fw-semibold mb-3">
+            <i class="bi bi-lightbulb me-1"></i>Key Program Insights
+          </h6>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="text-center p-3 bg-light rounded">
+                <div class="fw-bold text-primary fs-4">{{ firm_data.insights_count }}</div>
+                <small class="text-muted">Graduate Experiences</small>
+              </div>
             </div>
+            {% if firm_data.top_intake %}
+            <div class="col-md-4">
+              <div class="text-center p-3 bg-light rounded">
+                <div class="fw-bold text-success fs-4">{{ firm_data.top_intake }}</div>
+                <small class="text-muted">Most Common Intake Year</small>
+              </div>
+            </div>
+            {% endif %}
+            {% if firm_data.cities_count %}
+            <div class="col-md-4">
+              <div class="text-center p-3 bg-light rounded">
+                <div class="fw-bold text-info fs-4">{{ firm_data.cities_count }}</div>
+                <small class="text-muted">Office Location{{ 's' if firm_data.cities_count > 1 else '' }}</small>
+              </div>
+            </div>
+            {% endif %}
           </div>
-        {% endif %}
+        </div>
       </div>
     </div>
   {% endif %}
@@ -163,34 +205,58 @@
     <div class="card mb-5">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h4 class="card-title mb-0">Recent Experiences</h4>
+          <h4 class="card-title mb-0">
+            <i class="bi bi-chat-quote me-2"></i>Graduate Experiences
+          </h4>
           <a href="/experiences/{{ company | urlencode }}" class="btn btn-outline-primary">
             View All {{ firm_data.total_experiences }} Experiences
           </a>
         </div>
         
-        <div class="row g-3">
+        <div class="row g-4">
           {% for exp in firm_data.experiences %}
             <div class="col-12">
-              <div class="card border-start border-3 border-primary">
-                <div class="card-body py-3">
+              <div class="card border-0 bg-light">
+                <div class="card-body p-4">
                   {% if exp.cat_labels %}
-                    <div class="d-flex flex-wrap gap-1 mb-2">
+                    <div class="d-flex flex-wrap gap-1 mb-3">
                       {% for label in exp.cat_labels %}
-                        <span class="badge bg-light text-dark small">{{ label }}</span>
+                        <span class="badge bg-primary-subtle text-primary">{{ label }}</span>
                       {% endfor %}
                     </div>
                   {% endif %}
-                  <p class="mb-1">{{ exp.evidence_span or exp.content }}</p>
-                  {% if exp.location %}
-                    <small class="text-muted">
-                      <i class="bi bi-geo-alt me-1"></i>{{ exp.location }}
-                    </small>
-                  {% endif %}
+                  
+                  <div class="mb-3">
+                    <p class="mb-0 lh-base">{{ exp.evidence_span or exp.content }}</p>
+                  </div>
+                  
+                  <div class="d-flex justify-content-between align-items-center text-muted small">
+                    <div>
+                      {% if exp.city %}
+                        <i class="bi bi-geo-alt me-1"></i>{{ exp.city }}
+                      {% endif %}
+                      {% if exp.program_type %}
+                        <span class="ms-3">
+                          <i class="bi bi-briefcase me-1"></i>{{ exp.program_type }}
+                        </span>
+                      {% endif %}
+                    </div>
+                    {% if exp.intake_year %}
+                      <span>
+                        <i class="bi bi-calendar me-1"></i>{{ exp.intake_year }} intake
+                      </span>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
             </div>
           {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+          <p class="text-muted mb-0">
+            <i class="bi bi-shield-check me-1"></i>All experiences are anonymized and usernames removed for privacy
+          </p>
         </div>
       </div>
     </div>

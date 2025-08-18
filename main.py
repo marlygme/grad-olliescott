@@ -179,7 +179,7 @@ def company_page(name):
             firm_experiences = [exp for exp in experiences if exp['firm_name'].lower() == name.lower()]
             
             # Categorize experiences and add to firm data
-            for exp in firm_experiences[:5]:  # Show top 5
+            for exp in firm_experiences[:10]:  # Show top 10
                 content = exp.get("evidence_span", "")
                 if content:
                     p, cats, details = classify_text(content, threshold=1.0, top_k=3)
@@ -275,7 +275,7 @@ def companies():
     
     # Add experiences to each firm
     for firm in firms:
-        firm['experiences'] = firm_experiences.get(firm['name'], [])[:5]  # Show top 5 experiences
+        firm['experiences'] = firm_experiences.get(firm['name'], [])[:8]  # Show top 8 experiences
         firm['total_experiences'] = len(firm_experiences.get(firm['name'], []))
     
     return render_template("companies_v2.html", firms=firms)
@@ -303,7 +303,7 @@ def firm_experiences(firm_name):
     # Try to load filtered experiences first
     try:
         from experience_filter import load_filtered_for_firm
-        items = load_filtered_for_firm(firm_name, min_score=0.6, exclude_questions=True)
+        items = load_filtered_for_firm(firm_name, min_score=0.3, exclude_questions=False)
         print(f"Loaded {len(items)} filtered experiences for {firm_name}")
         is_filtered = True
     except Exception as e:

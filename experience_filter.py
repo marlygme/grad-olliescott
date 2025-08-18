@@ -5,53 +5,25 @@ from typing import List, Dict, Optional
 from extractors import FIRM_ALIASES
 
 def clean_content(content: str) -> str:
-    """Clean forum artifacts and metadata from content"""
+    """Clean forum artifacts and metadata from content - less aggressive version"""
     if not content:
         return ""
 
-    # Remove complete Whirlpool user metadata blocks at the start
-    # Pattern: "User #12345 123 posts username Forum Regular reference: whrl.pl/xyz posted 2024-Nov-2, 9:53 pm AEST"
-    content = re.sub(r'^User #\d+.*?(?:Forum Regular|Participant|Whirlpool Enthusiast|Forum Addict|I\'m new here, please be nice).*?reference:.*?whrl\.pl/\w+.*?posted.*?(?:AEST|AEDT)[^\n]*', '', content, flags=re.IGNORECASE | re.DOTALL)
+    # Only remove clear metadata blocks, preserve the actual content
+    content = re.sub(r'^User #\d+.*?(?:Forum Regular|Participant|Whirlpool Enthusiast|Forum Addict).*?reference:.*?whrl\.pl/\w+.*?posted.*?(?:AEST|AEDT)', '', content, flags=re.IGNORECASE | re.DOTALL)
 
-    # Remove any remaining user identifiers and usernames
+    # Remove user identifiers but preserve experience content
     content = re.sub(r'User #\d+', '', content, flags=re.IGNORECASE)
     content = re.sub(r'@\w+', '', content)  # Remove @mentions
-    content = re.sub(r'\busername:\s*\w+', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\buser:\s*\w+', '', content, flags=re.IGNORECASE)
-
-    # Remove standalone references and timestamps
-    content = re.sub(r'ref:\s*whrl\.pl/\w+\s+posted.*?(?:AEST|AEDT)', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'reference:\s*whrl\.pl/\w+', '', content, flags=re.IGNORECASE)
-
-    # Remove "last updated" and "posted" timestamp lines
-    content = re.sub(r'last updated.*?posted.*?(?:AEST|AEDT)', '', content, flags=re.IGNORECASE)
+    
+    # Remove timestamps but keep experience details
     content = re.sub(r'posted\s+\d{4}-[A-Za-z]{3}-\d{2},\s+\d{1,2}:\d{2}\s+[ap]m\s+(?:AEST|AEDT)', '', content, flags=re.IGNORECASE)
-
-    # Remove user status and post counts
-    content = re.sub(r'\b\d+\s+posts?\b', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\b(Forum Regular|Participant|Whirlpool Enthusiast|Forum Addict|In the penalty box)\b', '', content, flags=re.IGNORECASE)
-
-    # Remove "I'm new here" politeness requests
-    content = re.sub(r'\b(I\'m new here,?\s*please be nice|I am new here|new to this forum|first time posting)\b', '', content, flags=re.IGNORECASE)
-
-    # Remove common forum artifacts and reply indicators
-    content = re.sub(r'\bOP wrote:\b', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\b(replied|quote|originally posted)\b', '', content, flags=re.IGNORECASE)
-
-    # Remove common forum artifacts
-    content = re.sub(r'^(Re:|RE:)\s*', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'\s*\[Quote.*?\]', '', content, flags=re.DOTALL)
-    content = re.sub(r'\(adsbygoogle = window\.adsbygoogle \|\| \[\]\)\.push\(\{\}\);', '', content)
-
-    # Remove O.P. markers and edited timestamps
-    content = re.sub(r'\bO\.P\.\s*', '', content, flags=re.IGNORECASE)
-    content = re.sub(r'edited\s+\d{4}-[A-Za-z]{3}-\d{2},.*?(?:AEST|AEDT)', '', content, flags=re.IGNORECASE)
-
-    # Clean up multiple whitespace and normalize
+    
+    # Clean up multiple whitespace
     content = ' '.join(content.split())
 
-    # Remove content that's just metadata artifacts
-    if len(content) < 10 or content.lower() in ['deleted', 'edited', '']:
+    # Only remove if it's clearly just metadata
+    if len(content) < 5 or content.lower() in ['deleted', 'edited', '']:
         return ""
 
     return content.strip()
@@ -112,13 +84,13 @@ def is_too_short(content: str) -> bool:
 
     cleaned = clean_content(content)
 
-    # Length check
-    if len(cleaned) < 180:
+    # More lenient length check
+    if len(cleaned) < 100:
         return True
 
-    # Unique words check
+    # More lenient unique words check
     words = set(word.lower() for word in re.findall(r'\b\w+\b', cleaned))
-    if len(words) < 25:
+    if len(words) < 15:
         return True
 
     return False
@@ -291,7 +263,7 @@ def process_csv_files(input_files: List[str], target_firm: Optional[str] = None)
 
     return results
 
-def load_filtered_for_firm(firm_name: str, min_score: float = 0.6, exclude_questions: bool = True) -> List[Dict]:
+def load_filtered_for_firm(firm_name: str, min_score: float = 0.4, exclude_questions: bool = True) -> List[Dict]:
     """Load filtered experiences for a specific firm"""
     # Try to load from cached file first
     slug = firm_name.lower().replace('&', '').replace('+', '').replace(' ', '-').strip('-')

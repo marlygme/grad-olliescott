@@ -1,0 +1,140 @@
+1) Create categorizer.py (exact content)
+# categorizer.py — tiny rule-based tags (stdlib only)
+import re
+from collections import defaultdict
+
+LABELS = {
+    "application_timeline": "Application timeline",
+    "selection_process": "Selection process",
+    "offer_outcomes": "Offer outcomes",
+    "program_structure": "Program structure",
+    "pay_benefits": "Pay & benefits",
+    "hours_workload": "Hours & workload",
+    "culture_environment": "Culture & environment",
+    "training_support": "Training & support",
+    "secondments_mobility": "Secondments & mobility",
+    "eligibility_requirements": "Eligibility & requirements",
+    "interview_tips": "Interview tips",
+}
+
+CATS = {
+    "application_timeline": {"kw": ["open", "close", "deadline", "window", "applications", "intake", "cutoff"], "rx": [r"\b[A-Za-z]{3,9}\s+\d{4}\b", r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b"]},
+    "selection_process": {"kw": ["online assessment","oa","video interview","vi","assessment centre","assessment center","ac","superday","panel","partner interview","aptitude test"], "rx": []},
+    "offer_outcomes": {"kw": ["offer","offers","accepted","rejected","waitlist","on hold","conversion"], "rx": []},
+    "program_structure": {"kw": ["rotation","rotations","seat","length","program"], "rx": [r"\b\d+\s+rotations?\b", r"\b\d+\s*(months?|yrs?|years?)\b"]},
+    "pay_benefits": {"kw": ["salary","pay","super","bonus","overtime","toil","benefits","allowance"], "rx": [r"\$[\d,]+", r"\b\d+\s*k\b"]},
+    "hours_workload": {"kw": ["hours","late","weekend","workload","busy","billable","target","utilisation","utilization"], "rx": [r"\b\d{2}\+?\s*hours?\b", r"\b\d{3,4}\s*billable\b"]},
+    "culture_environment": {"kw": ["culture","supportive","toxic","collegial","micromanage","burnout","team","partners"], "rx": []},
+    "training_support": {"kw": ["mentor","buddy","training","plt","admission","coaching","feedback","onboarding"], "rx": []},
+    "secondments_mobility": {"kw": ["secondment","client secondment","international","relocation"], "rx": []},
+    "eligibility_requirements": {"kw": ["penultimate","final year","citizenship","visa","gpa","credit average","requirements"], "rx": []},
+    "interview_tips": {"kw": ["tip","advice","be ready","expect","they asked","question was","my experience"], "rx": []},
+}
+
+def _score(text: str):
+    t = (text or "").lower()
+    s = defaultdict(float)
+    for slug, spec in CATS.items():
+        for k in spec["kw"]:
+            if k in t: s[slug] += 1.0
+        for pat in spec["rx"]:
+            if re.search(pat, t): s[slug] += 1.5
+    if re.search(r"\$[\d,]+|\b\d+\s*k\b", t): s["pay_benefits"] += 0.5
+    if "billable" in t or "target" in t: s["hours_workload"] += 0.5
+    if "rotation" in t or "seat" in t: s["program_structure"] += 0.5
+    return s
+
+def classify_text(text: str, threshold: float = 1.0, top_k: int = 3):
+    scores = _score(text)
+    ranked = sorted(scores.items(), key=lambda x: (-x[1], x[0]))
+    kept = [(slug, sc) for slug, sc in ranked if sc >= threshold][:top_k]
+    primary = kept[0][0] if kept else (ranked[0][0] if ranked else None)
+    return primary, [s for s,_ in kept], kept
+
+def label(slug: str) -> str:
+    return LABELS.get(slug, slug.replace("_"," ").title())
+
+2) Patch your firm experiences route in main.py
+
+Find the route that renders /experiences/<firm> and replace the function body with this safe version (keeps your existing loader).
+
+from flask import request, render_template
+from collections import Counter
+from categorizer import classify_text, label
+
+@app.route("/experiences/<path:firm>")
+def experiences_firm(firm):
+    # Use your existing loader — keep whichever you have
+    items = []
+    try:
+        from experience_filter import load_filtered_for_firm  # if you created this earlier
+        items = load_filtered_for_firm(firm)
+    except Exception:
+        # fallback: if you had a different function/variable, adapt here
+        pass
+
+    # Guard: ensure 'content' exists
+    items = [it for it in items if isinstance(it.get("content"), str) and it["content"].strip()]
+
+    # Tag each item
+    for it in items:
+        p, cats, _ = classify_text(it["content"], threshold=1.0, top_k=3)
+        it["primary_cat"] = p
+        it["cat_labels"] = [label(c) for c in cats]
+
+    # Optional filter via ?cat=slug
+    active_cat = request.args.get("cat")
+    if active_cat:
+        items = [it for it in items if it.get("primary_cat") == active_cat]
+
+    # Counts for chips
+    cat_counts = Counter(it["primary_cat"] for it in items if it.get("primary_cat"))
+
+    return render_template(
+        "experiences.html",  # keep your template name
+        firm_name=firm,
+        items=items,
+        cat_counts=cat_counts,
+        active_cat=active_cat,
+    )
+
+3) Update templates/experiences.html
+
+Add chips at the top and tiny tags on each card. Leave everything else as-is.
+
+Chips (place under the page title):
+
+{% if cat_counts %}
+  <div class="mb-4 flex flex-wrap gap-2">
+    <a href="?" class="px-2 py-1 rounded-full text-xs {{ 'bg-gray-900 text-white' if not active_cat else 'bg-gray-100 text-gray-700' }}">All</a>
+    {% for slug, count in cat_counts.items() %}
+      <a href="?cat={{ slug }}" class="px-2 py-1 rounded-full text-xs {{ 'bg-gray-900 text-white' if active_cat==slug else 'bg-gray-100 text-gray-700' }}">
+        {{ slug.replace('_',' ') }} · {{ count }}
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+Tiny tags on each card (put inside your card markup, under the snippet/title):
+
+{% if item.cat_labels %}
+  <div class="mt-1 flex flex-wrap gap-1">
+    {% for c in item.cat_labels %}
+      <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px]">{{ c }}</span>
+    {% endfor %}
+  </div>
+{% endif %}
+
+4) Quick sanity check (Shell)
+python - <<'PY'
+from categorizer import classify_text, label
+texts = [
+ "Offers usually go out mid-Oct after AC.",
+ "Online assessment -> video interview -> partner interview.",
+ "Pay is $85k + super; rotations are 6 months.",
+]
+for t in texts:
+    p,c,_ = classify_text(t)
+    print(t[:40], "=>", p, "tags:", [label(x) for x in c])
+PY

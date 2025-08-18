@@ -161,52 +161,7 @@
                 <div class="small text-muted">{{ firm.selection_process }}</div>
               </div>
 
-              <!-- Compensation -->
-              {% if firm.avg_salary %}
-              <div class="mb-3">
-                <div class="small fw-medium text-warning mb-1">Compensation</div>
-                <div class="small text-muted">
-                  Average: ${{ "{:,}".format(firm.avg_salary) }}
-                  {% if firm.salary_range %}
-                    <br>Range: {{ firm.salary_range }}
-                  {% endif %}
-                </div>
-              </div>
-              {% endif %}
-
-              <!-- Program Structure -->
-              <div class="mb-3">
-                <div class="small fw-medium text-purple mb-1">Program Structure</div>
-                <div class="small text-muted">
-                  {{ firm.training_info }}
-                  {% if firm.typical_length %}
-                    <br>Duration: {{ firm.typical_length }}
-                  {% endif %}
-                  {% if firm.rotation_info %}
-                    <br>{{ firm.rotation_info }}
-                  {% endif %}
-                </div>
-              </div>
-
-              <!-- Culture & Environment -->
-              <div class="mb-3">
-                <div class="small fw-medium text-secondary mb-1">Work Environment</div>
-                <div class="small text-muted">{{ firm.work_culture }}</div>
-              </div>
-
-              <!-- Conversion & Offers -->
-              <div class="mb-3">
-                <div class="row g-2">
-                  <div class="col-6">
-                    <div class="small fw-medium text-success mb-1">Conversion Rate</div>
-                    <div class="small text-muted">{{ firm.conversion_rate }}</div>
-                  </div>
-                  <div class="col-6">
-                    <div class="small fw-medium text-primary mb-1">Offer Timeline</div>
-                    <div class="small text-muted">{{ firm.offer_timeline }}</div>
-                  </div>
-                </div>
-              </div>
+              
 
               <!-- Popular Programs -->
               {% if firm.popular_programs %}

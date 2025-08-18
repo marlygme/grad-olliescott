@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from datetime import datetime
 import json
@@ -75,7 +74,7 @@ if not os.path.exists(data_file):
 def index():
     with open(data_file, 'r') as f:
         submissions = json.load(f)
-    
+
     # Group submissions by company for homepage
     companies = {}
     for submission in submissions:
@@ -89,34 +88,34 @@ def index():
                 'salary_count': 0,
                 'recent_roles': set()
             }
-        
+
         companies[company]['total_submissions'] += 1
         if submission['outcome'] == 'Success':
             companies[company]['success_count'] += 1
-        
+
         if submission['salary'] and submission['salary'].isdigit():
             companies[company]['avg_salary'] += int(submission['salary'])
             companies[company]['salary_count'] += 1
-        
+
         companies[company]['recent_roles'].add(submission['role'])
-    
+
     # Calculate averages and format data
     for company_data in companies.values():
         if company_data['salary_count'] > 0:
             company_data['avg_salary'] = int(company_data['avg_salary'] / company_data['salary_count'])
         else:
             company_data['avg_salary'] = None
-        
+
         company_data['success_rate'] = round((company_data['success_count'] / company_data['total_submissions']) * 100, 1)
         company_data['recent_roles'] = list(company_data['recent_roles'])[:3]  # Show top 3 roles
-    
+
     # Sort by number of submissions
     sorted_companies = sorted(companies.values(), key=lambda x: x['total_submissions'], reverse=True)
-    
+
     # Load firms from CSV for Explore Companies section
     firms = load_cards("out/grad_program_signals.csv")
     print(f"Loaded {len(firms)} firms from CSV")
-    
+
     return render_template('index.html', companies=sorted_companies, total_submissions=len(submissions), firms=firms)
 
 
@@ -125,12 +124,12 @@ def submit():
     # Get user info from Replit headers
     user_id = request.headers.get('X-Replit-User-Id')
     user_name = request.headers.get('X-Replit-User-Name')
-    
+
     if request.method == 'POST':
         # Ensure user is authenticated before allowing submission
         if not user_id:
             return redirect(url_for('submit'))
-        
+
         new_entry = {
             'company': request.form['company'],
             'role': request.form['role'],
@@ -153,7 +152,7 @@ def submit():
         with open(data_file, 'w') as f:
             json.dump(data, f, indent=2)
         return redirect(url_for('index'))
-    
+
     return render_template('submit.html', user_id=user_id, user_name=user_name)
 
 
@@ -162,22 +161,22 @@ def submit():
 @app.route('/company/<name>')
 def company_page(name):
     from categorizer import classify_text, label
-    
+
     with open(data_file, 'r') as f:
         data = json.load(f)
     company_entries = [entry for entry in data if entry['company'].lower() == name.lower()]
-    
+
     # Load firm data from CSV
     firms = load_cards_v2("out/grad_program_signals.csv")
     firm_data = None
     for firm in firms:
         if firm['name'].lower() == name.lower():
             firm_data = firm
-            
+
             # Load experiences for this firm
             experiences = load_grad_signals("out/grad_program_signals.csv")
             firm_experiences = [exp for exp in experiences if exp['firm_name'].lower() == name.lower()]
-            
+
             # Categorize experiences and add to firm data
             for exp in firm_experiences[:10]:  # Show top 10
                 content = exp.get("evidence_span", "")
@@ -185,7 +184,7 @@ def company_page(name):
                     p, cats, details = classify_text(content, threshold=1.0, top_k=3)
                     exp["primary_cat"] = p
                     exp["cat_labels"] = [label(c) for c in cats]
-                
+
                 # Clean any remaining usernames or identifiers
                 for field in ['evidence_span', 'content']:
                     if exp.get(field):
@@ -195,33 +194,33 @@ def company_page(name):
                         exp[field] = re.sub(r'\busername:\s*\w+', '', exp[field], flags=re.IGNORECASE)
                         # Clean up multiple spaces
                         exp[field] = ' '.join(exp[field].split())
-            
+
             firm_data['experiences'] = firm_experiences[:5]
             firm_data['total_experiences'] = len(firm_experiences)
             break
-    
+
     # Calculate company stats
     if company_entries:
         success_count = len([e for e in company_entries if e['outcome'] == 'Success'])
         success_rate = round((success_count / len(company_entries)) * 100, 1)
-        
+
         salaries = [int(e['salary']) for e in company_entries if e['salary'] and e['salary'].isdigit()]
         avg_salary = int(sum(salaries) / len(salaries)) if salaries else None
-        
+
         roles = list(set([e['role'] for e in company_entries]))
-        
+
         # Add university breakdown if available
         university_breakdown = None
         if name in FIRM_UNIVERSITY_DATA:
             university_breakdown = FIRM_UNIVERSITY_DATA[name]
-        
+
         # Calculate salary ranges
         salary_ranges = {
             'entry_level': len([s for s in salaries if s < 80000]),
             'mid_level': len([s for s in salaries if 80000 <= s < 120000]),
             'senior_level': len([s for s in salaries if s >= 120000])
         }
-        
+
         # Most common advice themes
         advice_keywords = {}
         for entry in company_entries:
@@ -230,7 +229,7 @@ def company_page(name):
                 for word in words:
                     if len(word) > 4:  # Only count meaningful words
                         advice_keywords[word] = advice_keywords.get(word, 0) + 1
-        
+
         top_advice = sorted(advice_keywords.items(), key=lambda x: x[1], reverse=True)[:5]
 
         company_stats = {
@@ -244,40 +243,40 @@ def company_page(name):
         }
     else:
         company_stats = None
-    
+
     return render_template('company.html', company=name, entries=company_entries, stats=company_stats, firm_data=firm_data)
 
 
 @app.route('/companies')
 def companies():
     from categorizer import classify_text, label
-    
+
     firms = load_cards_v2("out/grad_program_signals.csv")
-    
+
     # Load experiences for each firm
     experiences = load_grad_signals("out/grad_program_signals.csv")
-    
+
     # Group experiences by firm
     firm_experiences = {}
     for exp in experiences:
         firm_name = exp['firm_name']
         if firm_name not in firm_experiences:
             firm_experiences[firm_name] = []
-        
+
         # Categorize the experience
         content = exp.get("evidence_span", "")
         if content:
             p, cats, details = classify_text(content, threshold=1.0, top_k=3)
             exp["primary_cat"] = p
             exp["cat_labels"] = [label(c) for c in cats]
-        
+
         firm_experiences[firm_name].append(exp)
-    
+
     # Add experiences to each firm
     for firm in firms:
         firm['experiences'] = firm_experiences.get(firm['name'], [])[:8]  # Show top 8 experiences
         firm['total_experiences'] = len(firm_experiences.get(firm['name'], []))
-    
+
     return render_template("companies_v2.html", firms=firms)
 
 
@@ -296,41 +295,40 @@ def experiences():
 def firm_experiences(firm_name):
     from collections import Counter
     from categorizer import classify_text, label
-    
+
     # Get university data for this firm
     university_data = FIRM_UNIVERSITY_DATA.get(firm_name, None)
-    
+
     # Try to load filtered experiences first
     try:
-        from experience_quality import load_filtered_for_firm
-        items = load_filtered_for_firm(firm_name, min_score=0.60, exclude_questions=False)
+        from experience_quality_v2 import load_filtered_for_firm
+        items = load_filtered_for_firm(firm_name, min_score=0.55, exclude_questions=False)
         print(f"Loaded {len(items)} filtered experiences for {firm_name}")
         is_filtered = True
     except Exception as e:
-        print(f"Error loading filtered experiences: {e}")
         # Fall back to grad signals
         experiences = load_grad_signals("out/grad_program_signals.csv")
         items = [exp for exp in experiences if exp['firm_name'].lower() == firm_name.lower()]
         is_filtered = False
-    
+
     # Guard: ensure 'content' exists
     items = [it for it in items if isinstance(it.get("content"), str) and it["content"].strip()]
-    
+
     # Categorize each item
     for item in items:
         content = item.get("content", "") or item.get("evidence_span", "")
         p, cats, details = classify_text(content, threshold=1.0, top_k=3)
         item["primary_cat"] = p
         item["cat_labels"] = [label(c) for c in cats]
-    
+
     # Apply category filter
     active_cat = request.args.get("cat")
     if active_cat:
         items = [item for item in items if item.get("primary_cat") == active_cat]
-    
+
     # Build category counts
     cat_counts = Counter(item["primary_cat"] for item in items if item.get("primary_cat"))
-    
+
     return render_template("experiences.html", 
                          experiences=items, 
                          firm_name=firm_name, 
@@ -355,7 +353,7 @@ def law_match():
             uni_percentage = uni_data.get(uni, uni_data.get('Other', 0))
             if uni_percentage >= 15:
                 uni_matches.append((firm, uni_percentage))
-        
+
         # Sort by university representation
         uni_matches.sort(key=lambda x: x[1], reverse=True)
 

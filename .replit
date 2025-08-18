@@ -20,7 +20,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python3 main.py"
+args = "/nix/store/mh4qa3grfdqd5fnqvlhixf5gci98v8vj-python3-wrapper/bin/python3 main.py"
 
 [[ports]]
 localPort = 5000

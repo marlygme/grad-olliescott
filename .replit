@@ -9,19 +9,3 @@ channel = "stable-23_05"
 [deployment]
 run = ["sh", "-c", "python3 main.py"]
 deploymentTarget = "cloudrun"
-
-[workflows]
-runButton = "Run Flask App"
-
-[[workflows.workflow]]
-name = "Run Flask App"
-author = 45355385
-mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "/nix/store/mh4qa3grfdqd5fnqvlhixf5gci98v8vj-python3-wrapper/bin/python3 main.py"
-
-[[ports]]
-localPort = 5000
-externalPort = 80

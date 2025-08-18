@@ -121,7 +121,15 @@ def index():
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
+    # Get user info from Replit headers
+    user_id = request.headers.get('X-Replit-User-Id')
+    user_name = request.headers.get('X-Replit-User-Name')
+    
     if request.method == 'POST':
+        # Ensure user is authenticated before allowing submission
+        if not user_id:
+            return redirect(url_for('submit'))
+        
         new_entry = {
             'company': request.form['company'],
             'role': request.form['role'],
@@ -134,7 +142,9 @@ def submit():
             'interview_experience': request.form.get('interview_experience', ''),
             'outcome': request.form['outcome'],
             'advice': request.form.get('advice', ''),
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.utcnow().isoformat(),
+            'user_id': user_id,
+            'user_name': user_name
         }
         with open(data_file, 'r') as f:
             data = json.load(f)
@@ -142,7 +152,8 @@ def submit():
         with open(data_file, 'w') as f:
             json.dump(data, f, indent=2)
         return redirect(url_for('index'))
-    return render_template('submit.html')
+    
+    return render_template('submit.html', user_id=user_id, user_name=user_name)
 
 
 

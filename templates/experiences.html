@@ -20,6 +20,19 @@
       </p>
     </div>
 
+    {% if cat_counts %}
+      <div class="mb-4 d-flex flex-wrap gap-2 justify-content-center">
+        <a href="?" class="btn btn-sm {{ 'btn-dark' if not active_cat else 'btn-outline-secondary' }} rounded-pill">
+          All
+        </a>
+        {% for slug, count in cat_counts.items() %}
+          <a href="?cat={{ slug }}" class="btn btn-sm {{ 'btn-dark' if active_cat==slug else 'btn-outline-secondary' }} rounded-pill">
+            {{ slug.replace('_',' ').title() }} · {{ count }}
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
+
     {% if experiences %}
       <!-- University Distribution - shown once per firm -->
       {% if firm_name and university_data %}
@@ -92,8 +105,16 @@
                   <p class="text-dark small mb-0">{{ exp.content }}{% if exp.content|length > 280 %}{% endif %}</p>
                 </div>
               {% elif exp.evidence_span %}
-                <div class="border-start border-primary border-3 ps-3">
+                <div class="border-start border-primary border-3 ps-3 mb-3">
                   <p class="text-muted small mb-0">{{ exp.evidence_span[:200] }}{% if exp.evidence_span|length > 200 %}...{% endif %}</p>
+                </div>
+              {% endif %}
+
+              {% if exp.cat_labels %}
+                <div class="mt-2 d-flex flex-wrap gap-1">
+                  {% for c in exp.cat_labels %}
+                    <span class="badge bg-light text-dark small">{{ c }}</span>
+                  {% endfor %}
                 </div>
               {% endif %}
             </div>

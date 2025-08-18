@@ -239,6 +239,9 @@ def firm_experiences(firm_name):
         items = [exp for exp in experiences if exp['firm_name'].lower() == firm_name.lower()]
         is_filtered = False
     
+    # Guard: ensure 'content' exists
+    items = [it for it in items if isinstance(it.get("content"), str) and it["content"].strip()]
+    
     # Categorize each item
     for item in items:
         content = item.get("content", "") or item.get("evidence_span", "")
@@ -249,7 +252,7 @@ def firm_experiences(firm_name):
     # Apply category filter
     active_cat = request.args.get("cat")
     if active_cat:
-        items = [item for item in items if item.get("primary_cat") == active_cat or active_cat in [c.lower().replace(" ", "_") for c in item.get("cat_labels", [])]]
+        items = [item for item in items if item.get("primary_cat") == active_cat]
     
     # Build category counts
     cat_counts = Counter(item["primary_cat"] for item in items if item.get("primary_cat"))

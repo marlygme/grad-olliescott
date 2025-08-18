@@ -75,18 +75,158 @@
         <option value="interview_tips">Interview tips</option>
       </select>
     </div>
-    <div class="col-12">
-      <label class="form-label">Application Stages</label>
-      <textarea name="application_stages" class="form-control" rows="2" placeholder="Describe the application process (e.g., online application, phone screen, assessment centre, etc.)"></textarea>
+    <div class="col-12" id="dynamic-fields">
+      <!-- Dynamic fields will be inserted here based on theme selection -->
     </div>
-    <div class="col-12">
-      <label class="form-label">Interview Experience</label>
-      <textarea name="interview_experience" class="form-control" rows="3" placeholder="What was the interview like? What questions were asked?"></textarea>
-    </div>
-    <div class="col-12">
-      <label class="form-label">Advice</label>
-      <textarea name="advice" class="form-control" rows="3" placeholder="Any advice for future applicants?"></textarea>
-    </div>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const themeSelect = document.querySelector('select[name="theme"]');
+        const dynamicFields = document.getElementById('dynamic-fields');
+        
+        const fieldTemplates = {
+          'application_timeline': `
+            <div class="mb-3">
+              <label class="form-label">Application Timeline Details</label>
+              <textarea name="application_stages" class="form-control" rows="3" placeholder="When did applications open/close? What were the key dates and deadlines?"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Timeline Tips</label>
+              <textarea name="advice" class="form-control" rows="2" placeholder="Any advice about timing, deadlines, or when to apply?"></textarea>
+            </div>
+          `,
+          'selection_process': `
+            <div class="mb-3">
+              <label class="form-label">Selection Process Stages</label>
+              <textarea name="application_stages" class="form-control" rows="3" placeholder="Describe each stage: online application, tests, interviews, assessment centre, etc."></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">What to Expect</label>
+              <textarea name="interview_experience" class="form-control" rows="3" placeholder="What should candidates expect at each stage? Any surprises or unique elements?"></textarea>
+            </div>
+          `,
+          'offer_outcomes': `
+            <div class="mb-3">
+              <label class="form-label">Offer Details</label>
+              <textarea name="application_stages" class="form-control" rows="2" placeholder="When did you hear back? How was the offer communicated?"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Outcome Experience</label>
+              <textarea name="interview_experience" class="form-control" rows="3" placeholder="Describe your experience receiving the outcome (offer/rejection). Any negotiation?"></textarea>
+            </div>
+          `,
+          'program_structure': `
+            <div class="mb-3">
+              <label class="form-label">Program Structure</label>
+              <textarea name="application_stages" class="form-control" rows="3" placeholder="How many rotations? What practice areas? Program length and structure?"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Rotation Experience</label>
+              <textarea name="interview_experience" class="form-control" rows="3" placeholder="What were your rotations like? How do you choose seats?"></textarea>
+            </div>
+          `,
+          'pay_benefits': `
+            <div class="mb-3">
+              <label class="form-label">Compensation Details</label>
+              <textarea name="application_stages" class="form-control" rows="2" placeholder="Break down salary, bonuses, benefits, super, overtime rates, etc."></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Benefits Experience</label>
+              <textarea name="interview_experience" class="form-control" rows="3" placeholder="What benefits did you receive? Any hidden costs or unexpected perks?"></textarea>
+            </div>
+          `,
+          'hours_workload': `
+            <div class="mb-3">
+              <label class="form-label">Hours & Workload</label>
+              <textarea name="application_stages" class="form-control" rows="3" placeholder="Typical hours per day/week? Billable targets? Weekend work? Overtime expectations?"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Work-Life Balance</label>
+              <textarea name="interview_experience" class="form-control" rows="3" placeholder="How manageable was the workload? Any tips for balancing work and life?"></textarea>
+            </div>
+          `,
+          'culture_environment': `
+            <div class="mb-3">
+              <label class="form-label">Firm Culture</label>
+              <textarea name="application_stages" class="form-control" rows="3" placeholder="Describe the culture, team dynamics, partner relationships, social events, etc."></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Cultural Fit</label>
+              <textarea name="interview_experience" class="form-control" rows="3" placeholder="What type of person thrives here? Any cultural challenges or highlights?"></textarea>
+            </div>
+          `,
+          'training_support': `
+            <div class="mb-3">
+              <label class="form-label">Training Programs</label>
+              <textarea name="application_stages" class="form-control" rows="3" placeholder="What training did you receive? Mentorship programs? PLT support?"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Support System</label>
+              <textarea name="interview_experience" class="form-control" rows="3" placeholder="How supportive were partners/senior lawyers? Quality of mentorship and feedback?"></textarea>
+            </div>
+          `,
+          'secondments_mobility': `
+            <div class="mb-3">
+              <label class="form-label">Secondment Opportunities</label>
+              <textarea name="application_stages" class="form-control" rows="3" placeholder="What secondment options are available? Client secondments? International opportunities?"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Mobility Experience</label>
+              <textarea name="interview_experience" class="form-control" rows="3" placeholder="Did you do any secondments? How do you apply? What was the experience like?"></textarea>
+            </div>
+          `,
+          'eligibility_requirements': `
+            <div class="mb-3">
+              <label class="form-label">Eligibility Criteria</label>
+              <textarea name="application_stages" class="form-control" rows="3" placeholder="Academic requirements, citizenship/visa requirements, year of study, etc."></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Application Requirements</label>
+              <textarea name="interview_experience" class="form-control" rows="3" placeholder="What documents were required? Any specific eligibility challenges you faced?"></textarea>
+            </div>
+          `,
+          'interview_tips': `
+            <div class="mb-3">
+              <label class="form-label">Interview Questions</label>
+              <textarea name="interview_experience" class="form-control" rows="4" placeholder="What questions were you asked? Behavioral, technical, case studies? Be specific with examples."></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Interview Advice</label>
+              <textarea name="advice" class="form-control" rows="3" placeholder="Your best tips for interviews at this firm. What worked? What didn't? How to prepare?"></textarea>
+            </div>
+          `
+        };
+        
+        function updateFields() {
+          const selectedTheme = themeSelect.value;
+          if (selectedTheme && fieldTemplates[selectedTheme]) {
+            dynamicFields.innerHTML = fieldTemplates[selectedTheme];
+          } else {
+            // Default fields
+            dynamicFields.innerHTML = `
+              <div class="mb-3">
+                <label class="form-label">Application Stages</label>
+                <textarea name="application_stages" class="form-control" rows="2" placeholder="Describe the application process (e.g., online application, phone screen, assessment centre, etc.)"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Interview Experience</label>
+                <textarea name="interview_experience" class="form-control" rows="3" placeholder="What was the interview like? What questions were asked?"></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Advice</label>
+                <textarea name="advice" class="form-control" rows="3" placeholder="Any advice for future applicants?"></textarea>
+              </div>
+            `;
+          }
+        }
+        
+        // Initialize with default fields
+        updateFields();
+        
+        // Update fields when theme changes
+        themeSelect.addEventListener('change', updateFields);
+      });
+    </script>
     <div class="col-12">
       <button type="submit" class="btn btn-primary">Submit</button>
       <a href="/" class="btn btn-outline-secondary ms-2">Cancel</a>

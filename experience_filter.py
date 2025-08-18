@@ -263,7 +263,7 @@ def process_csv_files(input_files: List[str], target_firm: Optional[str] = None)
 
     return results
 
-def load_filtered_for_firm(firm_name: str, min_score: float = 0.4, exclude_questions: bool = True) -> List[Dict]:
+def load_filtered_for_firm(firm_name: str, min_score: float = 0.5, exclude_questions: bool = True) -> List[Dict]:
     """Load filtered experiences for a specific firm"""
     # Try to load from cached file first
     slug = firm_name.lower().replace('&', '').replace('+', '').replace(' ', '-').strip('-')

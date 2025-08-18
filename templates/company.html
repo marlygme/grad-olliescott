@@ -4,86 +4,150 @@
 {% block title %}{{ company }} – Company Insights – Gradvantage{% endblock %}
 
 {% block content %}
-<div class="hero-section">
-  <div class="container text-center">
-    <h1 class="hero-title">{{ company }}</h1>
-    <p class="hero-subtitle">Graduate experiences and insights</p>
-  </div>
-</div>
-
 <div class="container my-5">
-  <a href="/" class="btn btn-link text-decoration-none mb-4">← Back to companies</a>
+  <a href="/companies" class="btn btn-link text-decoration-none mb-4">← Back to companies</a>
   
-  {% if stats %}
-    <div class="row mb-5">
-      <div class="col-md-3">
-        <div class="stat-item">
-          <span class="stat-number">{{ stats.total_entries }}</span>
-          <div class="stat-label">Total Experiences</div>
-        </div>
+  <div class="hero-section mb-5">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h1 class="display-4 fw-bold mb-2">{{ company }}</h1>
+        <p class="fs-5 text-muted">Graduate program insights and experiences</p>
       </div>
-      <div class="col-md-3">
-        <div class="stat-item">
-          <span class="stat-number">{{ stats.success_rate }}%</span>
-          <div class="stat-label">Success Rate</div>
-        </div>
+      <div class="col-md-4 text-md-end">
+        {% if stats %}
+          <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+            <span class="badge bg-primary fs-6">{{ stats.total_entries }} experiences</span>
+            {% if stats.avg_salary %}
+              <span class="badge bg-success fs-6">${{ "{:,}".format(stats.avg_salary) }} avg</span>
+            {% endif %}
+          </div>
+        {% endif %}
       </div>
-      <div class="col-md-3">
-        <div class="stat-item">
-          {% if stats.avg_salary %}
-            <span class="stat-number">${{ "{:,}".format(stats.avg_salary) }}</span>
-          {% else %}
-            <span class="stat-number">N/A</span>
-          {% endif %}
-          <div class="stat-label">Average Salary</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-item">
-          <span class="stat-number">{{ stats.roles|length }}</span>
-          <div class="stat-label">Different Roles</div>
+    </div>
+  </div>
 
-    
-    {% if stats.university_breakdown %}
-      <div class="row mt-5">
-        <div class="col-12">
-          <h4>University Representation</h4>
-          <div class="row">
-            {% for uni, percentage in stats.university_breakdown.items() %}
-              <div class="col-md-6 mb-2">
-                <div class="d-flex justify-content-between align-items-center">
-                  <span>{{ uni }}</span>
-                  <div class="d-flex align-items-center">
-                    <div class="progress me-2" style="width: 100px; height: 20px;">
-                      <div class="progress-bar" style="width: {{ percentage }}%"></div>
-                    </div>
-                    <span class="small">{{ percentage }}%</span>
-                  </div>
-                </div>
-              </div>
-            {% endfor %}
+  {% if firm_data %}
+    <!-- Company Overview Card -->
+    <div class="card mb-5 shadow-sm">
+      <div class="card-body p-4">
+        <h4 class="card-title mb-4">Program Overview</h4>
+        
+        <div class="row g-4">
+          <!-- Application Timeline -->
+          <div class="col-md-6">
+            <div class="mb-3">
+              <h6 class="fw-semibold text-primary mb-2">Application Timeline</h6>
+              <p class="mb-1">{{ firm_data.application_timeline or 'Not specified' }}</p>
+              {% if firm_data.next_close %}
+                <small class="text-danger fw-medium">Next deadline: {{ firm_data.next_close }}</small>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Location Information -->
+          <div class="col-md-6">
+            <div class="mb-3">
+              <h6 class="fw-semibold text-primary mb-2">Locations</h6>
+              <p class="mb-0">
+                {% if firm_data.top_city %}
+                  <i class="bi bi-geo-alt me-1"></i>{{ firm_data.top_city }}
+                  {% if firm_data.locations_count > 1 %}
+                    <small class="text-muted"> + {{ firm_data.locations_count - 1 }} other location{{ 's' if firm_data.locations_count > 2 else '' }}</small>
+                  {% endif %}
+                {% else %}
+                  Not specified
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          <!-- Eligibility -->
+          <div class="col-md-6">
+            <div class="mb-3">
+              <h6 class="fw-semibold text-success mb-2">Eligibility</h6>
+              <p class="mb-0">{{ firm_data.eligibility or 'Not specified' }}</p>
+            </div>
+          </div>
+
+          <!-- Selection Process -->
+          <div class="col-md-6">
+            <div class="mb-3">
+              <h6 class="fw-semibold text-info mb-2">Selection Process</h6>
+              <p class="mb-0">{{ firm_data.selection_process or 'Not specified' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Popular Programs -->
+        {% if firm_data.popular_programs %}
+          <div class="mt-4">
+            <h6 class="fw-semibold text-secondary mb-2">Popular Programs</h6>
+            <div class="d-flex flex-wrap gap-2">
+              {% for program in firm_data.popular_programs %}
+                <span class="badge bg-light text-dark">{{ program }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if stats %}
+    <!-- Statistics Overview -->
+    <div class="row mb-5 g-4">
+      <div class="col-md-3">
+        <div class="card text-center h-100">
+          <div class="card-body">
+            <div class="display-6 fw-bold text-primary">{{ stats.total_entries }}</div>
+            <div class="text-muted">Total Experiences</div>
           </div>
         </div>
       </div>
-    {% endif %}
-
+      <div class="col-md-3">
+        <div class="card text-center h-100">
+          <div class="card-body">
+            <div class="display-6 fw-bold text-success">{{ stats.success_rate }}%</div>
+            <div class="text-muted">Success Rate</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center h-100">
+          <div class="card-body">
+            {% if stats.avg_salary %}
+              <div class="display-6 fw-bold text-warning">${{ "{:,}".format(stats.avg_salary) }}</div>
+            {% else %}
+              <div class="display-6 fw-bold text-muted">N/A</div>
+            {% endif %}
+            <div class="text-muted">Average Salary</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center h-100">
+          <div class="card-body">
+            <div class="display-6 fw-bold text-info">{{ stats.roles|length }}</div>
+            <div class="text-muted">Different Roles</div>
+          </div>
         </div>
       </div>
     </div>
 
+    <!-- University Representation -->
     {% if stats.university_breakdown %}
       <div class="card mb-5">
         <div class="card-body">
-          <h5 class="card-title">University Representation</h5>
-          <p class="text-muted mb-3">Historical graduate intake by university</p>
+          <h4 class="card-title mb-3">University Representation</h4>
+          <p class="text-muted mb-4">Historical graduate intake by university</p>
           <div class="row">
             {% for uni, percentage in stats.university_breakdown.items() %}
               <div class="col-md-6 mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="small">{{ uni }}</span>
-                  <span class="small fw-bold">{{ percentage }}%</span>
+                  <span>{{ uni }}</span>
+                  <span class="fw-bold">{{ percentage }}%</span>
                 </div>
-                <div class="progress" style="height: 8px;">
+                <div class="progress" style="height: 10px;">
                   <div class="progress-bar" role="progressbar" style="width: {{ percentage }}%" aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
               </div>
@@ -94,14 +158,53 @@
     {% endif %}
   {% endif %}
 
+  <!-- Recent Experiences -->
+  {% if firm_data and firm_data.experiences %}
+    <div class="card mb-5">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="card-title mb-0">Recent Experiences</h4>
+          <a href="/experiences/{{ company | urlencode }}" class="btn btn-outline-primary">
+            View All {{ firm_data.total_experiences }} Experiences
+          </a>
+        </div>
+        
+        <div class="row g-3">
+          {% for exp in firm_data.experiences %}
+            <div class="col-12">
+              <div class="card border-start border-3 border-primary">
+                <div class="card-body py-3">
+                  {% if exp.cat_labels %}
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                      {% for label in exp.cat_labels %}
+                        <span class="badge bg-light text-dark small">{{ label }}</span>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                  <p class="mb-1">{{ exp.evidence_span or exp.content }}</p>
+                  {% if exp.location %}
+                    <small class="text-muted">
+                      <i class="bi bi-geo-alt me-1"></i>{{ exp.location }}
+                    </small>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- User Submitted Experiences -->
   {% if entries %}
-    <h3 class="mb-4">All Experiences</h3>
+    <h3 class="mb-4">Community Experiences</h3>
     <div class="row g-4">
       {% for entry in entries %}
         <div class="col-md-6">
-          <div class="card">
+          <div class="card h-100">
             <div class="card-body">
-              <h5 class="card-title role-title">{{ entry.role }}</h5>
+              <h5 class="card-title">{{ entry.role }}</h5>
               
               <div class="mb-2">
                 <strong>Type:</strong> {{ entry.experience_type or 'Not specified' }}
@@ -121,11 +224,11 @@
               <div class="mb-3">
                 <strong>Outcome:</strong>
                 {% if entry.outcome == 'Success' %}
-                  <span class="badge success-badge">Success</span>
+                  <span class="badge bg-success">Success</span>
                 {% elif entry.outcome == 'Rejected' %}
-                  <span class="badge rejected-badge">Rejected</span>
+                  <span class="badge bg-danger">Rejected</span>
                 {% else %}
-                  <span class="badge ghosted-badge">Ghosted</span>
+                  <span class="badge bg-secondary">Ghosted</span>
                 {% endif %}
               </div>
 
@@ -148,9 +251,12 @@
       {% endfor %}
     </div>
   {% else %}
-    <div class="empty-state">
-      <h4>No experiences yet for {{ company }}</h4>
-      <p class="text-muted mb-4">Be the first to share your experience with this company!</p>
+    <div class="text-center py-5">
+      <div class="empty-icon mb-4">
+        <i class="bi bi-chat-quote text-muted" style="font-size: 4rem;"></i>
+      </div>
+      <h4 class="fw-medium mb-3">No community experiences yet</h4>
+      <p class="text-muted mb-4">Be the first to share your experience with {{ company }}!</p>
       <a href="/submit" class="btn btn-primary">Share Your Experience</a>
     </div>
   {% endif %}

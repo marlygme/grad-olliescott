@@ -149,9 +149,34 @@ def submit():
 
 @app.route('/company/<name>')
 def company_page(name):
+    from categorizer import classify_text, label
+    
     with open(data_file, 'r') as f:
         data = json.load(f)
     company_entries = [entry for entry in data if entry['company'].lower() == name.lower()]
+    
+    # Load firm data from CSV
+    firms = load_cards_v2("out/grad_program_signals.csv")
+    firm_data = None
+    for firm in firms:
+        if firm['name'].lower() == name.lower():
+            firm_data = firm
+            
+            # Load experiences for this firm
+            experiences = load_grad_signals("out/grad_program_signals.csv")
+            firm_experiences = [exp for exp in experiences if exp['firm_name'].lower() == name.lower()]
+            
+            # Categorize experiences and add to firm data
+            for exp in firm_experiences[:5]:  # Show top 5
+                content = exp.get("evidence_span", "")
+                if content:
+                    p, cats, details = classify_text(content, threshold=1.0, top_k=3)
+                    exp["primary_cat"] = p
+                    exp["cat_labels"] = [label(c) for c in cats]
+            
+            firm_data['experiences'] = firm_experiences[:5]
+            firm_data['total_experiences'] = len(firm_experiences)
+            break
     
     # Calculate company stats
     if company_entries:
@@ -198,7 +223,7 @@ def company_page(name):
     else:
         company_stats = None
     
-    return render_template('company.html', company=name, entries=company_entries, stats=company_stats)
+    return render_template('company.html', company=name, entries=company_entries, stats=company_stats, firm_data=firm_data)
 
 
 @app.route('/companies')

@@ -72,6 +72,10 @@ if not os.path.exists(data_file):
 
 @app.route('/')
 def index():
+    # Get user info from Replit headers
+    user_id = request.headers.get('X-Replit-User-Id')
+    user_name = request.headers.get('X-Replit-User-Name')
+
     with open(data_file, 'r') as f:
         submissions = json.load(f)
 
@@ -116,7 +120,7 @@ def index():
     firms = load_cards("out/grad_program_signals.csv")
     print(f"Loaded {len(firms)} firms from CSV")
 
-    return render_template('index.html', companies=sorted_companies, total_submissions=len(submissions), firms=firms)
+    return render_template('index.html', companies=sorted_companies, total_submissions=len(submissions), firms=firms, user_id=user_id, user_name=user_name)
 
 
 @app.route('/submit', methods=['GET', 'POST'])

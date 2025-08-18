@@ -26,9 +26,15 @@
           </p>
           
           <div class="d-flex flex-column flex-sm-row gap-3">
-            <a href="/submit" class="btn btn-primary btn-lg btn-pill px-4">
-              <i class="bi bi-plus-circle me-2"></i>Share Your Story
-            </a>
+            {% if user_id %}
+              <a href="/submit" class="btn btn-primary btn-lg btn-pill px-4">
+                <i class="bi bi-plus-circle me-2"></i>Share Your Story
+              </a>
+            {% else %}
+              <a href="/submit" class="btn btn-primary btn-lg btn-pill px-4">
+                <i class="bi bi-plus-circle me-2"></i>Share Your Story
+              </a>
+            {% endif %}
             <a href="/experiences" class="btn btn-outline-primary btn-lg btn-pill px-4">
               <i class="bi bi-search me-2"></i>Browse Experiences
             </a>

@@ -1,0 +1,312 @@
+
+# experience_quality_v3.py
+# Strict answers-only filter: cleans Whirlpool junk, scores quality,
+# and EXCLUDES any question-style posts. stdlib only.
+
+import csv, re, os, argparse
+from typing import List, Dict, Optional, Tuple
+
+# --- Firm aliases (prefer project list if present) --------------------------
+try:
+    from extractors import FIRM_ALIASES  # type: ignore
+except Exception:
+    FIRM_ALIASES = {
+        "Allens": ["allens"],
+        "Herbert Smith Freehills": ["hsf","herbert smith freehills","herbies"],
+        "Ashurst": ["ashurst"],
+        "MinterEllison": ["minters","minter ellison","minterellison"],
+        "King & Wood Mallesons": ["kwm","mallesons","king and wood mallesons"],
+        "Corrs Chambers Westgarth": ["corrs","corrs chambers"],
+        "Gilbert + Tobin": ["gilbert + tobin","gilbert and tobin","g+t","g + t","gtobin","g+tobin"],
+        "Clayton Utz": ["clayton utz","clutz"],
+        "Baker McKenzie": ["baker mckenzie","bakers"],
+        "Norton Rose Fulbright": ["norton rose","nrf"],
+        "DLA Piper": ["dla","dla piper"],
+        "K&L Gates": ["k&l gates","klgates","k l gates"],
+        "White & Case": ["white & case","white and case","w&c"],
+        "HWL Ebsworth": ["hwl","hwl ebsworth"],
+        "Hall & Wilcox": ["hall & wilcox","hall and wilcox","h&w"],
+        "Sparke Helmore": ["sparke helmore","sparke"],
+        "Maddocks": ["maddocks"],
+    }
+
+# --- Cleaning ---------------------------------------------------------------
+NOISE_PATTERNS = [
+    r"User\s?#\d+.*?(Forum (Regular|Participant)|Enthusiast|Addict).*?(?=posted|$)",
+    r"\bO\.P\.\b",
+    r"\bref:\s*whrl\.pl/\S+", r"\bwhrl\.pl/\S+",
+    r"https?://\S+",
+    r"posted\s+\d{4}-[A-Za-z]{3}-\d{1,2},\s+\d{1,2}:\d{2}\s*[ap]m\s*(AEST|AEDT)",
+    r"\b(AEST|AEDT)\b",
+    r"\b(edit(ed)?|last updated)\b[^\n]*",
+]
+MONTHS = "jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec"
+
+def clean_whirlpool_text(text: str) -> str:
+    if not isinstance(text, str): return ""
+    t = re.sub(r"[\u200B-\u200D\uFEFF]", "", text)
+    for pat in NOISE_PATTERNS:
+        t = re.sub(pat, "", t, flags=re.IGNORECASE)
+    t = re.sub(r"@\w+", "", t)                      # @mentions
+    t = re.sub(r"(?m)^\s*[>\-\•]+\s*", "", t)       # quote/bullets prefixes
+    t = re.sub(r"\s{2,}", " ", t).strip()
+    if len(t) < 5 or t.lower() in {"deleted","edited"}: return ""
+    return t
+
+# --- Features ---------------------------------------------------------------
+QUESTION_STARTERS = [
+    "anyone know","does anyone","has anyone","is it true","should i","where can i",
+    "what are","when do","how long","how do","can i","would it","is there","do they",
+    "am i","are we","any idea","any updates"
+]
+META_PHRASES = [
+    "bump","following","subscribing","any updates","lol","lmao","haha","dm me","pm me","+1","same here"
+]
+PROGRAM_SIGNALS = [
+    "offer","offers","accepted","rejected","waitlist","on hold",
+    "clerkship","graduate program","grad program","vacation program",
+    "rotation","rotations","seat","assessment centre","assessment center",
+    "ac","superday","panel","partner interview","paralegal","salary","pay",
+    "remuneration","benefits","billable","hours","culture","mentor",
+    "secondment","training","practice group","plt","admission","oa","vi","video interview",
+]
+PAST_TENSE_VERBS = [
+    "received","accepted","completed","did","worked","went","rotated","attended",
+    "participated","finished","started","applied","interviewed","progressed","declined",
+    "heard","got","made","sat","signed","joined"
+]
+
+def words(text: str): return re.findall(r"\b[^\W_]+\b", text.lower())
+def sentences(text: str): return [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
+
+def first_person(text: str) -> bool:
+    return bool(re.search(r"\b(i|my|we|our|me)\b", text.lower()))
+
+def is_question_strict(text: str) -> bool:
+    t = text.strip().lower()
+    return bool("?" in text or t.endswith("?") or any(t.startswith(s) for s in QUESTION_STARTERS))
+
+def is_meta_low(text: str) -> bool:
+    t = text.strip().lower()
+    if not t: return True
+    if any(p in t for p in META_PHRASES):
+        # allow "thanks" only if long and informative
+        if "thanks" in t and len(t) > 160: return False
+        return True
+    if len(t) < 18 and any(w in t for w in ["yes","no","ok","thanks","same"]):
+        return True
+    return False
+
+def info_signals(text: str) -> Dict[str,bool]:
+    t = text.lower()
+    return {
+        "has_money": bool(re.search(r"\$\s*[\d,]+|\b\d+\s*k\b", t)),
+        "has_date": bool(re.search(rf"\b({MONTHS})\b|\b\d{{1,2}}[/-]\d{{1,2}}[/-]\d{{2,4}}\b|\b20\d{{2}}\b", t)),
+        "has_number": bool(re.search(r"\b\d+\b", t)),
+    }
+
+def program_signal_count(text: str) -> int:
+    t = text.lower()
+    return sum(1 for k in PROGRAM_SIGNALS if k in t)
+
+def past_tense(text: str) -> bool:
+    t = text.lower()
+    return any(v in t for v in PAST_TENSE_VERBS)
+
+def density(text: str) -> Tuple[int,int,int,float]:
+    w = words(text); wc = len(w); uw = len(set(w)); sc = len(sentences(text))
+    dens = (uw / wc) if wc else 0.0
+    return wc, uw, sc, dens
+
+# --- Answer-likeness (hard requirement) -------------------------------------
+ANSWER_REGEX = re.compile(
+    r"\b(offers?\s+(went out|released)|apps?\s+(open|opened|close|closed)|ac invites?|"
+    r"video interview|final interview|base\s+(is|was)|salary\s+(is|was)|I\s+(got|received|accepted|was rejected))\b",
+    re.IGNORECASE
+)
+
+def answer_like(text: str) -> bool:
+    if is_question_strict(text): return False
+    wc, uw, _, _ = density(text)
+    if wc < 18 or uw < 10:  # still needs minimal substance
+        return False
+    sigs = info_signals(text)
+    if past_tense(text): return True
+    if program_signal_count(text) >= 1 and (sigs["has_date"] or sigs["has_money"] or sigs["has_number"]):
+        return True
+    if ANSWER_REGEX.search(text): return True
+    if first_person(text) and wc >= 22: return True
+    return False
+
+# --- Quality score (lenient but only applied to answers) --------------------
+def quality_score(text: str) -> float:
+    base = 0.50
+    wc, uw, _, _ = density(text)
+    # length bonus (tuned for short posts)
+    length_bonus = 0.0
+    if wc >= 28: length_bonus = min(0.16, (wc - 28) * 0.0025)
+    # density bonus
+    dens = (uw / wc) if wc else 0.0
+    dens_bonus = min(0.10, max(0.0, (dens - 0.42) * 0.5))
+    # signals
+    ps = program_signal_count(text)
+    prog_bonus = min(0.26, ps * 0.06)
+    sigs = info_signals(text)
+    sig_bonus = 0.05 * sum(1 for v in sigs.values() if v)  # up to +0.15
+    pt_bonus = 0.08 if past_tense(text) else 0.0
+    fp_bonus = 0.06 if first_person(text) else 0.0
+    # penalties (light; we already gated questions out)
+    penalty = 0.0
+    if is_meta_low(text): penalty += 0.10
+    if wc < 22 or uw < 12: penalty += 0.10
+    score = base + length_bonus + dens_bonus + prog_bonus + sig_bonus + pt_bonus + fp_bonus - penalty
+    return max(0.0, min(1.0, score))
+
+# --- Firm match -------------------------------------------------------------
+def match_firm(text: str, title: str = "") -> Optional[str]:
+    hay = f"{text} {title}".lower()
+    for canonical, aliases in FIRM_ALIASES.items():
+        if re.search(rf"\b{re.escape(canonical.lower())}\b", hay): return canonical
+        for a in aliases:
+            if re.search(rf"\b{re.escape(a.lower())}\b", hay): return canonical
+    return None
+
+# --- Core processing --------------------------------------------------------
+FIELDNAMES = [
+    "firm_name","content","raw_content","timestamp","thread_url","quality_score",
+    "is_question","is_meta_low","words","unique_words","reasons"
+]
+
+def _dedupe(rows: List[Dict]) -> List[Dict]:
+    seen = set(); out = []
+    for r in rows:
+        key = (r.get("thread_url",""), r.get("timestamp",""), r.get("content","")[:80].lower())
+        if key in seen: continue
+        seen.add(key); out.append(r)
+    # remove strict substrings (keep the longer)
+    filtered = []
+    for r in out:
+        c = r["content"]
+        if any((c != o["content"]) and (c in o["content"]) for o in out):
+            continue
+        filtered.append(r)
+    return filtered
+
+def process_csvs(inputs: List[str], firm: Optional[str]=None) -> List[Dict]:
+    out: List[Dict] = []
+    for path in inputs:
+        if not os.path.exists(path):
+            print(f"Warning: {path} not found"); continue
+        with open(path, newline="", encoding="utf-8") as f:
+            r = csv.DictReader(f)
+            for row in r:
+                raw = (row.get("content") or "").strip()
+                if not raw: continue
+                clean = clean_whirlpool_text(raw)
+                if not clean: continue
+
+                firm_hit = match_firm(clean, row.get("thread_title","") or "")
+                if not firm_hit: continue
+                if firm and firm_hit.lower() != firm.lower(): continue
+
+                # HARD requirement: answer-like only
+                if not answer_like(clean): 
+                    continue
+
+                wc, uw, _, _ = density(clean)
+                s = quality_score(clean)
+                is_q = is_question_strict(clean)
+                meta = is_meta_low(clean)
+                reasons = []
+                if s >= 0.60: reasons.append("high_quality")
+                if meta: reasons.append("meta")
+                if wc < 22 or uw < 12: reasons.append("short")
+
+                out.append({
+                    "firm_name": firm_hit,
+                    "content": clean,            # CLEAN text for UI
+                    "raw_content": raw,          # keep original for audit
+                    "timestamp": row.get("timestamp",""),
+                    "thread_url": row.get("thread_url",""),
+                    "quality_score": f"{s:.3f}",
+                    "is_question": str(is_q),
+                    "is_meta_low": str(meta),
+                    "words": str(wc),
+                    "unique_words": str(uw),
+                    "reasons": ",".join(reasons),
+                })
+    return _dedupe(out)
+
+def slugify_firm(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+","-", name.lower().replace("&","and")).strip("-")
+
+def save_cache(rows: List[Dict], firm_name: str) -> str:
+    os.makedirs("out", exist_ok=True)
+    p = os.path.join("out", f"experiences_{slugify_firm(firm_name)}.csv")
+    with open(p, "w", newline="", encoding="utf-8") as g:
+        w = csv.DictWriter(g, fieldnames=FIELDNAMES)
+        w.writeheader(); w.writerows(rows)
+    return p
+
+def _filter_rows(rows: List[Dict], min_score: float) -> List[Dict]:
+    kept = []
+    for r in rows:
+        q = float(r["quality_score"])
+        # NEVER keep questions; `answer_like` already enforced upstream
+        if q >= min_score:
+            kept.append(r)
+    return kept
+
+def load_filtered_for_firm(firm_name: str, min_score: float=0.55, min_items:int=6) -> List[Dict]:
+    """Answers-only, strict. If too few, lower min_score slightly, but NEVER include questions."""
+    cache = os.path.join("out", f"experiences_{slugify_firm(firm_name)}.csv")
+    rows: List[Dict] = []
+    if os.path.exists(cache):
+        with open(cache, newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+            # Clean fallback for old caches
+            for r in rows:
+                if not r.get("content") and r.get("raw_content"):
+                    r["content"] = clean_whirlpool_text(r["raw_content"])
+
+    if not rows:
+        inputs = ["law_raw.csv","law_whirlpool_2018_2025.csv","raw_all.csv"]
+        rows = process_csvs(inputs, firm_name)
+        if rows: save_cache(rows, firm_name)
+
+    kept = _filter_rows(rows, min_score)
+
+    # if still few, soften threshold a bit (still answers-only)
+    if len(kept) < min_items:
+        kept = _filter_rows(rows, min_score=min(0.50, min_score))
+
+    # last resort: take top N by quality (answers-only cache already enforced)
+    if len(kept) < min_items:
+        rows_sorted = sorted(rows, key=lambda r: float(r["quality_score"]), reverse=True)
+        kept = rows_sorted[:min_items]
+
+    kept.sort(key=lambda r: float(r["quality_score"]), reverse=True)
+    return kept
+
+# --- CLI --------------------------------------------------------------------
+def main():
+    ap = argparse.ArgumentParser(description="Answers-only quality filter for firm experiences")
+    ap.add_argument("--in", dest="inputs", nargs="+", required=True, help="Input CSV(s)")
+    ap.add_argument("--firm", dest="firm", default=None, help="Optional firm canonical name")
+    ap.add_argument("--out", dest="out", default=None, help="Write kept rows to CSV")
+    ap.add_argument("--minscore", dest="minscore", type=float, default=0.55, help="Keep threshold (default 0.55)")
+    ap.add_argument("--min-items", dest="min_items", type=int, default=6, help="Minimum rows to return")
+    args = ap.parse_args()
+
+    rows = process_csvs(args.inputs, args.firm)
+    if args.out and args.firm:
+        os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+        kept = load_filtered_for_firm(args.firm, args.minscore, args.min_items)
+        with open(args.out, "w", newline="", encoding="utf-8") as g:
+            w = csv.DictWriter(g, fieldnames=FIELDNAMES); w.writeheader(); w.writerows(kept)
+        print(f"Wrote {args.out} (kept {len(kept)} rows)")
+    else:
+        print(f"Processed {len(rows)} rows{' for '+args.firm if args.firm else ''}")
+
+if __name__ == "__main__":
+    main()

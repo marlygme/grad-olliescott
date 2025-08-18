@@ -220,29 +220,47 @@ def experiences():
 
 @app.route('/experiences/<firm_name>')
 def firm_experiences(firm_name):
+    from collections import Counter
+    from categorizer import classify_text, label
+    
     # Get university data for this firm
     university_data = FIRM_UNIVERSITY_DATA.get(firm_name, None)
     
     # Try to load filtered experiences first
     try:
         from experience_filter import load_filtered_for_firm
-        filtered_experiences = load_filtered_for_firm(firm_name, min_score=0.6, exclude_questions=True)
-        print(f"Loaded {len(filtered_experiences)} filtered experiences for {firm_name}")
-        return render_template("experiences.html", 
-                             experiences=filtered_experiences, 
-                             firm_name=firm_name, 
-                             is_filtered=True,
-                             university_data=university_data)
+        items = load_filtered_for_firm(firm_name, min_score=0.6, exclude_questions=True)
+        print(f"Loaded {len(items)} filtered experiences for {firm_name}")
+        is_filtered = True
     except Exception as e:
         print(f"Error loading filtered experiences: {e}")
         # Fall back to grad signals
         experiences = load_grad_signals("out/grad_program_signals.csv")
-        firm_experiences = [exp for exp in experiences if exp['firm_name'].lower() == firm_name.lower()]
-        return render_template("experiences.html", 
-                             experiences=firm_experiences, 
-                             firm_name=firm_name, 
-                             is_filtered=False,
-                             university_data=university_data)
+        items = [exp for exp in experiences if exp['firm_name'].lower() == firm_name.lower()]
+        is_filtered = False
+    
+    # Categorize each item
+    for item in items:
+        content = item.get("content", "") or item.get("evidence_span", "")
+        p, cats, details = classify_text(content, threshold=1.0, top_k=3)
+        item["primary_cat"] = p
+        item["cat_labels"] = [label(c) for c in cats]
+    
+    # Apply category filter
+    active_cat = request.args.get("cat")
+    if active_cat:
+        items = [item for item in items if item.get("primary_cat") == active_cat or active_cat in [c.lower().replace(" ", "_") for c in item.get("cat_labels", [])]]
+    
+    # Build category counts
+    cat_counts = Counter(item["primary_cat"] for item in items if item.get("primary_cat"))
+    
+    return render_template("experiences.html", 
+                         experiences=items, 
+                         firm_name=firm_name, 
+                         is_filtered=is_filtered,
+                         university_data=university_data,
+                         cat_counts=cat_counts,
+                         active_cat=active_cat)
 
 
 @app.route('/law-match', methods=['GET', 'POST'])

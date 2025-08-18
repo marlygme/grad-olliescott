@@ -86,12 +86,43 @@
     </div>
     <h3 class="fw-medium mb-3">Account Required</h3>
     <p class="text-muted mb-4">Please log in with your Replit account to share your graduate experience and help other students.</p>
-    <div>
-      <script
-        authed="location.reload()"
-        src="https://auth.util.repl.co/script.js"
-      ></script>
+    <div class="mb-4">
+      <button onclick="LoginWithReplit()" class="btn btn-primary btn-lg">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Login with Replit
+      </button>
     </div>
+    <script>
+      function LoginWithReplit() {
+        window.addEventListener("message", authComplete);
+        var h = 500;
+        var w = 350;
+        var left = screen.width / 2 - w / 2;
+        var top = screen.height / 2 - h / 2;
+
+        var authWindow = window.open(
+          "https://replit.com/auth_with_repl_site?domain=" + location.host,
+          "_blank",
+          "modal=yes, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=" +
+            w +
+            ", height=" +
+            h +
+            ", top=" +
+            top +
+            ", left=" +
+            left
+        );
+
+        function authComplete(e) {
+          if (e.data !== "auth_complete") {
+            return;
+          }
+
+          window.removeEventListener("message", authComplete);
+          authWindow.close();
+          location.reload();
+        }
+      }
+    </script>
   </div>
   {% endif %}
 </div>

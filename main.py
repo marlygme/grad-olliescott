@@ -138,6 +138,7 @@ def submit():
             'company': request.form['company'],
             'role': request.form['role'],
             'experience_type': request.form['experience_type'],
+            'theme': request.form['theme'],
             'salary': request.form.get('salary', ''),
             'university': request.form.get('university', ''),
             'wam': request.form.get('wam', ''),

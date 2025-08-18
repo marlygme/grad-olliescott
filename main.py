@@ -203,7 +203,34 @@ def company_page(name):
 
 @app.route('/companies')
 def companies():
+    from categorizer import classify_text, label
+    
     firms = load_cards_v2("out/grad_program_signals.csv")
+    
+    # Load experiences for each firm
+    experiences = load_grad_signals("out/grad_program_signals.csv")
+    
+    # Group experiences by firm
+    firm_experiences = {}
+    for exp in experiences:
+        firm_name = exp['firm_name']
+        if firm_name not in firm_experiences:
+            firm_experiences[firm_name] = []
+        
+        # Categorize the experience
+        content = exp.get("evidence_span", "")
+        if content:
+            p, cats, details = classify_text(content, threshold=1.0, top_k=3)
+            exp["primary_cat"] = p
+            exp["cat_labels"] = [label(c) for c in cats]
+        
+        firm_experiences[firm_name].append(exp)
+    
+    # Add experiences to each firm
+    for firm in firms:
+        firm['experiences'] = firm_experiences.get(firm['name'], [])[:5]  # Show top 5 experiences
+        firm['total_experiences'] = len(firm_experiences.get(firm['name'], []))
+    
     return render_template("companies_v2.html", firms=firms)
 
 

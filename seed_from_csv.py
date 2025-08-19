@@ -184,15 +184,29 @@ def build_all(per_firm: int = 3) -> List[Dict]:
     seeds: List[Dict] = []
     for firm, posts in by_firm.items():
         if not posts: continue
-        # create up to per_firm variations (slight shuffles)
+        # Always create at least 2 seeds per firm, with variations even for small datasets
         base = summarise_firm(firm, posts)
         seeds.append({**base, "id": f"seed:{firm}:1"})
-        if per_firm >= 2 and len(posts) > 10:
-            alt = summarise_firm(firm, posts[5:] + posts[:5])
-            alt["id"] = f"seed:{firm}:2"; seeds.append(alt)
-        if per_firm >= 3 and len(posts) > 20:
-            alt2 = summarise_firm(firm, posts[10:] + posts[:10])
-            alt2["id"] = f"seed:{firm}:3"; seeds.append(alt2)
+        
+        # Create second variation with different sampling
+        if len(posts) >= 2:
+            alt_posts = posts[1:] + posts[:1] if len(posts) > 1 else posts
+            alt = summarise_firm(firm, alt_posts)
+            alt["id"] = f"seed:{firm}:2"
+            seeds.append(alt)
+        else:
+            # For single-post firms, create slight variation
+            alt = {**base}
+            alt["id"] = f"seed:{firm}:2"
+            alt["card_text"] = (alt.get("card_text", "") + " [Alternative view]")[:500]
+            seeds.append(alt)
+            
+        # Third variation for firms with more data
+        if per_firm >= 3 and len(posts) > 5:
+            alt2_posts = posts[2:] + posts[:2] if len(posts) > 2 else posts
+            alt2 = summarise_firm(firm, alt2_posts)
+            alt2["id"] = f"seed:{firm}:3"
+            seeds.append(alt2)
     return seeds
 
 def main():

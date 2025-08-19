@@ -310,6 +310,7 @@ def firm_experiences(firm_name):
         print(f"Loaded {len(items)} filtered experiences for {firm_name}")
         is_filtered = True
     except Exception as e:
+        print(f"Error loading filtered experiences: {e}")
         # Fall back to grad signals
         experiences = load_grad_signals("out/grad_program_signals.csv")
         items = [exp for exp in experiences if exp['firm_name'].lower() == firm_name.lower()]

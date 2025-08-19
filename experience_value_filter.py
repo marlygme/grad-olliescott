@@ -39,6 +39,7 @@ NOISE_PATTERNS = [
     r"\b(AEST|AEDT)\b",
     r"\b(edit(ed)?|last updated)\b[^\n]*",
 ]
+
 def clean_text(text: str) -> str:
     if not isinstance(text, str): return ""
     t = re.sub(r"[\u200B-\u200D\uFEFF]", "", text)

@@ -105,11 +105,12 @@ def index():
             }
 
         companies[company]['total_submissions'] += 1
-        if submission['outcome'] == 'Success':
+        if submission.get('outcome') == 'Success':
             companies[company]['success_count'] += 1
 
-        if submission['salary'] and submission['salary'].isdigit():
-            companies[company]['avg_salary'] += int(submission['salary'])
+        salary = submission.get('salary', '')
+        if salary and str(salary).isdigit():
+            companies[company]['avg_salary'] += int(salary)
             companies[company]['salary_count'] += 1
 
         companies[company]['recent_roles'].add(submission['role'])
@@ -223,10 +224,10 @@ def company_page(name):
 
     # Calculate company stats
     if company_entries:
-        success_count = len([e for e in company_entries if e['outcome'] == 'Success'])
+        success_count = len([e for e in company_entries if e.get('outcome') == 'Success'])
         success_rate = round((success_count / len(company_entries)) * 100, 1)
 
-        salaries = [int(e['salary']) for e in company_entries if e['salary'] and e['salary'].isdigit()]
+        salaries = [int(e.get('salary', 0)) for e in company_entries if e.get('salary') and str(e.get('salary')).isdigit()]
         avg_salary = int(sum(salaries) / len(salaries)) if salaries else None
 
         roles = list(set([e['role'] for e in company_entries]))

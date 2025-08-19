@@ -19,7 +19,7 @@
   <form method="POST" class="row g-3">
     <div class="col-md-6">
       <label class="form-label">Company</label>
-      <input name="company" class="form-control" required>
+      <input id="company" name="company" class="form-control" required>
     </div>
     <div class="col-md-6">
       <label class="form-label">Role</label>
@@ -27,7 +27,7 @@
     </div>
     <div class="col-md-6">
       <label class="form-label">Experience Type</label>
-      <select name="experience_type" class="form-select" required>
+      <select id="experience_type" name="experience_type" class="form-select" required>
         <option value="">Select type</option>
         <option value="Graduate Program">Graduate Program</option>
         <option value="Internship">Internship</option>
@@ -36,9 +36,15 @@
         <option value="Entry Level">Entry Level</option>
       </select>
     </div>
+    <div class="col-md-6">
+      <button type="button" id="btn-autofill" class="btn btn-info btn-sm mt-4">
+        <i class="bi bi-magic me-1"></i>Use data-assisted draft
+      </button>
+      <small class="text-muted d-block">Auto-fill from CSV data</small>
+    </div>
     <div class="col-md-12">
       <label class="form-label">Key Theme</label>
-      <select name="theme" class="form-select" required>
+      <select id="theme" name="theme" class="form-select" required>
         <option value="">Select theme</option>
         <option value="application_timeline">Application timeline</option>
         <option value="selection_process">Selection process</option>
@@ -203,6 +209,94 @@
 
         // Update fields when theme changes
         themeSelect.addEventListener('change', updateFields);
+      });
+
+      // Data-assisted draft functionality
+      async function fetchDraft(firm){
+        const res = await fetch(`/api/draft?firm=${encodeURIComponent(firm)}`);
+        if (!res.ok) throw new Error('No draft for firm');
+        return await res.json();
+      }
+      function setIf(el, val){ if(el && val){ el.value = val; } }
+      function selectIfHas(select, val){
+        if(!select || !val) return;
+        [...select.options].forEach(opt => {
+          if(opt.value.toLowerCase() === String(val).toLowerCase()) select.value = opt.value;
+        });
+      }
+      function selectMulti(select, values){
+        if(!select || !values) return;
+        const set = new Set(values.map(v=>String(v).toLowerCase()));
+        [...select.options].forEach(opt => {
+          opt.selected = set.has(opt.textContent.trim().toLowerCase()) || set.has(opt.value.toLowerCase());
+        });
+      }
+
+      document.getElementById('btn-autofill')?.addEventListener('click', async () => {
+        const firm = (document.getElementById('company')?.value || "").trim();
+        if(!firm){ alert("Enter a company name first."); return; }
+        try {
+          const d = await fetchDraft(firm);
+          if (d.error) throw new Error(d.error);
+          
+          // Update basic fields
+          setIf(document.getElementById('company'), d.company);
+          selectIfHas(document.getElementById('experience_type'), d.experience_type);
+          
+          // Auto-select appropriate theme based on data
+          if (d.key_themes && d.key_themes.length > 0) {
+            const themeMap = {
+              'Application timeline': 'application_timeline',
+              'Selection process': 'selection_process', 
+              'Pay & benefits': 'pay_benefits',
+              'Hours & workload': 'hours_workload',
+              'Program structure': 'program_structure',
+              'Training & support': 'training_support',
+              'Secondments & mobility': 'secondments_mobility',
+              'Eligibility & requirements': 'eligibility_requirements',
+              'Culture & environment': 'culture_environment',
+              'Interview tips': 'interview_tips'
+            };
+            const firstTheme = d.key_themes[0];
+            const themeValue = themeMap[firstTheme];
+            if (themeValue) {
+              document.getElementById('theme').value = themeValue;
+              // Trigger the change event to update dynamic fields
+              document.getElementById('theme').dispatchEvent(new Event('change'));
+              
+              // Wait a bit for fields to be created, then fill them
+              setTimeout(() => {
+                // Fill dynamic fields based on theme
+                const appStages = document.querySelector('textarea[name="application_stages"]');
+                const interviewExp = document.querySelector('textarea[name="interview_experience"]');
+                const advice = document.querySelector('textarea[name="advice"]');
+                
+                if (themeValue === 'selection_process' && d.process_line) {
+                  setIf(appStages, d.process_line);
+                }
+                if (themeValue === 'pay_benefits' && d.pay_line) {
+                  setIf(appStages, d.pay_line);
+                }
+                if (themeValue === 'hours_workload' && d.hours_line) {
+                  setIf(appStages, d.hours_line);
+                }
+                if (themeValue === 'culture_environment' && d.culture_para) {
+                  setIf(appStages, d.culture_para);
+                }
+                if (themeValue === 'interview_tips') {
+                  setIf(interviewExp, d.tips_line);
+                  setIf(advice, 'Based on forum posts: ' + (d.tips_line || 'No specific tips found'));
+                }
+              }, 100);
+            }
+          }
+          
+          console.log("Draft filled from", d.evidence_count, "posts");
+          alert(`Draft filled from ${d.evidence_count} posts. Please review and edit before submitting.`);
+        } catch (e){
+          console.error(e);
+          alert("Couldn't build a draft for that firm. Try a different name or check if data exists.");
+        }
       });
     </script>
     <div class="col-12">

@@ -7,6 +7,7 @@ import csv
 from collections import defaultdict, Counter
 from grad_data import load_cards, load_grad_signals
 from grad_data_v2 import load_cards as load_cards_v2
+from draft_service import build_draft
 
 app = Flask(__name__)
 
@@ -301,6 +302,15 @@ def companies():
 @app.route('/api/grad-data')
 def api_grad_data():
     return jsonify({"firms": load_cards("out/grad_program_signals.csv")})
+
+
+@app.route('/api/draft')
+def api_draft():
+    firm = request.args.get("firm", "").strip()
+    if not firm:
+        return jsonify({"error":"firm required"}), 400
+    data = build_draft(firm)
+    return jsonify(data)
 
 
 @app.route('/experiences')

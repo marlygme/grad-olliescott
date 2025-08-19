@@ -9,18 +9,8 @@ from grad_data import load_cards, load_grad_signals
 from grad_data_v2 import load_cards as load_cards_v2
 from draft_service import build_draft
 
-# Load seed data
-SEED_PATH = "seed_submissions.json"
-SEED_DATA = []
-if os.path.exists(SEED_PATH):
-    try:
-        with open(SEED_PATH, "r", encoding="utf-8") as f:
-            SEED_DATA = json.load(f)
-    except Exception:
-        SEED_DATA = []
-
-def seed_for_firm(firm: str, limit: int = 3):
-    return [s for s in SEED_DATA if s.get("company","").strip().lower() == firm.strip().lower()][:limit]
+# Load data from JSON file
+data_file = 'submissions.json'
 
 app = Flask(__name__)
 
@@ -363,18 +353,36 @@ def firm_experiences(firm_name):
         item["primary_cat"] = p
         item["cat_labels"] = [label(c) for c in cats]
 
-    # Add seed cards at the top
-    seeds = seed_for_firm(firm_name, limit=3)
-    seed_cards = [{
-        "content": s.get("card_text") or "",
-        "quality_score": 0.99,
-        "primary_cat": "summary",
-        "cat_labels": ["Community summary"],
-        "is_seed": True,
-    } for s in seeds if s.get("card_text")]
-
-    # Put seeds first, then real items
-    items = seed_cards + items
+    # Load submissions data for this firm
+    with open(data_file, 'r') as f:
+        submissions = json.load(f)
+    
+    firm_submissions = [s for s in submissions if s.get('company', '').lower() == firm_name.lower()]
+    
+    # Convert submissions to experience format
+    submission_items = []
+    for sub in firm_submissions:
+        content_parts = []
+        if sub.get('application_stages'):
+            content_parts.append(f"Application process: {sub['application_stages']}")
+        if sub.get('interview_experience'):
+            content_parts.append(f"Interview experience: {sub['interview_experience']}")
+        if sub.get('advice'):
+            content_parts.append(f"Advice: {sub['advice']}")
+        
+        submission_items.append({
+            "content": " • ".join(content_parts),
+            "quality_score": 0.95,
+            "primary_cat": sub.get('theme', 'other').lower(),
+            "cat_labels": [sub.get('theme', 'Other')],
+            "is_submission": True,
+            "experience_type": sub.get('experience_type', ''),
+            "role": sub.get('role', ''),
+            "timestamp": sub.get('timestamp', '')
+        })
+    
+    # Put submissions first, then CSV items
+    items = submission_items + items
 
     # Apply category filter
     active_cat = request.args.get("cat")

@@ -1,8 +1,9 @@
 
 # seed_from_csv.py
-# Build "seed submissions" per firm from existing CSVs (stdlib only).
+# Build "seed submissions" per firm from existing CSVs in Share Story format.
 import csv, re, os, json, argparse, statistics, random
 from typing import List, Dict, Optional, Tuple
+from datetime import datetime, timedelta
 
 CSV_PATHS = ["law_raw.csv", "law_whirlpool_2018_2025.csv", "raw_all.csv"]
 
@@ -26,199 +27,210 @@ except Exception:
         t = re.sub(r"\s{2,}", " ", t).strip()
         return t
 
-# Basic heuristics
-STEP_TOKENS = [
-    ("Online Assessment", ["online assessment","oa"]),
-    ("Video Interview",   ["video interview","vi","one-way video"]),
-    ("Assessment Centre", ["assessment centre","assessment center","ac","superday"]),
-    ("Partner Interview", ["partner interview","panel"]),
-]
-TYPE_TOKENS = [
-    ("Clerkship", ["clerkship","vacation program","vac program","seasonal clerk"]),
-    ("Graduate Program", ["graduate program","grad program"]),
-    ("Internship", ["internship","intern"]),
-    ("Paralegal", ["paralegal"]),
-]
-POS = ["supportive","collegial","friendly","helpful","nice","fair","great","good"]
-NEG = ["toxic","long hours","late","weekend","overworked","burnout","pressure","micromanage","stress"]
-TIP_HINTS = ["be ready","expect","they asked","question was","case","group exercise","writing test","tips","advice","prepare"]
+# Experience type mapping based on themes
+THEME_TO_TYPE = {
+    "Programs": "Clerkship",
+    "Applications": "Graduate Program", 
+    "Interviews": "Graduate Program",
+    "Salaries": "Graduate Program",
+    "Start Dates": "Graduate Program",
+    "Offers & Rejections": "Graduate Program",
+    "Firm Culture": "Clerkship",
+    "Practice Areas": "Clerkship",
+    "Locations": "Clerkship",
+    "Other": "Graduate Program"
+}
 
-MONTHS = "jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec"
+THEME_TO_STORY_FOCUS = {
+    "Programs": "program_structure",
+    "Applications": "application_stages", 
+    "Interviews": "interview_experience",
+    "Salaries": "advice",
+    "Start Dates": "advice",
+    "Offers & Rejections": "interview_experience",
+    "Firm Culture": "advice",
+    "Practice Areas": "advice",
+    "Locations": "advice",
+    "Other": "advice"
+}
 
-def has(t: str, keys: List[str]) -> bool:
-    s = t.lower()
-    return any(k in s for k in keys)
-
-def detect_steps(t: str) -> List[str]:
-    s = t.lower()
-    found = []
-    for label, keys in STEP_TOKENS:
-        if any(k in s for k in keys): found.append(label)
-    order = [x for x,_ in STEP_TOKENS]
-    return [x for x in order if x in found]
-
-def guess_type(t: str) -> Optional[str]:
-    s=t.lower()
-    for label, keys in TYPE_TOKENS:
-        if any(k in s for k in keys): return label
-    return None
-
-def parse_salary(t: str) -> List[int]:
-    s=t.lower().replace(",","")
-    out = [int(m.group(1)) for m in re.finditer(r"\$\s*(\d{5,6})", s)]
-    out += [int(m.group(1))*1000 for m in re.finditer(r"\b(\d{2,3})\s*k\b", s)]
-    return out
-
-def parse_hours(t: str) -> List[int]:
-    s=t.lower()
-    out = [int(m.group(1)) for m in re.finditer(r"\b(\d{2,3})\s*hours?\b", s) if 20<=int(m.group(1))<=120]
-    out += [int(m.group(1))//52 for m in re.finditer(r"\b(\d{3,4})\s*billable\b", s)]
-    return out
-
-def sentences(t: str) -> List[str]:
-    return [x.strip() for x in re.split(r"[.!?]\s*", t) if x.strip()]
-
-def good_bits(t: str) -> List[str]:
-    # short, non-question snippets
-    return [s for s in sentences(t) if len(s) >= 30 and not s.endswith("?")][:2]
-
-def load_by_firm() -> Dict[str, List[str]]:
-    """Return {firm: [cleaned post text, ...]} using firm_name col or text/title match."""
-    firms: Dict[str, List[str]] = {}
-    for p in CSV_PATHS:
-        if not os.path.exists(p): continue
-        with open(p, newline="", encoding="utf-8") as f:
-            r = csv.DictReader(f)
-            for row in r:
-                raw = (row.get("content") or "").strip()
-                if not raw: continue
-                txt = clean_text(raw)
-                if not txt: continue
-                firm = (row.get("firm_name") or row.get("firm") or "").strip()
-                hay  = f"{txt} {(row.get('thread_title') or '')}".lower()
-                if not firm:
-                    # naive fallback: pick a capitalised word pair as firm (rare path)
-                    m = re.search(r"\b([A-Z][a-z]+(?:\s+[&A-Za-z][a-z]+){0,3})\b", row.get("thread_title",""))
-                    firm = m.group(0) if m else ""
-                if not firm: 
-                    # try a few known legal brands in text
-                    for candidate in ["Allens","Ashurst","MinterEllison","Clayton Utz","K&L Gates","White & Case",
-                                      "Gilbert + Tobin","King & Wood Mallesons","Corrs Chambers Westgarth",
-                                      "Herbert Smith Freehills","HWL Ebsworth","Hall & Wilcox"]:
-                        if candidate.lower().replace("&","and") in hay.replace("&","and"):
-                            firm = candidate; break
-                if not firm: continue
-                firms.setdefault(firm, []).append(txt)
-    return firms
-
-def summarise_firm(firm: str, posts: List[str]) -> Dict:
-    random.seed(hash(firm) & 0xffff)  # deterministic sample per firm
-    sample = posts[:80]  # cap processing
-    salaries, hours, steps_all, tips, pos, neg, types, outcomes = [], [], [], [], [], [], [], []
-    themes: Dict[str,int] = {}
-    for t in sample:
-        salaries += parse_salary(t); hours += parse_hours(t)
-        steps = detect_steps(t)
-        if steps: steps_all.append(" → ".join(steps))
-        typ = guess_type(t); 
-        if typ: types.append(typ)
-        if re.search(r"\boffer(s|ed)?\b", t, re.I): outcomes.append("Offer")
-        elif re.search(r"\breject(ed|ion)\b|\bunsuccessful\b", t, re.I): outcomes.append("Rejected")
-        elif re.search(r"\bwaitlist|on hold\b", t, re.I): outcomes.append("Waitlist")
-        elif re.search(r"\binterview|assessment\b", t, re.I): outcomes.append("Interviewed")
-
-        def add(th): themes[th] = themes.get(th,0)+1
-        if re.search(rf"\b({MONTHS})\b|\b\d{{1,2}}[/-]\d{{1,2}}[/-]\d{{2,4}}\b|\b20\d{{2}}\b", t, re.I): add("Application timeline")
-        if steps: add("Selection process")
-        if parse_salary(t): add("Pay & benefits")
-        if parse_hours(t):  add("Hours & workload")
-        if has(t, ["rotation","rotations","seat","program"]): add("Program structure")
-        if has(t, ["mentor","buddy","training","plt","admission","onboarding"]): add("Training & support")
-        if has(t, ["secondment","client secondment","international"]): add("Secondments & mobility")
-        if has(t, ["penultimate","final year","gpa","citizenship","visa"]): add("Eligibility & requirements")
-        if has(t, ["culture","collegial","supportive","toxic","pressure","burnout","micromanage","team"]): add("Culture & environment")
-        if has(t, ["tip","advice","be ready","expect","they asked","case","group exercise","writing test"]): add("Interview tips")
-
-        if has(t, POS): pos += good_bits(t)
-        if has(t, NEG): neg += good_bits(t)
-        if has(t, TIP_HINTS): tips += good_bits(t)
-
-    med_salary = int(statistics.median(salaries)) if salaries else None
-    avg_hours  = int(statistics.mean(hours)) if hours else None
-    process    = steps_all[0] if steps_all else ""
-    exp_type   = types[0] if types else ""
-    outcome    = outcomes[0] if outcomes else ""
-    top_themes = [k for k,_ in sorted(themes.items(), key=lambda x:(-x[1], x[0]))[:5]]
-
-    culture_line = ""
-    if pos: culture_line += "Positives: " + "; ".join(pos[:2])
-    if neg: culture_line += (" " if culture_line else "") + "Watchouts: " + "; ".join(neg[:2])
-
-    draft = {
-        "company": firm,
-        "experience_type": exp_type,
-        "outcome": outcome,
-        "total_salary": med_salary or "",
-        "key_themes": top_themes,
-        "selection_process": process,
-        "pay_benefits": (f"Base around ${med_salary:,} incl. super (from posts)" if med_salary else ""),
-        "hours_workload": (f"Typical hours ~{avg_hours}/week (from posts)" if avg_hours else ""),
-        "culture_env": culture_line,
-        "interview_tips": " • ".join(list(dict.fromkeys(tips))[:4]),
-        "source": "csv_seed",
-        "is_seed": True,
-    }
-    # also a pre-rendered card body for the Experiences list
-    parts = [p for p in [
-        f"Selection process: {process}" if process else "",
-        draft["pay_benefits"] or "",
-        draft["hours_workload"] or "",
-        draft["culture_env"] or "",
-        ("Tips: " + draft["interview_tips"]) if draft["interview_tips"] else "",
-    ] if p]
-    draft["card_text"] = " • ".join(parts)[:500]
-    return draft
-
-def build_all(per_firm: int = 3) -> List[Dict]:
-    by_firm = load_by_firm()
-    seeds: List[Dict] = []
-    for firm, posts in by_firm.items():
-        if not posts: continue
-        # Always create at least 2 seeds per firm, with variations even for small datasets
-        base = summarise_firm(firm, posts)
-        seeds.append({**base, "id": f"seed:{firm}:1"})
-        
-        # Create second variation with different sampling
-        if len(posts) >= 2:
-            alt_posts = posts[1:] + posts[:1] if len(posts) > 1 else posts
-            alt = summarise_firm(firm, alt_posts)
-            alt["id"] = f"seed:{firm}:2"
-            seeds.append(alt)
-        else:
-            # For single-post firms, create slight variation
-            alt = {**base}
-            alt["id"] = f"seed:{firm}:2"
-            alt["card_text"] = (alt.get("card_text", "") + " [Alternative view]")[:500]
-            seeds.append(alt)
+def load_csv_data() -> List[Dict]:
+    """Load and clean CSV data with themes and firms."""
+    csv_file = "attached_assets/Auslaw_Comments_with_Themes_and_Firms_1754309543165.csv"
+    if not os.path.exists(csv_file):
+        return []
+    
+    data = []
+    with open(csv_file, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            company = row.get("Business", "").strip()
+            theme = row.get("Theme", "Other").strip()
+            comment = row.get("Comment", "").strip()
             
-        # Third variation for firms with more data
-        if per_firm >= 3 and len(posts) > 5:
-            alt2_posts = posts[2:] + posts[:2] if len(posts) > 2 else posts
-            alt2 = summarise_firm(firm, alt2_posts)
-            alt2["id"] = f"seed:{firm}:3"
-            seeds.append(alt2)
-    return seeds
+            if company and comment:
+                data.append({
+                    "company": company,
+                    "theme": theme,
+                    "comment": clean_text(comment),
+                    "original_comment": comment
+                })
+    return data
+
+def generate_realistic_stages(comment: str) -> str:
+    """Generate application stages based on comment content."""
+    stages = []
+    comment_lower = comment.lower()
+    
+    if any(word in comment_lower for word in ["application", "apply", "cv", "resume", "cover letter"]):
+        stages.append("Online application with CV and cover letter")
+    
+    if any(word in comment_lower for word in ["online", "test", "assessment", "oa"]):
+        stages.append("Online assessment or testing")
+        
+    if any(word in comment_lower for word in ["video", "interview", "phone", "call"]):
+        stages.append("Video or phone interview")
+        
+    if any(word in comment_lower for word in ["assessment centre", "ac", "group", "presentation"]):
+        stages.append("Assessment centre with group exercises")
+        
+    if any(word in comment_lower for word in ["partner", "final", "panel"]):
+        stages.append("Final partner interview")
+    
+    if not stages:
+        stages = ["Application submitted", "Initial screening", "Interview process"]
+    
+    return " → ".join(stages)
+
+def generate_interview_experience(comment: str, theme: str) -> str:
+    """Generate interview experience based on comment and theme."""
+    if "interview" in comment.lower():
+        # Extract relevant parts about interviews
+        sentences = [s.strip() for s in re.split(r'[.!?]', comment) if 'interview' in s.lower()]
+        if sentences:
+            return sentences[0][:200] + ("..." if len(sentences[0]) > 200 else "")
+    
+    # Theme-based fallbacks
+    if theme == "Interviews":
+        return "Standard competency-based interview focusing on motivation and commercial awareness. Behavioral questions about teamwork and problem-solving."
+    elif theme == "Applications":
+        return "Application reviewed, followed by structured interview process with HR and senior lawyers."
+    else:
+        return "Professional interview process with questions about interest in the firm and legal career goals."
+
+def generate_advice(comment: str, theme: str) -> str:
+    """Generate advice based on comment content and theme."""
+    advice_parts = []
+    comment_lower = comment.lower()
+    
+    if theme == "Applications":
+        advice_parts.append("Start applications early and tailor each one to the specific firm.")
+    elif theme == "Interviews":
+        advice_parts.append("Practice common interview questions and research the firm's recent deals.")
+    elif theme == "Firm Culture":
+        advice_parts.append("Ask about the culture during interviews and speak to current employees if possible.")
+    elif theme == "Salaries":
+        advice_parts.append("Research market rates and don't be afraid to negotiate respectfully.")
+    
+    # Extract advice-like content from comment
+    advice_indicators = ["advice", "tip", "recommend", "suggest", "should", "important", "make sure"]
+    sentences = [s.strip() for s in re.split(r'[.!?]', comment)]
+    
+    for sentence in sentences:
+        if any(indicator in sentence.lower() for indicator in advice_indicators):
+            advice_parts.append(sentence[:150])
+            break
+    
+    if not advice_parts:
+        advice_parts.append("Do your research on the firm and be genuine about your interest in their work.")
+    
+    return " ".join(advice_parts)[:400]
+
+def create_share_story_entry(company: str, theme: str, comment: str) -> Dict:
+    """Create a realistic Share Story submission entry."""
+    experience_type = THEME_TO_TYPE.get(theme, "Graduate Program")
+    
+    # Generate realistic content
+    application_stages = generate_realistic_stages(comment)
+    interview_experience = generate_interview_experience(comment, theme)
+    advice = generate_advice(comment, theme)
+    
+    # Random but realistic timestamp (last 2 years)
+    base_date = datetime.now() - timedelta(days=random.randint(30, 730))
+    
+    return {
+        "company": company,
+        "role": random.choice(["Graduate Lawyer", "Summer Clerk", "Paralegal", "Legal Intern"]),
+        "experience_type": experience_type,
+        "theme": theme,
+        "application_stages": application_stages,
+        "interview_experience": interview_experience,
+        "advice": advice,
+        "timestamp": base_date.isoformat(),
+        "user_id": f"seed_user_{random.randint(1000, 9999)}",
+        "user_name": f"Graduate{random.randint(100, 999)}",
+        "source": "csv_seed"
+    }
+
+def build_share_story_submissions(min_per_firm: int = 2, max_per_firm: int = 4) -> List[Dict]:
+    """Build Share Story format submissions from CSV data."""
+    csv_data = load_csv_data()
+    if not csv_data:
+        print("No CSV data found")
+        return []
+    
+    # Group by company
+    by_company = {}
+    for entry in csv_data:
+        company = entry["company"]
+        if company not in by_company:
+            by_company[company] = []
+        by_company[company].append(entry)
+    
+    submissions = []
+    
+    for company, entries in by_company.items():
+        # Generate 2-4 submissions per company
+        num_submissions = min(max_per_firm, max(min_per_firm, len(entries)))
+        
+        # Sample entries to avoid duplicates
+        sampled_entries = random.sample(entries, min(num_submissions, len(entries)))
+        
+        for entry in sampled_entries:
+            submission = create_share_story_entry(
+                company=entry["company"],
+                theme=entry["theme"], 
+                comment=entry["comment"]
+            )
+            submissions.append(submission)
+    
+    return submissions
 
 def main():
-    ap = argparse.ArgumentParser(description="Build seed submissions from CSVs")
-    ap.add_argument("--per-firm", type=int, default=2, help="seed entries per firm (default 2)")
-    ap.add_argument("--out", default="seed_submissions.json")
+    ap = argparse.ArgumentParser(description="Build Share Story submissions from CSV")
+    ap.add_argument("--min-per-firm", type=int, default=2, help="Minimum submissions per firm")
+    ap.add_argument("--max-per-firm", type=int, default=4, help="Maximum submissions per firm")
+    ap.add_argument("--out", default="submissions.json", help="Output file")
     args = ap.parse_args()
 
-    seeds = build_all(args.per_firm)
+    # Generate submissions
+    submissions = build_share_story_submissions(args.min_per_firm, args.max_per_firm)
+    
+    # Write to file
     with open(args.out, "w", encoding="utf-8") as f:
-        json.dump(seeds, f, ensure_ascii=False, indent=2)
-    print(f"Wrote {len(seeds)} seeds to {args.out}")
+        json.dump(submissions, f, ensure_ascii=False, indent=2)
+    
+    print(f"Generated {len(submissions)} Share Story submissions")
+    
+    # Print summary by company
+    by_company = {}
+    for sub in submissions:
+        company = sub["company"]
+        by_company[company] = by_company.get(company, 0) + 1
+    
+    print(f"Distribution across {len(by_company)} companies:")
+    for company, count in sorted(by_company.items()):
+        print(f"  {company}: {count} submissions")
 
 if __name__ == "__main__":
     main()

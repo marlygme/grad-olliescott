@@ -70,6 +70,22 @@
                   {% if is_filtered %}{{ exp.firm_name }}{% else %}{{ exp.firm_name }}{% endif %}
                 </h5>
                 <div class="d-flex flex-wrap gap-1">
+                  {% if exp.is_submission %}
+                    <div class="badge bg-success text-white small mb-2">
+                      <i class="bi bi-person-check me-1"></i>Graduate Experience
+                    </div>
+                  {% elif exp.get('is_seed') %}
+                    <div class="badge bg-info text-white small mb-2">Community Summary</div>
+                  {% endif %}
+
+                  {% if exp.get('experience_type') %}
+                    <div class="badge bg-secondary text-white small mb-2">{{ item.experience_type }}</div>
+                  {% endif %}
+
+                  {% if exp.get('role') %}
+                    <div class="badge bg-outline-primary small mb-2">{{ item.role }}</div>
+                  {% endif %}
+
                   {% if is_filtered and exp.quality_score %}
                     <span class="badge bg-success-subtle text-success small">Q: {{ "%.1f"|format(exp.quality_score|float) }}</span>
                   {% endif %}

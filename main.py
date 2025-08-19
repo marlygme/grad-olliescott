@@ -1,14 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
-from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
+from datetime import datetime, date
 import json
 import os
 import re
+import csv
+from collections import defaultdict, Counter
 from grad_data import load_cards, load_grad_signals
 from grad_data_v2 import load_cards as load_cards_v2
 
 app = Flask(__name__)
 
 data_file = 'submissions.json'
+tracker_file = 'applications.json'
 
 # University distribution data for law firms
 FIRM_UNIVERSITY_DATA = {
@@ -67,6 +70,10 @@ FIRM_UNIVERSITY_DATA = {
 # Load existing data or create empty
 if not os.path.exists(data_file):
     with open(data_file, 'w') as f:
+        json.dump([], f)
+
+if not os.path.exists(tracker_file):
+    with open(tracker_file, 'w') as f:
         json.dump([], f)
 
 
@@ -395,6 +402,200 @@ def law_match():
         return render_template('law_match_result.html', match=match, uni_matches=uni_matches[:5])
 
     return render_template('law_match.html')
+
+
+@app.route('/tracker')
+def tracker():
+    user_id = request.headers.get('X-Replit-User-Id')
+    user_name = request.headers.get('X-Replit-User-Name')
+    
+    applications = []
+    if user_id:
+        with open(tracker_file, 'r') as f:
+            all_applications = json.load(f)
+        
+        # Filter applications for current user
+        user_applications = [app for app in all_applications if app.get('user_id') == user_id]
+        
+        # Convert date strings to datetime objects for display
+        for app in user_applications:
+            if app.get('application_date'):
+                app['application_date'] = datetime.strptime(app['application_date'], '%Y-%m-%d').date()
+            if app.get('response_date'):
+                app['response_date'] = datetime.strptime(app['response_date'], '%Y-%m-%d').date()
+        
+        applications = sorted(user_applications, key=lambda x: x.get('application_date', date.min), reverse=True)
+    
+    return render_template('tracker.html', applications=applications, user_id=user_id, user_name=user_name)
+
+
+@app.route('/tracker/add', methods=['POST'])
+def add_application():
+    user_id = request.headers.get('X-Replit-User-Id')
+    user_name = request.headers.get('X-Replit-User-Name')
+    
+    if not user_id:
+        return redirect(url_for('tracker'))
+    
+    with open(tracker_file, 'r') as f:
+        applications = json.load(f)
+    
+    # Get next ID
+    next_id = max([app.get('id', 0) for app in applications], default=0) + 1
+    
+    new_application = {
+        'id': next_id,
+        'company': request.form['company'],
+        'role': request.form['role'],
+        'application_date': request.form['application_date'],
+        'status': request.form['status'],
+        'response_date': request.form.get('response_date', ''),
+        'priority': request.form.get('priority', ''),
+        'notes': request.form.get('notes', ''),
+        'user_id': user_id,
+        'user_name': user_name,
+        'timestamp': datetime.utcnow().isoformat()
+    }
+    
+    applications.append(new_application)
+    
+    with open(tracker_file, 'w') as f:
+        json.dump(applications, f, indent=2)
+    
+    return redirect(url_for('tracker'))
+
+
+@app.route('/tracker/delete/<int:app_id>', methods=['DELETE'])
+def delete_application(app_id):
+    user_id = request.headers.get('X-Replit-User-Id')
+    
+    if not user_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    with open(tracker_file, 'r') as f:
+        applications = json.load(f)
+    
+    # Remove application if it belongs to the user
+    applications = [app for app in applications if not (app.get('id') == app_id and app.get('user_id') == user_id)]
+    
+    with open(tracker_file, 'w') as f:
+        json.dump(applications, f, indent=2)
+    
+    return jsonify({'success': True})
+
+
+@app.route('/tracker/analytics')
+def tracker_analytics():
+    user_id = request.headers.get('X-Replit-User-Id')
+    
+    if not user_id:
+        return redirect(url_for('tracker'))
+    
+    with open(tracker_file, 'r') as f:
+        all_applications = json.load(f)
+    
+    # Personal stats
+    user_apps = [app for app in all_applications if app.get('user_id') == user_id]
+    
+    total_applications = len(user_apps)
+    responded_apps = [app for app in user_apps if app.get('response_date')]
+    response_rate = round((len(responded_apps) / total_applications * 100), 1) if total_applications > 0 else 0
+    
+    # Calculate average response time
+    response_times = []
+    for app in responded_apps:
+        if app.get('application_date') and app.get('response_date'):
+            app_date = datetime.strptime(app['application_date'], '%Y-%m-%d').date()
+            resp_date = datetime.strptime(app['response_date'], '%Y-%m-%d').date()
+            response_times.append((resp_date - app_date).days)
+    
+    avg_response_time = round(sum(response_times) / len(response_times)) if response_times else 0
+    
+    # Success rate (offers/total)
+    successful_apps = [app for app in user_apps if app.get('status') == 'Offered']
+    success_rate = round((len(successful_apps) / total_applications * 100), 1) if total_applications > 0 else 0
+    
+    personal_stats = {
+        'total_applications': total_applications,
+        'response_rate': response_rate,
+        'avg_response_time': avg_response_time,
+        'success_rate': success_rate
+    }
+    
+    # Community insights (aggregate data from submissions and tracker)
+    company_stats = {}
+    university_stats = {}
+    
+    # Aggregate from tracker data
+    company_counts = defaultdict(lambda: {'total_apps': 0, 'responses': 0})
+    uni_counts = defaultdict(lambda: {'total_apps': 0, 'total_offers': 0})
+    
+    # Add user info from submissions.json for university data
+    with open(data_file, 'r') as f:
+        submissions = json.load(f)
+    
+    for sub in submissions:
+        if sub.get('university'):
+            uni_counts[sub['university']]['total_apps'] += 1
+            if sub.get('outcome') == 'Success':
+                uni_counts[sub['university']]['total_offers'] += 1
+    
+    for app in all_applications:
+        if app.get('company'):
+            company_counts[app['company']]['total_apps'] += 1
+            if app.get('response_date'):
+                company_counts[app['company']]['responses'] += 1
+    
+    # Calculate rates
+    for company, counts in company_counts.items():
+        if counts['total_apps'] >= 3:  # Only show companies with 3+ applications
+            company_stats[company] = {
+                'total_apps': counts['total_apps'],
+                'response_rate': round((counts['responses'] / counts['total_apps'] * 100), 1)
+            }
+    
+    for uni, counts in uni_counts.items():
+        if counts['total_apps'] >= 3:  # Only show universities with 3+ applications
+            university_stats[uni] = {
+                'total_apps': counts['total_apps'],
+                'total_offers': counts['total_offers'],
+                'success_rate': round((counts['total_offers'] / counts['total_apps'] * 100), 1)
+            }
+    
+    # Sort by success/response rate
+    company_stats = dict(sorted(company_stats.items(), key=lambda x: x[1]['response_rate'], reverse=True)[:10])
+    university_stats = dict(sorted(university_stats.items(), key=lambda x: x[1]['success_rate'], reverse=True)[:10])
+    
+    return render_template('tracker_analytics.html',
+                         personal_stats=personal_stats,
+                         company_stats=company_stats,
+                         university_stats=university_stats,
+                         response_time_stats=None)
+
+
+@app.route('/tracker/export')
+def export_tracker():
+    user_id = request.headers.get('X-Replit-User-Id')
+    
+    if not user_id:
+        return redirect(url_for('tracker'))
+    
+    with open(tracker_file, 'r') as f:
+        all_applications = json.load(f)
+    
+    user_apps = [app for app in all_applications if app.get('user_id') == user_id]
+    
+    # Create CSV
+    output_file = f'tracker_export_{user_id}.csv'
+    with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
+        fieldnames = ['company', 'role', 'application_date', 'status', 'response_date', 'priority', 'notes']
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        writer.writeheader()
+        for app in user_apps:
+            writer.writerow({field: app.get(field, '') for field in fieldnames})
+    
+    return send_file(output_file, as_attachment=True, download_name=f'applications_{datetime.now().strftime("%Y%m%d")}.csv')
 
 
 if __name__ == '__main__':

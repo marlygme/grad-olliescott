@@ -1,0 +1,223 @@
+
+{% extends "base.html" %}
+
+{% block title %}Application Tracker – Gradvantage{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+  <div class="container text-center">
+    <h1 class="hero-title">Track Your Applications</h1>
+    <p class="hero-subtitle">Keep track of your graduate program applications and outcomes</p>
+  </div>
+</div>
+
+<div class="container my-5">
+  {% if user_id %}
+    <!-- Add New Application -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h4 class="card-title mb-3">Add New Application</h4>
+        <form method="POST" action="/tracker/add" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Company</label>
+            <input name="company" class="form-control" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Role/Program</label>
+            <input name="role" class="form-control" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Application Date</label>
+            <input name="application_date" type="date" class="form-control" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select" required>
+              <option value="">Select status</option>
+              <option value="Applied">Applied</option>
+              <option value="Under Review">Under Review</option>
+              <option value="Interview Scheduled">Interview Scheduled</option>
+              <option value="Interview Completed">Interview Completed</option>
+              <option value="Offered">Offered</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Withdrawn">Withdrawn</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Response Date (if applicable)</label>
+            <input name="response_date" type="date" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Priority</label>
+            <select name="priority" class="form-select">
+              <option value="">Select priority</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="2" placeholder="Any additional notes about this application..."></textarea>
+          </div>
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Add Application</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Applications List -->
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="card-title mb-0">Your Applications ({{ applications|length }})</h4>
+          <div class="d-flex gap-2">
+            <a href="/tracker/analytics" class="btn btn-outline-info btn-sm">
+              <i class="bi bi-bar-chart me-1"></i>View Analytics
+            </a>
+            <a href="/tracker/export" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-download me-1"></i>Export CSV
+            </a>
+          </div>
+        </div>
+
+        {% if applications %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Role</th>
+                  <th>Applied</th>
+                  <th>Status</th>
+                  <th>Response Time</th>
+                  <th>Priority</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for app in applications %}
+                <tr>
+                  <td class="fw-medium">{{ app.company }}</td>
+                  <td>{{ app.role }}</td>
+                  <td>{{ app.application_date.strftime('%b %d, %Y') if app.application_date else 'N/A' }}</td>
+                  <td>
+                    <span class="badge 
+                      {% if app.status == 'Offered' %}bg-success
+                      {% elif app.status == 'Rejected' %}bg-danger
+                      {% elif app.status == 'Interview Scheduled' or app.status == 'Interview Completed' %}bg-warning
+                      {% else %}bg-secondary
+                      {% endif %}">
+                      {{ app.status }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if app.response_date and app.application_date %}
+                      {% set days_diff = (app.response_date - app.application_date).days %}
+                      {{ days_diff }} day{{ 's' if days_diff != 1 else '' }}
+                    {% else %}
+                      Pending
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if app.priority %}
+                      <span class="badge 
+                        {% if app.priority == 'High' %}bg-danger
+                        {% elif app.priority == 'Medium' %}bg-warning
+                        {% else %}bg-info
+                        {% endif %} bg-opacity-25 text-dark">
+                        {{ app.priority }}
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-primary btn-sm" onclick="editApplication({{ app.id }})">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button class="btn btn-outline-danger btn-sm" onclick="deleteApplication({{ app.id }})">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="text-center py-5">
+            <div class="mb-4">
+              <i class="bi bi-clipboard-check text-muted" style="font-size: 4rem;"></i>
+            </div>
+            <h5 class="fw-medium mb-3">No applications yet</h5>
+            <p class="text-muted">Start tracking your graduate program applications to see your progress and get insights!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  {% else %}
+    <div class="text-center py-5">
+      <div class="mb-4">
+        <i class="bi bi-person-lock text-primary" style="font-size: 4rem;"></i>
+      </div>
+      <h3 class="fw-medium mb-3">Account Required</h3>
+      <p class="text-muted mb-4">Please log in with your Replit account to track your applications.</p>
+      <button onclick="LoginWithReplit()" class="btn btn-primary btn-lg">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Login with Replit
+      </button>
+    </div>
+    <script>
+      function LoginWithReplit() {
+        window.addEventListener("message", authComplete);
+        var h = 500;
+        var w = 350;
+        var left = screen.width / 2 - w / 2;
+        var top = screen.height / 2 - h / 2;
+
+        var authWindow = window.open(
+          "https://replit.com/auth_with_repl_site?domain=" + location.host,
+          "_blank",
+          "modal=yes, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=" +
+            w +
+            ", height=" +
+            h +
+            ", top=" +
+            top +
+            ", left=" +
+            left
+        );
+
+        function authComplete(e) {
+          if (e.data !== "auth_complete") {
+            return;
+          }
+
+          window.removeEventListener("message", authComplete);
+          authWindow.close();
+          location.reload();
+        }
+      }
+    </script>
+  {% endif %}
+</div>
+
+<script>
+function editApplication(id) {
+  // TODO: Implement edit modal
+  console.log('Edit application', id);
+}
+
+function deleteApplication(id) {
+  if (confirm('Are you sure you want to delete this application?')) {
+    fetch(`/tracker/delete/${id}`, {
+      method: 'DELETE'
+    }).then(() => {
+      location.reload();
+    });
+  }
+}
+</script>
+{% endblock %}

@@ -306,7 +306,7 @@ def firm_experiences(firm_name):
     # Try to load filtered experiences first
     try:
         from experience_quality_v3 import load_filtered_for_firm
-        items = load_filtered_for_firm(firm_name, min_score=0.55)
+        items = load_filtered_for_firm(firm_name, min_score=0.7)
         print(f"Loaded {len(items)} filtered experiences for {firm_name}")
         is_filtered = True
     except Exception as e:

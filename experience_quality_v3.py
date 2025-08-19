@@ -1,4 +1,3 @@
-
 # experience_quality_v3.py
 # Strict answers-only filter: cleans Whirlpool junk, scores quality,
 # and EXCLUDES any question-style posts. stdlib only.
@@ -83,8 +82,49 @@ def first_person(text: str) -> bool:
     return bool(re.search(r"\b(i|my|we|our|me)\b", text.lower()))
 
 def is_question_strict(text: str) -> bool:
-    t = text.strip().lower()
-    return bool("?" in text or t.endswith("?") or any(t.startswith(s) for s in QUESTION_STARTERS))
+    """Detect if text is question-like (should be excluded)."""
+    text_lower = text.lower().strip()
+
+    # Direct question patterns
+    question_patterns = [
+        r'\?',  # Contains question mark
+        r'^(what|how|when|where|why|which|who|can|could|should|would|will|is|are|does|do|did)\s',
+        r'^(any|anyone|anybody)\s',
+        r'(help|advice|tips|guidance|recommend|suggestion)',
+        r'(looking for|seeking|need|want|wondering)',
+        r'(has anyone|anyone else|does anyone)',
+        r'(please|pls)\s',
+        r'^(hi|hello|hey)\s',
+        r'(thank you|thanks|thx)',
+        r'(appreciate|grateful)',
+        r'(share|tell me|let me know)',
+        r'(experience.*with|thoughts.*on)',
+        r'(worth.*applying|should.*apply)',
+        r'(chances.*getting|likelihood)',
+        r'(interview.*process|application.*process)',
+        r'(good.*firm|best.*firm)',
+        r'(work.*life.*balance|culture.*like)',
+    ]
+
+    for pattern in question_patterns:
+        if re.search(pattern, text_lower):
+            return True
+
+    # Check if text is very short (likely not insightful)
+    if len(text.strip()) < 50:
+        return True
+
+    # Check for question-like sentence structure
+    sentences = text.split('.')
+    question_sentences = sum(1 for s in sentences if '?' in s or 
+                           any(s.strip().lower().startswith(q) for q in 
+                               ['what', 'how', 'when', 'where', 'why', 'which', 'who', 'can', 'could', 'should', 'would', 'will', 'is', 'are', 'does', 'do', 'did']))
+
+    # If more than 30% of sentences are questions, exclude
+    if len(sentences) > 1 and question_sentences / len(sentences) > 0.3:
+        return True
+
+    return False
 
 def is_meta_low(text: str) -> bool:
     t = text.strip().lower()
@@ -257,7 +297,7 @@ def _filter_rows(rows: List[Dict], min_score: float) -> List[Dict]:
             kept.append(r)
     return kept
 
-def load_filtered_for_firm(firm_name: str, min_score: float=0.55, min_items:int=6) -> List[Dict]:
+def load_filtered_for_firm(firm_name: str, min_score: float = 0.65, min_items:int=6) -> List[Dict]:
     """Answers-only, strict. If too few, lower min_score slightly, but NEVER include questions."""
     cache = os.path.join("out", f"experiences_{slugify_firm(firm_name)}.csv")
     rows: List[Dict] = []
@@ -294,7 +334,7 @@ def main():
     ap.add_argument("--in", dest="inputs", nargs="+", required=True, help="Input CSV(s)")
     ap.add_argument("--firm", dest="firm", default=None, help="Optional firm canonical name")
     ap.add_argument("--out", dest="out", default=None, help="Write kept rows to CSV")
-    ap.add_argument("--minscore", dest="minscore", type=float, default=0.55, help="Keep threshold (default 0.55)")
+    ap.add_argument("--minscore", dest="minscore", type=float, default=0.65, help="Keep threshold (default 0.65)")
     ap.add_argument("--min-items", dest="min_items", type=int, default=6, help="Minimum rows to return")
     args = ap.parse_args()
 

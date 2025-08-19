@@ -223,6 +223,50 @@ def write_txt(d: Dict, out_path: str):
         f.write(txt)
 
 # ---- CLI --------------------------------------------------------------------
+def generate_submission_for_firm(firm_name: str) -> Dict:
+    """Generate a submission draft for a specific firm using available data"""
+    inputs = ["law_raw.csv", "law_whirlpool_2018_2025.csv", "raw_all.csv"]
+    return aggregate_for_firm(inputs, firm_name)
+
+def format_submission_html(data: Dict) -> str:
+    """Format submission data as HTML for web display"""
+    html_parts = []
+    
+    html_parts.append(f"<h3>Generated Experience for {data['company']}</h3>")
+    
+    if data['experience_type']:
+        html_parts.append(f"<p><strong>Experience Type:</strong> {data['experience_type']}</p>")
+    
+    if data['outcome']:
+        html_parts.append(f"<p><strong>Outcome:</strong> {data['outcome']}</p>")
+    
+    if data['salary']:
+        html_parts.append(f"<p><strong>Total Salary (incl. super):</strong> ${data['salary']:,}</p>")
+    
+    if data['key_themes']:
+        html_parts.append(f"<p><strong>Key Themes:</strong> {', '.join(data['key_themes'])}</p>")
+    
+    html_parts.append("<hr>")
+    
+    if data['process_line']:
+        html_parts.append(f"<p><strong>Selection process:</strong> {data['process_line']}</p>")
+    
+    if data['pay_line']:
+        html_parts.append(f"<p><strong>Pay & benefits:</strong> {data['pay_line']}</p>")
+    
+    if data['hours_line']:
+        html_parts.append(f"<p><strong>Hours & workload:</strong> {data['hours_line']}</p>")
+    
+    if data['culture_para']:
+        html_parts.append(f"<p><strong>Culture & environment:</strong> {data['culture_para']}</p>")
+    
+    if data['tips_line']:
+        html_parts.append(f"<p><strong>Interview tips:</strong> {data['tips_line']}</p>")
+    
+    html_parts.append(f"<p><em>Note: Draft auto-generated from {data['evidence_count']} public posts; please review before submitting.</em></p>")
+    
+    return "\n".join(html_parts)
+
 def main():
     ap = argparse.ArgumentParser(description="Generate a data-assisted submission draft from CSVs")
     ap.add_argument("--firm", required=True, help="Firm canonical name as shown on site (e.g., 'Gilbert + Tobin')")

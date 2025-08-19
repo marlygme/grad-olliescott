@@ -26,9 +26,13 @@
             <label class="form-label">Role/Program</label>
             <input name="role" class="form-control" required>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">Application Date</label>
             <input name="application_date" type="date" class="form-control" required>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">WAM</label>
+            <input name="wam" type="number" step="0.1" class="form-control" placeholder="e.g. 78.5">
           </div>
           <div class="col-md-4">
             <label class="form-label">Status</label>
@@ -90,6 +94,7 @@
                   <th>Company</th>
                   <th>Role</th>
                   <th>Applied</th>
+                  <th>WAM</th>
                   <th>Status</th>
                   <th>Response Time</th>
                   <th>Priority</th>
@@ -102,6 +107,7 @@
                   <td class="fw-medium">{{ app.company }}</td>
                   <td>{{ app.role }}</td>
                   <td>{{ app.application_date.strftime('%b %d, %Y') if app.application_date else 'N/A' }}</td>
+                  <td>{{ app.wam if app.wam else '-' }}</td>
                   <td>
                     <span class="badge 
                       {% if app.status == 'Offered' %}bg-success

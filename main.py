@@ -459,6 +459,7 @@ def add_application():
         'company': request.form['company'],
         'role': request.form['role'],
         'application_date': request.form['application_date'],
+        'wam': request.form.get('wam', ''),
         'status': request.form['status'],
         'response_date': request.form.get('response_date', ''),
         'priority': request.form.get('priority', ''),
@@ -599,7 +600,7 @@ def export_tracker():
     # Create CSV
     output_file = f'tracker_export_{user_id}.csv'
     with open(output_file, 'w', newline='', encoding='utf-8') as csvfile:
-        fieldnames = ['company', 'role', 'application_date', 'status', 'response_date', 'priority', 'notes']
+        fieldnames = ['company', 'role', 'application_date', 'wam', 'status', 'response_date', 'priority', 'notes']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         writer.writeheader()

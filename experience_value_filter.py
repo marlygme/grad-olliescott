@@ -1,0 +1,299 @@
+
+# experience_value_filter.py
+# Answers-only value scoring tuned for short forum posts (stdlib only)
+
+import csv, re, os, argparse
+from typing import List, Dict, Optional, Tuple
+
+# --- Firm aliases (prefer the project's list if available) ------------------
+try:
+    from extractors import FIRM_ALIASES  # type: ignore
+except Exception:
+    FIRM_ALIASES = {
+        "Allens": ["allens"],
+        "Herbert Smith Freehills": ["hsf","herbert smith freehills","herbies"],
+        "Ashurst": ["ashurst"],
+        "MinterEllison": ["minter ellison","minterellison","minters"],
+        "King & Wood Mallesons": ["kwm","mallesons","king and wood mallesons"],
+        "Corrs Chambers Westgarth": ["corrs","corrs chambers"],
+        "Gilbert + Tobin": ["gilbert + tobin","gilbert and tobin","g+t","g + t","gtobin","g+tobin"],
+        "Clayton Utz": ["clayton utz","clutz"],
+        "Baker McKenzie": ["baker mckenzie","bakers"],
+        "Norton Rose Fulbright": ["norton rose","nrf"],
+        "DLA Piper": ["dla","dla piper"],
+        "K&L Gates": ["k&l gates","klgates","k l gates"],
+        "White & Case": ["white & case","white and case","w&c"],
+        "HWL Ebsworth": ["hwl","hwl ebsworth"],
+        "Hall & Wilcox": ["hall & wilcox","hall and wilcox","h&w"],
+        "Sparke Helmore": ["sparke helmore","sparke"],
+        "Maddocks": ["maddocks"],
+    }
+
+# --- Cleaner (kill Whirlpool junk, keep content) ----------------------------
+NOISE_PATTERNS = [
+    r"User\s?#\d+.*?(Forum (Regular|Participant)|Enthusiast|Addict).*?(?=posted|$)",
+    r"\bO\.P\.\b",
+    r"\bref:\s*whrl\.pl/\S+", r"\bwhrl\.pl/\S+",
+    r"https?://\S+",
+    r"posted\s+\d{4}-[A-Za-z]{3}-\d{1,2},\s+\d{1,2}:\d{2}\s*[ap]m\s*(AEST|AEDT)",
+    r"\b(AEST|AEDT)\b",
+    r"\b(edit(ed)?|last updated)\b[^\n]*",
+]
+def clean_text(text: str) -> str:
+    if not isinstance(text, str): return ""
+    t = re.sub(r"[\u200B-\u200D\uFEFF]", "", text)
+    for pat in NOISE_PATTERNS:
+        t = re.sub(pat, "", t, flags=re.IGNORECASE)
+    t = re.sub(r"@\w+", "", t)
+    t = re.sub(r"(?m)^\s*[>\-\•]+\s*", "", t)
+    t = re.sub(r"\s{2,}", " ", t).strip()
+    if len(t) < 5 or t.lower() in {"deleted","edited"}: return ""
+    return t
+
+# --- Token helpers ----------------------------------------------------------
+def words(x:str): return re.findall(r"\b[^\W_]+\b", x.lower())
+def sentences(x:str): return [s.strip() for s in re.split(r"[.!?]+", x) if s.strip()]
+
+# --- Heuristics -------------------------------------------------------------
+QUESTION_STARTERS = [
+    "anyone know","does anyone","has anyone","is it true","should i","where can i",
+    "what are","when do","how long","how do","can i","would it","is there","do they",
+    "am i","are we","any idea","any updates","does g+t","does g and t","what's the"
+]
+META_PHRASES = [
+    "bump","following","subscribing","any updates","lol","lmao","haha","dm me","pm me","+1",
+    "same here","i'm new here","please be nice","new here"
+]
+SPECULATIVE = ["i think","maybe","probably","guess","might","should","could","apparently","heard that","someone said","rumour","rumor"]
+PROGRAM_TERMS = [
+    "offer","offers","accepted","rejected","waitlist","on hold",
+    "clerkship","graduate program","grad program","vacation program",
+    "rotation","rotations","seat","assessment centre","assessment center",
+    "ac","superday","panel","partner interview","paralegal","salary","pay",
+    "remuneration","benefits","billable","hours","culture","mentor",
+    "secondment","training","practice group","plt","admission","oa","vi","video interview"
+]
+PAST_TENSE = [
+    "received","accepted","completed","did","worked","went","rotated","attended",
+    "participated","finished","started","applied","interviewed","progressed","declined",
+    "heard","got","made","sat","signed","joined"
+]
+MONTHS = "jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec"
+
+def has_question(text:str)->bool:
+    t = text.lower().strip()
+    return ("?" in text) or any(t.startswith(s) for s in QUESTION_STARTERS)
+
+def question_ratio(text:str)->float:
+    sents = re.findall(r"[^!?\.]+[!?\.]", text)
+    if not sents: return 0.0
+    return sum(1 for s in sents if s.strip().endswith("?"))/len(sents)
+
+def is_meta(text:str)->bool:
+    t = text.lower()
+    if any(p in t for p in META_PHRASES): return True
+    if len(t)<18 and any(w in t for w in ["yes","no","ok","thanks","same"]): return True
+    return False
+
+def is_speculative(text:str)->bool:
+    t = text.lower()
+    return any(p in t for p in SPECULATIVE)
+
+def info_signals(text:str)->Dict[str,bool]:
+    t = text.lower()
+    return {
+        "money": bool(re.search(r"\$\s*[\d,]+|\b\d+\s*k\b", t)),
+        "date":  bool(re.search(rf"\b({MONTHS})\b|\b\d{{1,2}}[/-]\d{{1,2}}[/-]\d{{2,4}}\b|\b20\d{{2}}\b", t)),
+        "num":   bool(re.search(r"\b\d+\b", t)),
+    }
+
+def program_hits(text:str)->int:
+    t = text.lower()
+    return sum(1 for k in PROGRAM_TERMS if k in t)
+
+def first_person(text:str)->bool:
+    return bool(re.search(r"\b(i|my|we|our|me)\b", text.lower()))
+
+def past_tense(text:str)->bool:
+    t = text.lower()
+    return any(v in t for v in PAST_TENSE)
+
+def density(text:str)->Tuple[int,int,float]:
+    w = words(text); wc=len(w); uw=len(set(w)); dens=(uw/wc) if wc else 0.0
+    return wc, uw, dens
+
+# Announcement patterns (keep even if short)
+ANNOUNCE_RX = re.compile(
+    r"\b((oa|online assessment|vi|video interview|ac|assessment (centre|center)|superday|offers?)\s+(are|were|went)\s+out|"
+    r"apps?\s+(open|opened|close|closed))\b", re.IGNORECASE
+)
+
+def is_announcement(text:str)->bool:
+    return bool(ANNOUNCE_RX.search(text))
+
+# --- Value gate (answers only) ----------------------------------------------
+def passes_answer_gate(text:str)->bool:
+    """Hard gate: reject questions/filler; allow short but concrete announcements."""
+    if not text.strip(): return False
+    if has_question(text) or question_ratio(text) > 0.5: 
+        return False
+    wc, uw, _ = density(text)
+    if is_meta(text): return False
+    if is_announcement(text): return True   # allow short concrete news
+    # otherwise require some substance
+    if wc < 18 or uw < 10: return False
+    if past_tense(text): return True
+    sigs = info_signals(text)
+    if program_hits(text) >= 1 and (sigs["date"] or sigs["money"] or sigs["num"]):
+        return True
+    if first_person(text) and wc >= 22:
+        return True
+    return False
+
+# --- Value score (0..1) -----------------------------------------------------
+def value_score(text:str)->float:
+    """Transparent additive model; applied only after passes_answer_gate."""
+    base = 0.50
+    wc, uw, dens = density(text)
+    # length/density (tuned for short posts)
+    length_bonus = min(0.14, max(0.0, (wc-28)*0.0025))
+    dens_bonus   = min(0.10, max(0.0, (dens-0.42)*0.5))
+    # signals
+    ps = program_hits(text)
+    prog_bonus = min(0.24, ps*0.06)
+    sigs = info_signals(text)
+    sig_bonus = 0.05*(sigs["money"] + sigs["date"] + sigs["num"])  # up to +0.15
+    pt_bonus  = 0.08 if past_tense(text) else 0.0
+    fp_bonus  = 0.06 if first_person(text) else 0.0
+    # penalties
+    penalty = 0.0
+    if is_speculative(text): penalty += 0.12
+    if wc < 22 or uw < 12:  penalty += 0.10
+    return max(0.0, min(1.0, base + length_bonus + dens_bonus + prog_bonus + sig_bonus + pt_bonus + fp_bonus - penalty))
+
+# --- Firm match --------------------------------------------------------------
+def match_firm(text:str, title:str="")->Optional[str]:
+    hay = f"{text} {title}".lower()
+    for canonical, aliases in FIRM_ALIASES.items():
+        if re.search(rf"\b{re.escape(canonical.lower())}\b", hay): return canonical
+        for a in aliases:
+            if re.search(rf"\b{re.escape(a.lower())}\b", hay): return canonical
+    return None
+
+# --- Core processing ---------------------------------------------------------
+FIELDNAMES = ["firm_name","content","raw_content","timestamp","thread_url","value_score","is_announcement","words","unique_words","reasons"]
+
+def _dedupe(rows: List[Dict]) -> List[Dict]:
+    seen=set(); out=[]
+    for r in rows:
+        key=(r.get("thread_url",""), r.get("timestamp",""), r.get("content","")[:80].lower())
+        if key in seen: continue
+        seen.add(key); out.append(r)
+    # remove strict substrings (keep longer)
+    final=[]
+    for r in out:
+        c=r["content"]
+        if any((c!=o["content"]) and (c in o["content"]) for o in out): continue
+        final.append(r)
+    return final
+
+def process_csvs(inputs:List[str], firm:Optional[str]=None)->List[Dict]:
+    out=[]
+    for path in inputs:
+        if not os.path.exists(path):
+            print(f"Warning: {path} not found"); continue
+        with open(path, newline="", encoding="utf-8") as f:
+            r=csv.DictReader(f)
+            for row in r:
+                raw=(row.get("content") or "").strip()
+                if not raw: continue
+                clean=clean_text(raw)
+                if not clean: continue
+                firm_hit=match_firm(clean, row.get("thread_title","") or "")
+                if not firm_hit: continue
+                if firm and firm_hit.lower()!=firm.lower(): continue
+                # answers-only gate
+                if not passes_answer_gate(clean): continue
+                wc=len(words(clean)); uw=len(set(words(clean)))
+                score=value_score(clean)
+                out.append({
+                    "firm_name": firm_hit,
+                    "content": clean,            # CLEAN for UI
+                    "raw_content": raw,          # keep original
+                    "timestamp": row.get("timestamp",""),
+                    "thread_url": row.get("thread_url",""),
+                    "value_score": f"{score:.3f}",
+                    "is_announcement": str(is_announcement(clean)),
+                    "words": str(wc),
+                    "unique_words": str(uw),
+                    "reasons": "announcement" if is_announcement(clean) else "",
+                })
+    return _dedupe(out)
+
+def slugify(name:str)->str:
+    return re.sub(r"[^a-z0-9]+","-", name.lower().replace("&","and")).strip("-")
+
+def save_cache(rows:List[Dict], firm_name:str)->str:
+    os.makedirs("out", exist_ok=True)
+    p=os.path.join("out", f"experiences_{slugify(firm_name)}.csv")
+    with open(p,"w",newline="",encoding="utf-8") as g:
+        w=csv.DictWriter(g, fieldnames=FIELDNAMES); w.writeheader(); w.writerows(rows)
+    return p
+
+def load_filtered_for_firm(firm_name:str, min_value:float=0.58, min_items:int=8)->List[Dict]:
+    """Answers-only + announcements allowed; smart fallback so lists don't look empty."""
+    cache=os.path.join("out", f"experiences_{slugify(firm_name)}.csv")
+    rows=[]
+    if os.path.exists(cache):
+        with open(cache, newline="", encoding="utf-8") as f:
+            rows=list(csv.DictReader(f))
+            for r in rows:
+                if not r.get("content") and r.get("raw_content"):
+                    r["content"]=clean_text(r["raw_content"])
+    if not rows:
+        inputs=["law_raw.csv","law_whirlpool_2018_2025.csv","raw_all.csv"]
+        rows=process_csvs(inputs, firm_name)
+        if rows: save_cache(rows, firm_name)
+
+    # primary keep
+    kept=[r for r in rows if float(r["value_score"])>=min_value]
+
+    # fallback: include short but concrete announcements if still thin
+    if len(kept)<min_items:
+        anns=[r for r in rows if r.get("is_announcement","false").lower()=="true"]
+        for r in sorted(anns, key=lambda x: float(x["value_score"]), reverse=True):
+            if r not in kept: kept.append(r)
+            if len(kept)>=min_items: break
+
+    # last resort: top by value_score
+    if len(kept)<min_items and rows:
+        extra=sorted(rows, key=lambda r: float(r["value_score"]), reverse=True)
+        for r in extra:
+            if r not in kept: kept.append(r)
+            if len(kept)>=min_items: break
+
+    kept.sort(key=lambda r: float(r["value_score"]), reverse=True)
+    return kept
+
+# --- CLI --------------------------------------------------------------------
+def main():
+    ap=argparse.ArgumentParser(description="Answers-only value filter for firm experiences")
+    ap.add_argument("--in", dest="inputs", nargs="+", required=True)
+    ap.add_argument("--firm", dest="firm", default=None)
+    ap.add_argument("--out", dest="out", default=None)
+    ap.add_argument("--min-value", dest="min_value", type=float, default=0.58)
+    ap.add_argument("--min-items", dest="min_items", type=int, default=8)
+    args=ap.parse_args()
+
+    rows=process_csvs(args.inputs, args.firm)
+    if args.out and args.firm:
+        os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+        kept=load_filtered_for_firm(args.firm, args.min_value, args.min_items)
+        with open(args.out, "w", newline="", encoding="utf-8") as g:
+            w=csv.DictWriter(g, fieldnames=FIELDNAMES); w.writeheader(); w.writerows(kept)
+        print(f"Wrote {args.out} (kept {len(kept)})")
+    else:
+        print(f"Processed {len(rows)} rows{' for '+args.firm if args.firm else ''}")
+
+if __name__=="__main__":
+    main()

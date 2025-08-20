@@ -79,11 +79,11 @@
                   {% endif %}
 
                   {% if exp.get('experience_type') %}
-                    <div class="badge bg-secondary text-white small mb-2">{{ item.experience_type }}</div>
+                    <div class="badge bg-secondary text-white small mb-2">{{ exp.experience_type }}</div>
                   {% endif %}
 
                   {% if exp.get('role') %}
-                    <div class="badge bg-outline-primary small mb-2">{{ item.role }}</div>
+                    <div class="badge bg-outline-primary small mb-2">{{ exp.role }}</div>
                   {% endif %}
 
                   {% if is_filtered and exp.quality_score %}

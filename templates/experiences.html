@@ -14,11 +14,11 @@
           <li class="breadcrumb-item active">{{ company }}</li>
         </ol>
       </nav>
-      <h1 class="display-4 fw-bold mb-3">{{ company }} Experiences</h1>
-      <p class="fs-5 text-muted">Real stories from graduates and applicants</p>
+      <h1 class="display-4 fw-bold mb-3">{{ company }} Stories</h1>
+      <p class="fs-5 text-muted">Real graduate experiences shared by our community</p>
     {% else %}
-      <h1 class="display-4 fw-bold mb-3">Graduate Experiences</h1>
-      <p class="fs-5 text-muted">Authentic stories from graduates across Australia's top firms</p>
+      <h1 class="display-4 fw-bold mb-3">Graduate Stories</h1>
+      <p class="fs-5 text-muted">Authentic experiences from graduates across Australia's top firms</p>
     {% endif %}
   </div>
 
@@ -36,11 +36,10 @@
             </div>
             <div class="col-md-4">
               <select class="form-select" id="outcomeFilter">
-                <option value="">All Outcomes</option>
-                <option value="offer">Offers</option>
-                <option value="rejected">Rejected</option>
-                <option value="pending">Pending</option>
-                <option value="ghosted">Ghosted</option>
+                <option value="">All Stories</option>
+                <option value="offer">Success Stories</option>
+                <option value="interview">Interview Tips</option>
+                <option value="application">Application Process</option>
               </select>
             </div>
           </div>
@@ -49,52 +48,49 @@
     </div>
   </div>
 
-  <!-- Experiences Grid -->
+  <!-- Stories Grid -->
   {% if experiences %}
     <div class="row g-4" id="experiencesContainer">
       {% for exp in experiences %}
-      <div class="col-lg-6 story-card" data-company="{{ exp.get('company', '') }}" data-role="{{ exp.get('role', '') }}" data-university="{{ exp.get('university', '') }}" data-outcome="{{ exp.get('outcome', '') }}">
-        <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+      <div class="col-lg-6 story-card" 
+           data-company="{{ exp.get('company', exp.get('firm_name', '')) }}" 
+           data-role="{{ exp.get('role', '') }}" 
+           data-content="{{ exp.get('content', '') }}">
+        
+        <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden story-card-modern">
           <!-- Story Header -->
           <div class="card-header bg-gradient text-white border-0 p-4">
             <div class="d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center">
                 <div class="story-icon me-3">
-                  <i class="bi bi-person-circle"></i>
+                  <i class="bi bi-person-circle fs-4"></i>
                 </div>
                 <div>
-                  <h5 class="mb-1 fw-bold">{{ exp.get('role', 'Graduate Position') }}</h5>
+                  <h5 class="mb-1 fw-bold">
+                    {{ exp.get('role', 'Graduate Experience') }}
+                  </h5>
                   <div class="d-flex align-items-center gap-2">
-                    <span class="company-name fw-medium">{{ exp.get('company', 'Anonymous Company') }}</span>
-                    {% if exp.get('location') %}
+                    <span class="company-name fw-medium">
+                      {{ exp.get('company', exp.get('firm_name', 'Law Firm')) }}
+                    </span>
+                    {% if exp.get('experience_type') %}
                       <span class="opacity-75">•</span>
-                      <span class="opacity-75">{{ exp.location }}</span>
+                      <span class="opacity-75">{{ exp.experience_type }}</span>
                     {% endif %}
                   </div>
                 </div>
               </div>
+              
+              <!-- Story Type Badge -->
               <div class="text-end">
-                {% if exp.get('outcome') %}
-                  {% set outcome = exp.outcome.lower() %}
-                  {% if 'offer' in outcome or 'accept' in outcome %}
-                    <span class="badge bg-success bg-opacity-75 text-white px-3 py-2">
-                      <i class="bi bi-check-circle me-1"></i>Offer
-                    </span>
-                  {% elif 'reject' in outcome %}
-                    <span class="badge bg-danger bg-opacity-75 text-white px-3 py-2">
-                      <i class="bi bi-x-circle me-1"></i>Rejected
-                    </span>
-                  {% elif 'pending' in outcome or 'wait' in outcome %}
-                    <span class="badge bg-warning bg-opacity-75 text-white px-3 py-2">
-                      <i class="bi bi-clock me-1"></i>Pending
-                    </span>
-                  {% elif 'ghost' in outcome %}
-                    <span class="badge bg-secondary bg-opacity-75 text-white px-3 py-2">
-                      <i class="bi bi-dash-circle me-1"></i>Ghosted
-                    </span>
-                  {% else %}
-                    <span class="badge bg-info bg-opacity-75 text-white px-3 py-2">{{ exp.outcome }}</span>
-                  {% endif %}
+                {% if exp.get('is_submission') %}
+                  <span class="badge bg-success bg-opacity-75 text-white px-3 py-2">
+                    <i class="bi bi-check-circle me-1"></i>Shared Story
+                  </span>
+                {% else %}
+                  <span class="badge bg-primary bg-opacity-75 text-white px-3 py-2">
+                    <i class="bi bi-chat-dots me-1"></i>Experience
+                  </span>
                 {% endif %}
               </div>
             </div>
@@ -102,111 +98,82 @@
 
           <!-- Story Content -->
           <div class="card-body p-4">
-            <!-- University & Experience Type -->
-            <div class="story-section mb-3">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                {% if exp.get('university') %}
-                  <div class="story-section-icon bg-primary-subtle text-primary">
-                    <i class="bi bi-mortarboard"></i>
+            <!-- Main Content -->
+            <div class="story-section mb-4">
+              {% if exp.get('content') %}
+                <div class="story-content">
+                  <p class="mb-0 lh-base">{{ exp.content }}</p>
+                </div>
+              {% endif %}
+              
+              {% if exp.get('application_stages') %}
+                <div class="story-subsection mt-3">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="story-section-icon bg-info-subtle text-info">
+                      <i class="bi bi-list-check"></i>
+                    </div>
+                    <span class="fw-medium text-dark">Application Process</span>
                   </div>
-                  <span class="university fw-medium">{{ exp.university }}</span>
-                {% endif %}
-                {% if exp.get('experience_type') %}
-                  <span class="badge bg-secondary ms-auto">{{ exp.experience_type }}</span>
-                {% endif %}
-              </div>
+                  <p class="story-text ms-4 mb-0">{{ exp.application_stages }}</p>
+                </div>
+              {% endif %}
+              
+              {% if exp.get('interview_experience') %}
+                <div class="story-subsection mt-3">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="story-section-icon bg-warning-subtle text-warning">
+                      <i class="bi bi-chat-dots"></i>
+                    </div>
+                    <span class="fw-medium text-dark">Interview Experience</span>
+                  </div>
+                  <div class="story-quote ms-4">
+                    <p class="mb-0">"{{ exp.interview_experience }}"</p>
+                  </div>
+                </div>
+              {% endif %}
+              
+              {% if exp.get('advice') %}
+                <div class="story-subsection mt-3">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="story-section-icon bg-success-subtle text-success">
+                      <i class="bi bi-lightbulb"></i>
+                    </div>
+                    <span class="fw-medium text-dark">Advice</span>
+                  </div>
+                  <div class="story-quote ms-4">
+                    <p class="mb-0">{{ exp.advice }}</p>
+                  </div>
+                </div>
+              {% endif %}
             </div>
 
-            <!-- Application Process -->
-            {% if exp.get('application_stages') %}
+            <!-- Categories -->
+            {% if exp.get('cat_labels') %}
             <div class="story-section mb-3">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <div class="story-section-icon bg-info-subtle text-info">
-                  <i class="bi bi-list-check"></i>
-                </div>
-                <span class="fw-medium text-dark">Application Process</span>
-              </div>
-              <p class="story-text text-muted ms-4">{{ exp.application_stages }}</p>
-            </div>
-            {% endif %}
-
-            <!-- Interview Experience -->
-            {% if exp.get('interview_experience') %}
-            <div class="story-section mb-3">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <div class="story-section-icon bg-warning-subtle text-warning">
-                  <i class="bi bi-chat-dots"></i>
-                </div>
-                <span class="fw-medium text-dark">Interview Experience</span>
-              </div>
-              <div class="story-quote ms-4">
-                <p class="mb-0">"{{ exp.interview_experience }}"</p>
-              </div>
-            </div>
-            {% endif %}
-
-            <!-- Salary Information -->
-            {% if exp.get('salary') %}
-            <div class="story-section mb-3">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <div class="story-section-icon bg-success-subtle text-success">
-                  <i class="bi bi-currency-dollar"></i>
-                </div>
-                <span class="fw-medium text-dark">Compensation</span>
-              </div>
-              <p class="story-text text-muted ms-4">${{ "{:,}".format(exp.salary) if exp.salary|int > 0 else exp.salary }}</p>
-            </div>
-            {% endif %}
-
-            <!-- Program Structure -->
-            {% if exp.get('program_structure') %}
-            <div class="story-section mb-3">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <div class="story-section-icon bg-purple-subtle text-purple">
-                  <i class="bi bi-diagram-3"></i>
-                </div>
-                <span class="fw-medium text-dark">Program Structure</span>
-              </div>
-              <p class="story-text text-muted ms-4">{{ exp.program_structure }}</p>
-            </div>
-            {% endif %}
-
-            <!-- Advice -->
-            {% if exp.get('advice') %}
-            <div class="story-section mb-3">
-              <div class="d-flex align-items-center gap-2 mb-2">
-                <div class="story-section-icon bg-info-subtle text-info">
-                  <i class="bi bi-lightbulb"></i>
-                </div>
-                <span class="fw-medium text-dark">Advice for Future Applicants</span>
-              </div>
-              <div class="story-quote ms-4">
-                <p class="mb-0">{{ exp.advice }}</p>
+              <div class="d-flex flex-wrap gap-1">
+                {% for label in exp.cat_labels %}
+                  <span class="badge bg-primary-subtle text-primary">{{ label }}</span>
+                {% endfor %}
               </div>
             </div>
             {% endif %}
 
-            <!-- Additional Details -->
+            <!-- Story Metadata -->
             <div class="story-section">
               <div class="row g-2 text-muted small">
-                {% if exp.get('start_date') %}
+                {% if exp.get('user_name') %}
                   <div class="col-sm-6">
-                    <i class="bi bi-calendar-event me-1"></i>Start: {{ exp.start_date }}
-                  </div>
-                {% endif %}
-                {% if exp.get('wam') %}
-                  <div class="col-sm-6">
-                    <i class="bi bi-graph-up me-1"></i>WAM: {{ exp.wam }}
-                  </div>
-                {% endif %}
-                {% if exp.get('application_year') %}
-                  <div class="col-sm-6">
-                    <i class="bi bi-calendar3 me-1"></i>Applied: {{ exp.application_year }}
+                    <i class="bi bi-person me-1"></i>Shared by {{ exp.user_name }}
                   </div>
                 {% endif %}
                 {% if exp.get('quality_score') %}
                   <div class="col-sm-6">
                     <i class="bi bi-star me-1"></i>Quality: {{ "%.1f"|format(exp.quality_score) }}/10
+                  </div>
+                {% endif %}
+                {% if exp.get('timestamp') %}
+                  <div class="col-sm-6">
+                    <i class="bi bi-clock me-1"></i>Recently shared
                   </div>
                 {% endif %}
               </div>
@@ -225,12 +192,9 @@
                 </button>
               </div>
               <div class="text-muted small">
-                <i class="bi bi-clock me-1"></i>
-                {% if exp.get('date_added') %}
-                  {{ exp.date_added }}
-                {% else %}
-                  Recently shared
-                {% endif %}
+                <span class="badge bg-light text-dark">
+                  {{ exp.get('theme', 'Graduate Story') }}
+                </span>
               </div>
             </div>
           </div>
@@ -252,7 +216,7 @@
       <div class="mb-4">
         <i class="bi bi-chat-square-text text-muted" style="font-size: 4rem;"></i>
       </div>
-      <h4 class="fw-medium mb-3">No experiences yet{% if company %} for {{ company }}{% endif %}</h4>
+      <h4 class="fw-medium mb-3">No stories yet{% if company %} for {{ company }}{% endif %}</h4>
       <p class="text-muted mb-4">Be the first to share your graduate experience and help build our community!</p>
       <a href="/submit" class="btn btn-primary btn-lg px-4">
         <i class="bi bi-plus-circle me-2"></i>Share Your Story
@@ -261,7 +225,7 @@
   {% endif %}
 </div>
 
-<!-- Search and Filter JavaScript -->
+<!-- JavaScript for Search and Filter -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
@@ -269,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const storyCards = document.querySelectorAll('.story-card');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     
-    let visibleCards = 6; // Initially show 6 cards
+    let visibleCards = 6;
     
     function updateCardVisibility() {
         storyCards.forEach((card, index) => {
@@ -280,7 +244,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Hide load more button if all cards are visible
         if (loadMoreBtn) {
             const visibleCount = Array.from(storyCards).filter(card => card.dataset.visible !== 'false').length;
             loadMoreBtn.style.display = visibleCards >= visibleCount ? 'none' : 'block';
@@ -289,22 +252,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function filterStories() {
         const searchTerm = searchInput.value.toLowerCase();
-        const selectedOutcome = outcomeFilter.value.toLowerCase();
+        const selectedFilter = outcomeFilter.value.toLowerCase();
 
         storyCards.forEach(card => {
             const company = card.dataset.company.toLowerCase();
             const role = card.dataset.role.toLowerCase();
-            const university = card.dataset.university.toLowerCase();
-            const outcome = card.dataset.outcome.toLowerCase();
+            const content = card.dataset.content.toLowerCase();
 
             const matchesSearch = !searchTerm || 
                                 company.includes(searchTerm) || 
                                 role.includes(searchTerm) || 
-                                university.includes(searchTerm);
+                                content.includes(searchTerm);
             
-            const matchesOutcome = !selectedOutcome || outcome.includes(selectedOutcome);
+            const matchesFilter = !selectedFilter || content.includes(selectedFilter);
 
-            if (matchesSearch && matchesOutcome) {
+            if (matchesSearch && matchesFilter) {
                 card.dataset.visible = 'true';
                 card.classList.add('fade-in');
             } else {
@@ -313,11 +275,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        visibleCards = 6; // Reset to initial count when filtering
+        visibleCards = 6;
         updateCardVisibility();
     }
 
-    // Event listeners
     if (searchInput) {
         searchInput.addEventListener('input', filterStories);
     }
@@ -333,7 +294,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Initial setup
     updateCardVisibility();
 });
 </script>

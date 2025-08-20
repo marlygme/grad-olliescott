@@ -508,11 +508,37 @@ html {
   transform: scale(1.05);
 }
 
+/* Story Card Styling */
+.story-card-modern {
+  transition: all 0.3s ease;
+}
+
+.story-card-modern:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+}
+
+.story-content {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1rem;
+  border-left: 4px solid var(--primary);
+}
+
+.story-subsection {
+  border-top: 1px solid #e9ecef;
+  padding-top: 0.75rem;
+}
+
+.story-subsection:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
 /* Story Content Animations */
 .story-section {
-  opacity: 0;
-  transform: translateY(10px);
-  animation: storyFadeIn 0.6s ease forwards;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .story-section:nth-child(1) { animation-delay: 0.1s; }
@@ -520,10 +546,18 @@ html {
 .story-section:nth-child(3) { animation-delay: 0.3s; }
 
 @keyframes storyFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.fade-in {
+  animation: storyFadeIn 0.3s ease-in;
 }
 
 /* Empty State Enhancement */

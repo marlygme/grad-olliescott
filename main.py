@@ -319,8 +319,39 @@ def api_draft():
 
 @app.route('/experiences')
 def experiences():
-    experiences = load_grad_signals("out/grad_program_signals.csv")
-    return render_template("experiences.html", experiences=experiences)
+    # Load all submissions and display as experiences
+    with open(data_file, 'r') as f:
+        submissions = json.load(f)
+    
+    # Convert submissions to experience format
+    experience_items = []
+    for sub in submissions:
+        content_parts = []
+        if sub.get('application_stages'):
+            content_parts.append(f"Application: {sub['application_stages']}")
+        if sub.get('interview_experience'):
+            content_parts.append(f"Interview: {sub['interview_experience']}")
+        if sub.get('advice'):
+            content_parts.append(f"Advice: {sub['advice']}")
+        
+        experience_items.append({
+            "content": " • ".join(content_parts),
+            "firm_name": sub['company'],
+            "quality_score": 0.95,
+            "primary_cat": sub.get('theme', 'other').lower().replace(' ', '_'),
+            "cat_labels": [sub.get('theme', 'Other')],
+            "is_submission": True,
+            "experience_type": sub.get('experience_type', ''),
+            "role": sub.get('role', ''),
+            "timestamp": sub.get('timestamp', ''),
+            "user_name": sub.get('user_name', 'Anonymous'),
+            "source": sub.get('source', 'user')
+        })
+    
+    # Sort by timestamp (most recent first)
+    experience_items.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+    
+    return render_template("experiences.html", experiences=experience_items, is_filtered=True)
 
 
 @app.route('/experiences/<firm_name>')
@@ -331,37 +362,14 @@ def firm_experiences(firm_name):
     # Get university data for this firm
     university_data = FIRM_UNIVERSITY_DATA.get(firm_name, None)
 
-    # Try to load filtered experiences first
-    try:
-        from experience_quality_v2 import load_filtered_for_firm
-        items = load_filtered_for_firm(firm_name, min_score=0.55, exclude_questions=True, min_items=6)
-        print(f"Loaded {len(items)} filtered experiences for {firm_name}")
-        is_filtered = True
-    except Exception as e:
-        print(f"Error loading filtered experiences: {e}")
-        # Fall back to grad signals
-        experiences = load_grad_signals("out/grad_program_signals.csv")
-        items = [exp for exp in experiences if exp['firm_name'].lower() == firm_name.lower()]
-        is_filtered = False
-
-    # Guard: ensure 'content' exists
-    items = [it for it in items if isinstance(it.get("content"), str) and it["content"].strip()]
-
-    # Categorize each item
-    for item in items:
-        content = item.get("content", "") or item.get("evidence_span", "")
-        p, cats, details = classify_text(content, threshold=1.0, top_k=3)
-        item["primary_cat"] = p
-        item["cat_labels"] = [label(c) for c in cats]
-
     # Load submissions data for this firm
     with open(data_file, 'r') as f:
         submissions = json.load(f)
     
     firm_submissions = [s for s in submissions if s.get('company', '').lower() == firm_name.lower()]
     
-    # Convert submissions to experience format
-    submission_items = []
+    # Convert submissions to experience format for display
+    items = []
     for sub in firm_submissions:
         content_parts = []
         if sub.get('application_stages'):
@@ -371,19 +379,19 @@ def firm_experiences(firm_name):
         if sub.get('advice'):
             content_parts.append(f"Advice: {sub['advice']}")
         
-        submission_items.append({
+        items.append({
             "content": " • ".join(content_parts),
+            "firm_name": sub['company'],
             "quality_score": 0.95,
-            "primary_cat": sub.get('theme', 'other').lower(),
+            "primary_cat": sub.get('theme', 'other').lower().replace(' ', '_'),
             "cat_labels": [sub.get('theme', 'Other')],
             "is_submission": True,
             "experience_type": sub.get('experience_type', ''),
             "role": sub.get('role', ''),
-            "timestamp": sub.get('timestamp', '')
+            "timestamp": sub.get('timestamp', ''),
+            "user_name": sub.get('user_name', 'Anonymous'),
+            "source": sub.get('source', 'user')
         })
-    
-    # Put submissions first, then CSV items
-    items = submission_items + items
 
     # Apply category filter
     active_cat = request.args.get("cat")
@@ -396,7 +404,7 @@ def firm_experiences(firm_name):
     return render_template("experiences.html", 
                          experiences=items, 
                          firm_name=firm_name, 
-                         is_filtered=is_filtered,
+                         is_filtered=True,
                          university_data=university_data,
                          cat_counts=cat_counts,
                          active_cat=active_cat)

@@ -77,90 +77,116 @@ def load_csv_data() -> List[Dict]:
                 })
     return data
 
-def generate_realistic_stages(comment: str) -> str:
-    """Generate application stages based on comment content."""
+def generate_realistic_stages(comment: str, theme: str) -> str:
+    """Generate application stages based on comment content and theme."""
     stages = []
     comment_lower = comment.lower()
     
-    if any(word in comment_lower for word in ["application", "apply", "cv", "resume", "cover letter"]):
-        stages.append("Online application with CV and cover letter")
+    # Always start with application
+    stages.append("Online application with CV and cover letter")
     
-    if any(word in comment_lower for word in ["online", "test", "assessment", "oa"]):
-        stages.append("Online assessment or testing")
+    if any(word in comment_lower for word in ["online", "test", "assessment", "oa", "aptitude", "cognitive"]):
+        stages.append("Online assessment (aptitude/situational judgment)")
         
-    if any(word in comment_lower for word in ["video", "interview", "phone", "call"]):
-        stages.append("Video or phone interview")
+    if any(word in comment_lower for word in ["video", "interview", "phone", "call", "screening"]):
+        stages.append("Phone/video interview with HR")
         
-    if any(word in comment_lower for word in ["assessment centre", "ac", "group", "presentation"]):
-        stages.append("Assessment centre with group exercises")
+    if any(word in comment_lower for word in ["assessment centre", "ac", "group", "presentation", "exercise"]):
+        stages.append("Assessment centre with group exercises and presentations")
+    elif theme == "Interviews" and "partner" not in comment_lower:
+        stages.append("In-person interview with team members")
         
-    if any(word in comment_lower for word in ["partner", "final", "panel"]):
-        stages.append("Final partner interview")
+    if any(word in comment_lower for word in ["partner", "final", "panel", "senior"]):
+        stages.append("Final interview with partners/senior staff")
     
-    if not stages:
-        stages = ["Application submitted", "Initial screening", "Interview process"]
+    # Ensure at least 3 stages for realism
+    if len(stages) < 3:
+        stages.insert(-1, "Competency-based interview")
     
     return " → ".join(stages)
 
 def generate_interview_experience(comment: str, theme: str) -> str:
     """Generate interview experience based on comment and theme."""
-    if "interview" in comment.lower():
-        # Extract relevant parts about interviews
-        sentences = [s.strip() for s in re.split(r'[.!?]', comment) if 'interview' in s.lower()]
-        if sentences:
-            return sentences[0][:200] + ("..." if len(sentences[0]) > 200 else "")
+    comment_lower = comment.lower()
     
-    # Theme-based fallbacks
+    # Extract interview-specific content
+    if any(word in comment_lower for word in ["interview", "panel", "video", "phone", "assessment centre", "ac"]):
+        sentences = [s.strip() for s in re.split(r'[.!?]', comment) if any(word in s.lower() for word in ["interview", "panel", "video", "phone", "assessment", "asked", "question"])]
+        if sentences:
+            best_sentence = max(sentences, key=len)
+            return clean_text(best_sentence)[:300] + ("..." if len(best_sentence) > 300 else "")
+    
+    # Theme-based realistic content
     if theme == "Interviews":
-        return "Standard competency-based interview focusing on motivation and commercial awareness. Behavioral questions about teamwork and problem-solving."
+        return "Competency-based interview with questions about motivation, commercial awareness, and why this firm. Asked about recent deals and current events affecting the legal industry."
     elif theme == "Applications":
-        return "Application reviewed, followed by structured interview process with HR and senior lawyers."
+        return "Initial application screening followed by phone interview with HR, then video interview with senior associate covering technical and behavioral questions."
+    elif theme == "Programs":
+        return "Interview focused on understanding of the clerkship program structure and rotation preferences. Questions about teamwork and adaptability."
     else:
-        return "Professional interview process with questions about interest in the firm and legal career goals."
+        return "Standard interview process covering motivation for law, interest in the firm, and scenario-based questions about client service."
 
 def generate_advice(comment: str, theme: str) -> str:
     """Generate advice based on comment content and theme."""
     advice_parts = []
     comment_lower = comment.lower()
     
-    if theme == "Applications":
-        advice_parts.append("Start applications early and tailor each one to the specific firm.")
-    elif theme == "Interviews":
-        advice_parts.append("Practice common interview questions and research the firm's recent deals.")
-    elif theme == "Firm Culture":
-        advice_parts.append("Ask about the culture during interviews and speak to current employees if possible.")
-    elif theme == "Salaries":
-        advice_parts.append("Research market rates and don't be afraid to negotiate respectfully.")
+    # Extract actionable advice from comment
+    advice_indicators = ["advice", "tip", "recommend", "suggest", "should", "important", "make sure", "prepare", "practice", "research", "apply early", "tailor"]
+    sentences = [s.strip() for s in re.split(r'[.!?]', comment) if s.strip()]
     
-    # Extract advice-like content from comment
-    advice_indicators = ["advice", "tip", "recommend", "suggest", "should", "important", "make sure"]
-    sentences = [s.strip() for s in re.split(r'[.!?]', comment)]
-    
+    # Find sentences with advice indicators
+    advice_sentences = []
     for sentence in sentences:
         if any(indicator in sentence.lower() for indicator in advice_indicators):
-            advice_parts.append(sentence[:150])
-            break
+            cleaned = clean_text(sentence)
+            if len(cleaned) > 20:  # Meaningful advice
+                advice_sentences.append(cleaned)
     
+    if advice_sentences:
+        advice_parts.extend(advice_sentences[:2])  # Top 2 pieces of advice
+    
+    # Theme-specific advice if no good advice found
     if not advice_parts:
-        advice_parts.append("Do your research on the firm and be genuine about your interest in their work.")
+        if theme == "Applications":
+            advice_parts.append("Start applications early and thoroughly research each firm's practice areas and recent work.")
+        elif theme == "Interviews":
+            advice_parts.append("Prepare for competency-based questions and be ready to discuss your motivation for commercial law.")
+        elif theme == "Firm Culture":
+            advice_parts.append("Ask current employees about day-to-day work culture and opportunities for mentorship.")
+        elif theme == "Salaries":
+            advice_parts.append("Research market rates through graduate surveys and be prepared to discuss total package including benefits.")
+        elif theme == "Programs":
+            advice_parts.append("Understand the rotation structure and express genuine interest in multiple practice areas.")
+        else:
+            advice_parts.append("Be genuine in your interest, prepare thoroughly, and show enthusiasm for learning.")
     
-    return " ".join(advice_parts)[:400]
+    return " ".join(advice_parts)[:500]
 
 def create_share_story_entry(company: str, theme: str, comment: str) -> Dict:
     """Create a realistic Share Story submission entry."""
     experience_type = THEME_TO_TYPE.get(theme, "Graduate Program")
     
+    # Weight roles based on experience type
+    if experience_type == "Clerkship":
+        roles = ["Summer Clerk", "Vacation Clerk", "Seasonal Clerk"]
+    elif experience_type == "Graduate Program":
+        roles = ["Graduate Lawyer", "Graduate", "Junior Lawyer"]
+    else:
+        roles = ["Graduate Lawyer", "Summer Clerk", "Paralegal", "Legal Intern"]
+    
     # Generate realistic content
-    application_stages = generate_realistic_stages(comment)
+    application_stages = generate_realistic_stages(comment, theme)
     interview_experience = generate_interview_experience(comment, theme)
     advice = generate_advice(comment, theme)
     
-    # Random but realistic timestamp (last 2 years)
-    base_date = datetime.now() - timedelta(days=random.randint(30, 730))
+    # Random but realistic timestamp (last 2 years, weighted toward recent)
+    days_back = random.choices([30, 90, 180, 365, 730], weights=[30, 25, 20, 15, 10])[0]
+    base_date = datetime.now() - timedelta(days=random.randint(1, days_back))
     
     return {
         "company": company,
-        "role": random.choice(["Graduate Lawyer", "Summer Clerk", "Paralegal", "Legal Intern"]),
+        "role": random.choice(roles),
         "experience_type": experience_type,
         "theme": theme,
         "application_stages": application_stages,

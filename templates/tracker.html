@@ -4,6 +4,18 @@
 {% block title %}Application Tracker – Gradvantage{% endblock %}
 
 {% block content %}
+<style>
+.status-container .status-display {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.status-container .status-display:hover {
+  opacity: 0.8;
+}
+.status-edit {
+  min-width: 200px;
+}
+</style>
 <div class="hero-section">
   <div class="container text-center">
     <h1 class="hero-title">Track Your Applications</h1>
@@ -134,14 +146,32 @@
                   <td>{{ app.application_date.strftime('%b %d, %Y') if app.application_date else 'N/A' }}</td>
                   <td>{{ app.wam if app.wam else '-' }}</td>
                   <td>
-                    <span class="badge 
-                      {% if app.status == 'Offered' %}bg-success
-                      {% elif app.status == 'Rejected' %}bg-danger
-                      {% elif app.status == 'Interview Scheduled' or app.status == 'Interview Completed' %}bg-warning
-                      {% else %}bg-secondary
-                      {% endif %}">
-                      {{ app.status }}
-                    </span>
+                    <div class="status-container" data-app-id="{{ app.id }}">
+                      <span class="status-display badge 
+                        {% if app.status == 'Offered' %}bg-success
+                        {% elif 'Rejected' in app.status %}bg-danger
+                        {% elif 'Interview' in app.status or 'Assessment' in app.status %}bg-warning
+                        {% else %}bg-secondary
+                        {% endif %}" onclick="editStatus({{ app.id }}, '{{ app.status }}')">
+                        {{ app.status }}
+                      </span>
+                      <select class="status-edit form-select form-select-sm d-none" data-original-status="{{ app.status }}">
+                        <option value="Applied" {{ 'selected' if app.status == 'Applied' else '' }}>Applied</option>
+                        <option value="Online Assessment Received" {{ 'selected' if app.status == 'Online Assessment Received' else '' }}>Online Assessment Received</option>
+                        <option value="Online Assessment Completed" {{ 'selected' if app.status == 'Online Assessment Completed' else '' }}>Online Assessment Completed</option>
+                        <option value="Phone Interview Scheduled" {{ 'selected' if app.status == 'Phone Interview Scheduled' else '' }}>Phone Interview Scheduled</option>
+                        <option value="Phone Interview Completed" {{ 'selected' if app.status == 'Phone Interview Completed' else '' }}>Phone Interview Completed</option>
+                        <option value="Assessment Centre Invited" {{ 'selected' if app.status == 'Assessment Centre Invited' else '' }}>Assessment Centre Invited</option>
+                        <option value="Assessment Centre Completed" {{ 'selected' if app.status == 'Assessment Centre Completed' else '' }}>Assessment Centre Completed</option>
+                        <option value="Final Interview Scheduled" {{ 'selected' if app.status == 'Final Interview Scheduled' else '' }}>Final Interview Scheduled</option>
+                        <option value="Final Interview Completed" {{ 'selected' if app.status == 'Final Interview Completed' else '' }}>Final Interview Completed</option>
+                        <option value="Offered" {{ 'selected' if app.status == 'Offered' else '' }}>Offered</option>
+                        <option value="Rejected - No Response" {{ 'selected' if app.status == 'Rejected - No Response' else '' }}>Rejected - No Response</option>
+                        <option value="Rejected - After Assessment" {{ 'selected' if app.status == 'Rejected - After Assessment' else '' }}>Rejected - After Assessment</option>
+                        <option value="Rejected - After Interview" {{ 'selected' if app.status == 'Rejected - After Interview' else '' }}>Rejected - After Interview</option>
+                        <option value="Withdrawn" {{ 'selected' if app.status == 'Withdrawn' else '' }}>Withdrawn</option>
+                      </select>
+                    </div>
                   </td>
                   <td>
                     {% if app.response_date and app.application_date %}
@@ -236,9 +266,80 @@
 </div>
 
 <script>
+function editStatus(appId, currentStatus) {
+  const container = document.querySelector(`[data-app-id="${appId}"]`);
+  const display = container.querySelector('.status-display');
+  const select = container.querySelector('.status-edit');
+  
+  // Hide display, show select
+  display.classList.add('d-none');
+  select.classList.remove('d-none');
+  select.focus();
+  
+  // Handle change
+  select.onchange = function() {
+    updateApplicationStatus(appId, this.value);
+  };
+  
+  // Handle click outside or escape
+  select.onblur = function() {
+    cancelStatusEdit(container);
+  };
+  
+  select.onkeydown = function(e) {
+    if (e.key === 'Escape') {
+      cancelStatusEdit(container);
+    }
+  };
+}
+
+function cancelStatusEdit(container) {
+  const display = container.querySelector('.status-display');
+  const select = container.querySelector('.status-edit');
+  
+  display.classList.remove('d-none');
+  select.classList.add('d-none');
+}
+
+function updateApplicationStatus(appId, newStatus) {
+  fetch(`/tracker/update/${appId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      status: newStatus
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload(); // Refresh to show updated status with correct badge color
+    } else {
+      alert('Failed to update status');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Failed to update status');
+  });
+}
+
 function editApplication(id) {
-  // TODO: Implement edit modal
-  console.log('Edit application', id);
+  // Quick edit for other fields - could expand this later
+  const notes = prompt('Update notes:');
+  if (notes !== null) {
+    fetch(`/tracker/update/${id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        notes: notes
+      })
+    })
+    .then(() => location.reload());
+  }
 }
 
 function deleteApplication(id) {

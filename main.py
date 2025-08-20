@@ -531,6 +531,38 @@ def add_application():
     return redirect(url_for('tracker'))
 
 
+@app.route('/tracker/update/<int:app_id>', methods=['POST'])
+def update_application(app_id):
+    user_id = request.headers.get('X-Replit-User-Id')
+
+    if not user_id:
+        return jsonify({'error': 'Not authenticated'}), 401
+
+    with open(tracker_file, 'r') as f:
+        applications = json.load(f)
+
+    # Find and update application if it belongs to the user
+    for app in applications:
+        if app.get('id') == app_id and app.get('user_id') == user_id:
+            # Update fields from request
+            if 'status' in request.json:
+                app['status'] = request.json['status']
+            if 'response_date' in request.json:
+                app['response_date'] = request.json['response_date']
+            if 'notes' in request.json:
+                app['notes'] = request.json['notes']
+            if 'priority' in request.json:
+                app['priority'] = request.json['priority']
+            
+            app['updated'] = datetime.utcnow().isoformat()
+            break
+
+    with open(tracker_file, 'w') as f:
+        json.dump(applications, f, indent=2)
+
+    return jsonify({'success': True})
+
+
 @app.route('/tracker/delete/<int:app_id>', methods=['DELETE'])
 def delete_application(app_id):
     user_id = request.headers.get('X-Replit-User-Id')

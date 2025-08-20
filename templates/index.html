@@ -153,20 +153,12 @@
               </div>
 
               <!-- Stats -->
+              {% if firm.avg_salary %}
               <div class="mb-3">
-                <div class="row g-2">
-                  <div class="col-6">
-                    <div class="small fw-medium text-success mb-1">Success Rate</div>
-                    <div class="small text-success fw-medium">{{ firm.success_rate }}%</div>
-                  </div>
-                  {% if firm.avg_salary %}
-                  <div class="col-6">
-                    <div class="small fw-medium text-info mb-1">Avg Salary</div>
-                    <div class="small text-info fw-medium">${{ "{:,}".format(firm.avg_salary) }}</div>
-                  </div>
-                  {% endif %}
-                </div>
+                <div class="small fw-medium text-info mb-1">Avg Salary</div>
+                <div class="small text-info fw-medium">${{ "{:,}".format(firm.avg_salary) }}</div>
               </div>
+              {% endif %}
 
               <!-- Recent Experience -->
               {% if firm.experiences %}

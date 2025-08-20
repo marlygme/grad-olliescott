@@ -273,8 +273,8 @@ def companies():
         if company not in companies:
             company_data = {
             'name': company,
-            'total_submissions': len(submissions),
-            'success_count': len([s for s in submissions if s.get('outcome') == 'Success']),
+            'total_submissions': 0,
+            'success_count': 0,
             'experiences': [],
             'recent_roles': set(),
             'avg_salary': 0,

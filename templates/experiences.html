@@ -59,18 +59,18 @@
         
         <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden story-card-modern">
           <!-- Story Header -->
-          <div class="card-header bg-gradient text-white border-0 p-4">
-            <div class="d-flex align-items-start justify-content-between">
+          <div class="story-header p-4 bg-white border-bottom">
+            <div class="d-flex align-items-start justify-content-between mb-3">
               <div class="flex-grow-1">
                 <div class="d-flex align-items-center mb-2">
-                  <div class="story-avatar me-3">
-                    <i class="bi bi-person-circle fs-3"></i>
+                  <div class="story-avatar bg-primary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="bi bi-person fs-5"></i>
                   </div>
                   <div>
-                    <h5 class="mb-1 fw-bold text-white">
-                      {{ exp.get('role', 'Graduate Experience') }}
+                    <h5 class="mb-1 fw-bold text-dark">
+                      {{ exp.get('role', 'Graduate Program') }}
                     </h5>
-                    <div class="text-white opacity-90">
+                    <div class="text-muted">
                       <strong>{{ exp.get('company', exp.get('firm_name', 'Law Firm')) }}</strong>
                       {% if exp.get('experience_type') %}
                         • {{ exp.experience_type }}
@@ -82,106 +82,93 @@
               
               <!-- Story Type Badge -->
               {% if exp.get('is_submission') %}
-                <span class="badge bg-white text-primary px-3 py-2 fw-medium">
+                <span class="badge bg-primary text-white px-3 py-2 fw-medium rounded-pill">
                   <i class="bi bi-chat-heart me-1"></i>Story
                 </span>
               {% else %}
-                <span class="badge bg-white bg-opacity-75 text-primary px-3 py-2 fw-medium">
-                  <i class="bi bi-lightbulb me-1"></i>Insight
+                <span class="badge bg-success text-white px-3 py-2 fw-medium rounded-pill">
+                  <i class="bi bi-lightbulb me-1"></i>Experience
                 </span>
               {% endif %}
             </div>
           </div>
 
           <!-- Story Content -->
-          <div class="card-body p-0">
+          <div class="card-body p-4">
             <!-- Main Story Content -->
             {% if exp.get('content') %}
-            <div class="story-main-content p-4 border-bottom bg-light">
-              <div class="story-text-content">
-                {{ exp.content }}
+            <div class="story-main-content mb-4">
+              <div class="story-text-content text-dark lh-base">
+                {% set content_lines = exp.content.split('•') %}
+                {% if content_lines|length > 1 %}
+                  <p class="mb-3 fw-medium">{{ content_lines[0].strip() }}</p>
+                  {% for line in content_lines[1:] %}
+                    {% if line.strip() %}
+                      <div class="mb-2 d-flex align-items-start">
+                        <i class="bi bi-check-circle text-success me-2 mt-1 flex-shrink-0"></i>
+                        <span>{{ line.strip() }}</span>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                {% else %}
+                  <p class="mb-0">{{ exp.content }}</p>
+                {% endif %}
               </div>
             </div>
             {% endif %}
             
-            <!-- Detailed Sections -->
-            <div class="story-details p-4">
-              {% if exp.get('application_stages') %}
-                <div class="story-detail-section mb-4">
-                  <div class="story-section-header mb-3">
-                    <div class="d-flex align-items-center">
-                      <div class="section-icon bg-primary text-white me-3">
-                        <i class="bi bi-list-check"></i>
-                      </div>
-                      <h6 class="mb-0 fw-semibold">Application Process</h6>
-                    </div>
+            <!-- Process Information -->
+            {% if exp.get('application_stages') or exp.get('interview_experience') %}
+            <div class="story-process mb-4">
+              <div class="border-start border-primary border-3 ps-3">
+                <h6 class="text-primary fw-semibold mb-2">
+                  <i class="bi bi-arrow-right-circle me-1"></i>Application Journey
+                </h6>
+                {% if exp.get('application_stages') %}
+                  <div class="mb-2 small text-muted">
+                    <strong>Process:</strong> {{ exp.application_stages }}
                   </div>
-                  <div class="section-content">
-                    {{ exp.application_stages }}
+                {% endif %}
+                {% if exp.get('interview_experience') %}
+                  <div class="small text-muted">
+                    <strong>Interview:</strong> {{ exp.interview_experience }}
                   </div>
-                </div>
-              {% endif %}
-              
-              {% if exp.get('interview_experience') %}
-                <div class="story-detail-section mb-4">
-                  <div class="story-section-header mb-3">
-                    <div class="d-flex align-items-center">
-                      <div class="section-icon bg-warning text-white me-3">
-                        <i class="bi bi-chat-dots"></i>
-                      </div>
-                      <h6 class="mb-0 fw-semibold">Interview Experience</h6>
-                    </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+            
+            <!-- Key Advice -->
+            {% if exp.get('advice') %}
+            <div class="story-advice mb-4">
+              <div class="bg-light rounded-3 p-3 border-start border-warning border-3">
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-lightbulb-fill text-warning me-2 mt-1 flex-shrink-0"></i>
+                  <div>
+                    <h6 class="text-warning fw-semibold mb-1">Pro Tip</h6>
+                    <p class="mb-0 small text-dark">{{ exp.advice }}</p>
                   </div>
-                  <div class="section-content interview-quote">
-                    <div class="quote-content p-3 bg-light rounded-3 border-start border-warning border-4">
-                      <i class="bi bi-quote text-warning me-2"></i>
-                      <span class="fw-medium">{{ exp.interview_experience }}</span>
-                    </div>
-                  </div>
-                </div>
-              {% endif %}
-              
-              {% if exp.get('advice') %}
-                <div class="story-detail-section mb-4">
-                  <div class="story-section-header mb-3">
-                    <div class="d-flex align-items-center">
-                      <div class="section-icon bg-success text-white me-3">
-                        <i class="bi bi-lightbulb"></i>
-                      </div>
-                      <h6 class="mb-0 fw-semibold">Key Advice</h6>
-                    </div>
-                  </div>
-                  <div class="section-content advice-content">
-                    <div class="advice-box p-3 bg-success-subtle rounded-3 border-start border-success border-4">
-                      <i class="bi bi-star text-success me-2"></i>
-                      <span>{{ exp.advice }}</span>
-                    </div>
-                  </div>
-                </div>
-              {% endif %}
-              
-              <!-- Tags and Categories -->
-              {% if exp.get('cat_labels') %}
-              <div class="story-tags mb-3">
-                <div class="d-flex flex-wrap gap-2">
-                  {% for label in exp.cat_labels %}
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ label }}</span>
-                  {% endfor %}
                 </div>
               </div>
-              {% endif %}
             </div>
+            {% endif %}
+            
+            <!-- Tags -->
+            {% if exp.get('cat_labels') %}
+            <div class="story-tags">
+              <div class="d-flex flex-wrap gap-2">
+                {% for label in exp.cat_labels %}
+                  <span class="badge bg-light text-dark border small">{{ label }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
           </div>
 
           <!-- Story Footer -->
-          <div class="card-footer bg-white border-0 p-4">
+          <div class="card-footer bg-light border-0 p-3">
             <div class="d-flex justify-content-between align-items-center">
               <div class="story-meta d-flex align-items-center gap-3">
-                {% if exp.get('user_name') %}
-                  <span class="text-muted small">
-                    <i class="bi bi-person me-1"></i>{{ exp.user_name }}
-                  </span>
-                {% endif %}
                 {% if exp.get('quality_score') %}
                   <span class="text-muted small">
                     <i class="bi bi-star-fill text-warning me-1"></i>{{ "%.1f"|format(exp.quality_score) }}/10
@@ -193,11 +180,8 @@
               </div>
               
               <div class="story-actions d-flex gap-2">
-                <button class="btn btn-sm btn-outline-primary" title="Mark as helpful">
-                  <i class="bi bi-hand-thumbs-up"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-secondary" title="Save story">
-                  <i class="bi bi-bookmark"></i>
+                <button class="btn btn-sm btn-outline-primary rounded-pill px-3" title="Helpful">
+                  <i class="bi bi-hand-thumbs-up me-1"></i>Helpful
                 </button>
               </div>
             </div>

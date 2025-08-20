@@ -436,107 +436,69 @@ html {
 }
 
 .story-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 15px 40px rgba(0,0,0,0.12) !important;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
 }
 
 .story-card-modern {
-  border: none !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #e9ecef !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s ease;
+}
+
+.story-card-modern:hover {
+  border-color: var(--primary) !important;
+}
+
+.story-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #f0f0f0 !important;
 }
 
 .story-avatar {
-  width: 48px;
-  height: 48px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  font-size: 1rem;
 }
 
-/* Story Content Sections */
+/* Story Content Styling */
 .story-main-content {
-  background: #f8f9fa !important;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 .story-text-content {
-  font-size: 1rem;
-  line-height: 1.6;
   color: var(--dark);
 }
 
-.story-details {
-  background: white;
-}
-
-.story-detail-section {
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 1.5rem;
-}
-
-.story-detail-section:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.story-section-header {
-  margin-bottom: 1rem;
-}
-
-.section-icon {
-  width: 32px;
-  height: 32px;
+.story-process {
+  background: rgba(37, 99, 235, 0.05);
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  font-weight: 600;
+  padding: 1rem;
+  border-left: 3px solid var(--primary);
 }
 
-.section-content {
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: var(--dark);
-}
-
-/* Quote and Advice Styling */
-.interview-quote .quote-content {
-  position: relative;
-  background: #f8f9fa !important;
-}
-
-.advice-content .advice-box {
-  background: rgba(22, 163, 74, 0.05) !important;
-}
-
-/* Story Tags */
-.story-tags {
-  border-top: 1px solid #f0f0f0;
-  padding-top: 1rem;
+.story-advice {
+  background: rgba(245, 158, 11, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  border-left: 3px solid var(--warning);
 }
 
 .story-tags .badge {
-  font-size: 0.8rem;
-  padding: 0.4rem 0.8rem;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
   font-weight: 500;
-}
-
-/* Footer Styling */
-.card-footer {
-  border-top: 1px solid #f0f0f0 !important;
+  border-radius: 20px;
 }
 
 .story-meta {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .story-actions .btn {
-  padding: 0.4rem 0.6rem;
-  font-size: 0.85rem;
-  border-radius: 6px;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.75rem;
   transition: all 0.2s ease;
 }
 

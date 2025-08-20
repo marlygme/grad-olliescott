@@ -263,35 +263,53 @@ def company_page(name):
 
 @app.route('/companies')
 def companies():
-    from categorizer import classify_text, label
+    with open(data_file, 'r') as f:
+        submissions = json.load(f)
 
-    firms = load_cards_v2("out/grad_program_signals.csv")
+    # Group submissions by company
+    companies = {}
+    for submission in submissions:
+        company = submission['company']
+        if company not in companies:
+            companies[company] = {
+                'name': company,
+                'total_submissions': 0,
+                'success_count': 0,
+                'avg_salary': 0,
+                'salary_count': 0,
+                'recent_roles': set(),
+                'experiences': []
+            }
 
-    # Load experiences for each firm
-    experiences = load_grad_signals("out/grad_program_signals.csv")
+        companies[company]['total_submissions'] += 1
+        if submission.get('outcome') == 'Success':
+            companies[company]['success_count'] += 1
 
-    # Group experiences by firm
-    firm_experiences = {}
-    for exp in experiences:
-        firm_name = exp['firm_name']
-        if firm_name not in firm_experiences:
-            firm_experiences[firm_name] = []
+        salary = submission.get('salary', '')
+        if salary and str(salary).isdigit():
+            companies[company]['avg_salary'] += int(salary)
+            companies[company]['salary_count'] += 1
 
-        # Categorize the experience
-        content = exp.get("evidence_span", "")
-        if content:
-            p, cats, details = classify_text(content, threshold=1.0, top_k=3)
-            exp["primary_cat"] = p
-            exp["cat_labels"] = [label(c) for c in cats]
+        companies[company]['recent_roles'].add(submission['role'])
+        companies[company]['experiences'].append(submission)
 
-        firm_experiences[firm_name].append(exp)
+    # Calculate averages and format data
+    for company_data in companies.values():
+        if company_data['salary_count'] > 0:
+            company_data['avg_salary'] = int(company_data['avg_salary'] / company_data['salary_count'])
+        else:
+            company_data['avg_salary'] = None
 
-    # Add experiences to each firm
-    for firm in firms:
-        firm['experiences'] = firm_experiences.get(firm['name'], [])[:8]  # Show top 8 experiences
-        firm['total_experiences'] = len(firm_experiences.get(firm['name'], []))
+        company_data['success_rate'] = round((company_data['success_count'] / company_data['total_submissions']) * 100, 1)
+        company_data['recent_roles'] = list(company_data['recent_roles'])[:3]  # Show top 3 roles
+        
+        # Keep only recent experiences for display
+        company_data['experiences'] = company_data['experiences'][:5]
 
-    return render_template("companies_v2.html", firms=firms)
+    # Convert to list and sort by number of submissions
+    firms = sorted(companies.values(), key=lambda x: x['total_submissions'], reverse=True)
+
+    return render_template("companies.html", firms=firms)
 
 
 @app.route('/api/grad-data')

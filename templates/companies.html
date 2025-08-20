@@ -1,41 +1,81 @@
 
 {% extends "base.html" %}
+
+{% block title %}Companies – Gradvantage{% endblock %}
+
 {% block content %}
 <div class="container py-5">
-  <h1 class="display-4 fw-bold mb-2">Explore Companies</h1>
-  <p class="text-muted mb-5 fs-5">Discover insights from graduates at leading organizations</p>
+  <div class="text-center mb-5">
+    <h1 class="display-4 fw-bold mb-3">Explore Companies</h1>
+    <p class="fs-5 text-muted">Real graduate experiences shared by our community</p>
+  </div>
 
-  <div class="row g-4">
-    {% for firm in firms %}
-    <div class="col-lg-6">
-      <div class="card h-100 shadow-sm border-0 rounded-3">
-        <div class="card-body p-4">
-          <div class="d-flex justify-content-between align-items-start mb-3">
-            <h3 class="card-title h5 fw-bold mb-0">{{ firm.name }}</h3>
-            <div class="d-flex gap-2 flex-wrap">
-              <span class="badge bg-light text-dark">{{ firm.experiences_count }} experiences</span>
-              {% if firm.avg_salary %}
-                <span class="badge bg-success">${{ "{:,}".format(firm.avg_salary) }} avg</span>
-              {% endif %}
+  {% if firms %}
+    <div class="row g-4">
+      {% for firm in firms %}
+      <div class="col-lg-6">
+        <div class="card h-100 shadow-sm border-0 rounded-3">
+          <div class="card-body p-4">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <h5 class="card-title fw-bold mb-0">{{ firm.name }}</h5>
+              <div class="d-flex flex-wrap gap-1">
+                <span class="badge bg-primary text-white small">{{ firm.total_submissions }} stories</span>
+                {% if firm.avg_salary %}
+                  <span class="badge bg-success text-white small">${{ "{:,}".format(firm.avg_salary) }} avg</span>
+                {% endif %}
+                <span class="badge bg-info text-white small">{{ firm.success_rate }}% success</span>
+              </div>
+            </div>
+            
+            <!-- Popular Roles -->
+            {% if firm.recent_roles %}
+            <div class="mb-3">
+              <div class="small fw-medium text-muted mb-1">Popular Roles</div>
+              <div class="d-flex flex-wrap gap-1">
+                {% for role in firm.recent_roles %}
+                  <span class="badge bg-light text-dark small">{{ role }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Experience Preview -->
+            {% if firm.experiences %}
+            <div class="mb-3">
+              <div class="small fw-medium text-primary mb-2">Recent Experience</div>
+              {% set recent_exp = firm.experiences[0] %}
+              <div class="bg-light p-3 rounded small">
+                <div class="fw-medium mb-1">{{ recent_exp.role }} • {{ recent_exp.experience_type or 'Graduate Program' }}</div>
+                {% if recent_exp.advice %}
+                  <p class="mb-0 text-muted">{{ recent_exp.advice[:120] }}{% if recent_exp.advice|length > 120 %}...{% endif %}</p>
+                {% elif recent_exp.interview_experience %}
+                  <p class="mb-0 text-muted">{{ recent_exp.interview_experience[:120] }}{% if recent_exp.interview_experience|length > 120 %}...{% endif %}</p>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Button -->
+            <div class="d-grid">
+              <a href="/experiences/{{ firm.name | urlencode }}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-arrow-right me-1"></i>View All {{ firm.total_submissions }} Stories
+              </a>
             </div>
           </div>
-          
-          <div class="small text-muted mb-2">
-            {% if firm.top_city %}{{ firm.top_city }}{% endif %}
-            {% if firm.top_intake %} • {{ firm.top_intake }}{% endif %}
-            {% if firm.next_close %} • Apps close {{ firm.next_close }}{% endif %}
-          </div>
-          
-          <div class="mb-2">
-            <small class="text-uppercase text-muted fw-medium">Popular Programs</small>
-          </div>
-          <p class="text-dark mb-0">
-            {% if firm.popular_programs %}{{ firm.popular_programs | join(", ") }}{% else %}—{% endif %}
-          </p>
         </div>
       </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
+  {% else %}
+    <div class="empty-state text-center py-5">
+      <div class="empty-icon mb-4">
+        <i class="bi bi-briefcase text-muted" style="font-size: 4rem;"></i>
+      </div>
+      <h4 class="fw-medium mb-3">No companies yet</h4>
+      <p class="text-muted mb-4">Be the first to share your graduate experience and help build our community!</p>
+      <a href="/submit" class="btn btn-primary btn-pill px-4">Share Your Experience</a>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}

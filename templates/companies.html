@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Companies – Gradvantage{% endblock %}
@@ -24,10 +23,9 @@
                 {% if firm.avg_salary %}
                   <span class="badge bg-success text-white small">${{ "{:,}".format(firm.avg_salary) }} avg</span>
                 {% endif %}
-                <span class="badge bg-info text-white small">{{ firm.success_rate }}% success</span>
               </div>
             </div>
-            
+
             <!-- Popular Roles -->
             {% if firm.recent_roles %}
             <div class="mb-3">

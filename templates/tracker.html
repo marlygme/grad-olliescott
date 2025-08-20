@@ -34,16 +34,39 @@
             <label class="form-label">WAM</label>
             <input name="wam" type="number" step="0.1" class="form-control" placeholder="e.g. 78.5">
           </div>
+          <div class="col-md-3">
+            <label class="form-label">University</label>
+            <select name="university" class="form-select" required>
+              <option value="">Select university</option>
+              <option value="University of Melbourne">University of Melbourne</option>
+              <option value="Monash University">Monash University</option>
+              <option value="University of Sydney">University of Sydney</option>
+              <option value="UNSW">UNSW</option>
+              <option value="University of Queensland">University of Queensland</option>
+              <option value="Australian National University">Australian National University</option>
+              <option value="Macquarie University">Macquarie University</option>
+              <option value="University of Adelaide">University of Adelaide</option>
+              <option value="University of Western Australia">University of Western Australia</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
           <div class="col-md-4">
             <label class="form-label">Status</label>
             <select name="status" class="form-select" required>
               <option value="">Select status</option>
               <option value="Applied">Applied</option>
-              <option value="Under Review">Under Review</option>
-              <option value="Interview Scheduled">Interview Scheduled</option>
-              <option value="Interview Completed">Interview Completed</option>
+              <option value="Online Assessment Received">Online Assessment Received</option>
+              <option value="Online Assessment Completed">Online Assessment Completed</option>
+              <option value="Phone Interview Scheduled">Phone Interview Scheduled</option>
+              <option value="Phone Interview Completed">Phone Interview Completed</option>
+              <option value="Assessment Centre Invited">Assessment Centre Invited</option>
+              <option value="Assessment Centre Completed">Assessment Centre Completed</option>
+              <option value="Final Interview Scheduled">Final Interview Scheduled</option>
+              <option value="Final Interview Completed">Final Interview Completed</option>
               <option value="Offered">Offered</option>
-              <option value="Rejected">Rejected</option>
+              <option value="Rejected - No Response">Rejected - No Response</option>
+              <option value="Rejected - After Assessment">Rejected - After Assessment</option>
+              <option value="Rejected - After Interview">Rejected - After Interview</option>
               <option value="Withdrawn">Withdrawn</option>
             </select>
           </div>
@@ -93,6 +116,7 @@
                 <tr>
                   <th>Company</th>
                   <th>Role</th>
+                  <th>University</th>
                   <th>Applied</th>
                   <th>WAM</th>
                   <th>Status</th>
@@ -106,6 +130,7 @@
                 <tr>
                   <td class="fw-medium">{{ app.company }}</td>
                   <td>{{ app.role }}</td>
+                  <td class="small">{{ app.university if app.university else '-' }}</td>
                   <td>{{ app.application_date.strftime('%b %d, %Y') if app.application_date else 'N/A' }}</td>
                   <td>{{ app.wam if app.wam else '-' }}</td>
                   <td>

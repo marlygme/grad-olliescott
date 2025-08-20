@@ -512,6 +512,7 @@ def add_application():
         'company': request.form['company'],
         'role': request.form['role'],
         'application_date': request.form['application_date'],
+        'university': request.form.get('university', ''),
         'wam': request.form.get('wam', ''),
         'status': request.form['status'],
         'response_date': request.form.get('response_date', ''),
@@ -587,13 +588,38 @@ def tracker_analytics():
         'success_rate': success_rate
     }
 
-    # Community insights (aggregate data from submissions and tracker)
+    # Enhanced community insights with interview stage progression
     company_stats = {}
     university_stats = {}
+    stage_progression = {}
 
-    # Aggregate from tracker data
-    company_counts = defaultdict(lambda: {'total_apps': 0, 'responses': 0})
-    uni_counts = defaultdict(lambda: {'total_apps': 0, 'total_offers': 0})
+    # Define interview stages in progression order
+    interview_stages = [
+        'Applied',
+        'Online Assessment Received',
+        'Online Assessment Completed',
+        'Phone Interview Scheduled',
+        'Phone Interview Completed',
+        'Assessment Centre Invited',
+        'Assessment Centre Completed',
+        'Final Interview Scheduled',
+        'Final Interview Completed',
+        'Offered'
+    ]
+
+    # Aggregate from tracker data with enhanced analytics
+    company_counts = defaultdict(lambda: {
+        'total_apps': 0, 'responses': 0, 'offers': 0,
+        'avg_response_time': 0, 'response_times': []
+    })
+    
+    uni_stage_progression = defaultdict(lambda: {
+        stage: 0 for stage in interview_stages
+    })
+    
+    uni_company_progression = defaultdict(lambda: defaultdict(lambda: {
+        stage: 0 for stage in interview_stages
+    }))
 
     # Add user info from submissions.json for university data
     with open(data_file, 'r') as f:
@@ -601,31 +627,76 @@ def tracker_analytics():
 
     for sub in submissions:
         if sub.get('university'):
-            uni_counts[sub['university']]['total_apps'] += 1
+            uni_stage_progression[sub['university']]['Applied'] += 1
             if sub.get('outcome') == 'Success':
-                uni_counts[sub['university']]['total_offers'] += 1
+                uni_stage_progression[sub['university']]['Offered'] += 1
 
     for app in all_applications:
-        if app.get('company'):
+        if app.get('company') and app.get('university'):
             company_counts[app['company']]['total_apps'] += 1
-            if app.get('response_date'):
-                company_counts[app['company']]['responses'] += 1
+            
+            # Track stage progression by university and company
+            status = app.get('status', 'Applied')
+            uni_stage_progression[app['university']][status] += 1
+            uni_company_progression[app['university']][app['company']][status] += 1
+            
+            # Calculate response times
+            if app.get('response_date') and app.get('application_date'):
+                try:
+                    app_date = datetime.strptime(app['application_date'], '%Y-%m-%d').date()
+                    resp_date = datetime.strptime(app['response_date'], '%Y-%m-%d').date()
+                    response_time = (resp_date - app_date).days
+                    company_counts[app['company']]['response_times'].append(response_time)
+                    company_counts[app['company']]['responses'] += 1
+                except:
+                    pass
+            
+            # Track offers
+            if status == 'Offered':
+                company_counts[app['company']]['offers'] += 1
 
-    # Calculate rates
+    # Calculate enhanced company stats
     for company, counts in company_counts.items():
-        if counts['total_apps'] >= 3:  # Only show companies with 3+ applications
+        if counts['total_apps'] >= 2:  # Lower threshold for more data
+            avg_response_time = 0
+            if counts['response_times']:
+                avg_response_time = round(sum(counts['response_times']) / len(counts['response_times']), 1)
+                
             company_stats[company] = {
                 'total_apps': counts['total_apps'],
-                'response_rate': round((counts['responses'] / counts['total_apps'] * 100), 1)
+                'response_rate': round((counts['responses'] / counts['total_apps'] * 100), 1) if counts['total_apps'] > 0 else 0,
+                'offer_rate': round((counts['offers'] / counts['total_apps'] * 100), 1) if counts['total_apps'] > 0 else 0,
+                'avg_response_time': avg_response_time
             }
 
-    for uni, counts in uni_counts.items():
-        if counts['total_apps'] >= 3:  # Only show universities with 3+ applications
+    # Calculate university progression statistics
+    for uni, stages in uni_stage_progression.items():
+        total_applied = stages.get('Applied', 0)
+        if total_applied >= 2:  # Minimum threshold
             university_stats[uni] = {
-                'total_apps': counts['total_apps'],
-                'total_offers': counts['total_offers'],
-                'success_rate': round((counts['total_offers'] / counts['total_apps'] * 100), 1)
+                'total_apps': total_applied,
+                'online_assessment_rate': round((stages.get('Online Assessment Received', 0) / total_applied * 100), 1) if total_applied > 0 else 0,
+                'interview_rate': round(((stages.get('Phone Interview Scheduled', 0) + stages.get('Assessment Centre Invited', 0)) / total_applied * 100), 1) if total_applied > 0 else 0,
+                'offer_rate': round((stages.get('Offered', 0) / total_applied * 100), 1) if total_applied > 0 else 0,
+                'stage_breakdown': {
+                    stage: stages.get(stage, 0) for stage in interview_stages
+                }
             }
+
+    # Create stage progression data for visualization
+    for uni, companies in uni_company_progression.items():
+        for company, stages in companies.items():
+            total_apps = stages.get('Applied', 0)
+            if total_apps >= 1:
+                if uni not in stage_progression:
+                    stage_progression[uni] = {}
+                stage_progression[uni][company] = {
+                    'total_apps': total_apps,
+                    'progression': {
+                        stage: round((count / total_apps * 100), 1) if total_apps > 0 else 0 
+                        for stage, count in stages.items()
+                    }
+                }
 
     # Sort by success/response rate
     company_stats = dict(sorted(company_stats.items(), key=lambda x: x[1]['response_rate'], reverse=True)[:10])
@@ -635,6 +706,7 @@ def tracker_analytics():
                          personal_stats=personal_stats,
                          company_stats=company_stats,
                          university_stats=university_stats,
+                         stage_progression=stage_progression,
                          response_time_stats=None)
 
 

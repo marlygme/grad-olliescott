@@ -134,7 +134,7 @@ def index():
 
     # Create a lookup dictionary for companies data
     companies_lookup = {company['name']: company for company in sorted_companies}
-    
+
     return render_template('index.html', companies=companies_lookup, sorted_companies=sorted_companies, total_submissions=len(submissions), firms=firms, user_id=user_id, user_name=user_name)
 
 
@@ -167,7 +167,7 @@ def submit():
         with open(data_file, 'w') as f:
             json.dump(data, f, indent=2)
         return redirect(url_for('index'))
-    
+
     return render_template("submit.html", user_id=user_id, user_name=user_name)
 
 
@@ -271,15 +271,16 @@ def companies():
     for submission in submissions:
         company = submission['company']
         if company not in companies:
-            companies[company] = {
-                'name': company,
-                'total_submissions': 0,
-                'success_count': 0,
-                'avg_salary': 0,
-                'salary_count': 0,
-                'recent_roles': set(),
-                'experiences': []
+            company_data = {
+            'name': company,
+            'total_submissions': len(submissions),
+            'success_count': len([s for s in submissions if s.get('outcome') == 'Success']),
+            'experiences': [],
+            'recent_roles': set(),
+            'avg_salary': 0,
+            'salary_count': 0
             }
+            companies[company] = company_data
 
         companies[company]['total_submissions'] += 1
         if submission.get('outcome') == 'Success':
@@ -302,7 +303,7 @@ def companies():
 
         company_data['success_rate'] = round((company_data['success_count'] / company_data['total_submissions']) * 100, 1)
         company_data['recent_roles'] = list(company_data['recent_roles'])[:3]  # Show top 3 roles
-        
+
         # Keep only recent experiences for display
         company_data['experiences'] = company_data['experiences'][:5]
 
@@ -325,7 +326,7 @@ def experiences():
     # Load all submissions and display as experiences
     with open(data_file, 'r') as f:
         submissions = json.load(f)
-    
+
     # Convert submissions to experience format
     experience_items = []
     for sub in submissions:
@@ -336,7 +337,7 @@ def experiences():
             content_parts.append(f"Interview: {sub['interview_experience']}")
         if sub.get('advice'):
             content_parts.append(f"Advice: {sub['advice']}")
-        
+
         experience_items.append({
             "content": " • ".join(content_parts),
             "firm_name": sub['company'],
@@ -350,10 +351,10 @@ def experiences():
             "user_name": sub.get('user_name', 'Anonymous'),
             "source": sub.get('source', 'user')
         })
-    
+
     # Sort by timestamp (most recent first)
     experience_items.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-    
+
     return render_template("experiences.html", experiences=experience_items, is_filtered=True)
 
 
@@ -368,9 +369,9 @@ def firm_experiences(firm_name):
     # Load submissions data for this firm
     with open(data_file, 'r') as f:
         submissions = json.load(f)
-    
+
     firm_submissions = [s for s in submissions if s.get('company', '').lower() == firm_name.lower()]
-    
+
     # Convert submissions to experience format for display
     items = []
     for sub in firm_submissions:
@@ -381,7 +382,7 @@ def firm_experiences(firm_name):
             content_parts.append(f"Interview experience: {sub['interview_experience']}")
         if sub.get('advice'):
             content_parts.append(f"Advice: {sub['advice']}")
-        
+
         items.append({
             "content": " • ".join(content_parts),
             "firm_name": sub['company'],

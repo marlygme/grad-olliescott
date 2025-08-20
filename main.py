@@ -132,7 +132,10 @@ def index():
     firms = load_cards("out/grad_program_signals.csv")
     print(f"Loaded {len(firms)} firms from CSV")
 
-    return render_template('index.html', companies=sorted_companies, total_submissions=len(submissions), firms=firms, user_id=user_id, user_name=user_name)
+    # Create a lookup dictionary for companies data
+    companies_lookup = {company['name']: company for company in sorted_companies}
+    
+    return render_template('index.html', companies=companies_lookup, sorted_companies=sorted_companies, total_submissions=len(submissions), firms=firms, user_id=user_id, user_name=user_name)
 
 
 @app.route('/submit', methods=['GET', 'POST'])

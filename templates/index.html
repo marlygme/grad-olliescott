@@ -139,6 +139,9 @@
                 <h5 class="card-title fw-bold mb-0">{{ firm.name }}</h5>
                 <div class="d-flex flex-wrap gap-1">
                   <span class="badge bg-primary text-white small">{{ firm.experiences_count }} insights</span>
+                  {% if companies and companies[firm.name] %}
+                    <span class="badge bg-success text-white small">{{ companies[firm.name].total_submissions }} stories</span>
+                  {% endif %}
                   {% if firm.locations_count > 1 %}
                     <span class="badge bg-info text-white small">{{ firm.locations_count }} cities</span>
                   {% endif %}

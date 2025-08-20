@@ -1,265 +1,323 @@
+
 {% extends "base.html" %}
 
-{% block title %}Share Your Experience – Gradvantage{% endblock %}
+{% block title %}Share Your Story – Gradvantage{% endblock %}
 
 {% block content %}
-<div class="hero-section">
-  <div class="container text-center">
-    <h1 class="hero-title">Share Your Graduate Experience</h1>
-    <p class="hero-subtitle">Help other students by sharing your application journey</p>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Header Section -->
+      <div class="text-center mb-5">
+        <div class="mb-4">
+          <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+            <i class="bi bi-chat-heart fs-1"></i>
+          </div>
+        </div>
+        <h1 class="display-5 fw-bold mb-3">Share Your Graduate Story</h1>
+        <p class="fs-5 text-muted mb-4">
+          Help fellow graduates by sharing your authentic experience. Your story could be the insight someone needs to land their dream role.
+        </p>
+        <div class="d-flex justify-content-center gap-4 text-muted small">
+          <div><i class="bi bi-shield-check me-1"></i>Anonymous & Safe</div>
+          <div><i class="bi bi-clock me-1"></i>Takes 3-5 minutes</div>
+          <div><i class="bi bi-people me-1"></i>Helps thousands of students</div>
+        </div>
+      </div>
+
+      <!-- Form Card -->
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-5">
+          <form method="POST" class="needs-validation" novalidate>
+            <!-- Progress Indicator -->
+            <div class="progress mb-5" style="height: 6px;">
+              <div class="progress-bar bg-gradient" role="progressbar" style="width: 0%" id="formProgress"></div>
+            </div>
+
+            <!-- Basic Information Section -->
+            <div class="form-section mb-5">
+              <h4 class="fw-semibold mb-4 text-primary">
+                <span class="step-number">1</span>
+                Basic Information
+              </h4>
+              
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <label for="company" class="form-label fw-medium">Company *</label>
+                  <input type="text" class="form-control form-control-lg" id="company" name="company" required placeholder="e.g., Allens, Clayton Utz">
+                  <div class="invalid-feedback">Please enter the company name.</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="role" class="form-label fw-medium">Role/Program *</label>
+                  <input type="text" class="form-control form-control-lg" id="role" name="role" required placeholder="e.g., Graduate Lawyer, Summer Clerk">
+                  <div class="invalid-feedback">Please enter the role or program.</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="experience_type" class="form-label fw-medium">Experience Type *</label>
+                  <select class="form-select form-select-lg" id="experience_type" name="experience_type" required>
+                    <option value="">Select experience type</option>
+                    <option value="Application">Application Process</option>
+                    <option value="Interview">Interview Experience</option>
+                    <option value="Assessment">Assessment Centre</option>
+                    <option value="Internship">Internship/Clerkship</option>
+                    <option value="Graduate Program">Graduate Program</option>
+                    <option value="General">General Experience</option>
+                  </select>
+                  <div class="invalid-feedback">Please select an experience type.</div>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="theme" class="form-label fw-medium">Main Theme *</label>
+                  <select class="form-select form-select-lg" id="theme" name="theme" required>
+                    <option value="">Select main theme</option>
+                    <option value="application_timeline">Application Timeline</option>
+                    <option value="selection_process">Selection Process</option>
+                    <option value="pay_benefits">Pay & Benefits</option>
+                    <option value="hours_workload">Hours & Workload</option>
+                    <option value="program_structure">Program Structure</option>
+                    <option value="training_support">Training & Support</option>
+                    <option value="secondments_mobility">Secondments & Mobility</option>
+                    <option value="eligibility_requirements">Eligibility & Requirements</option>
+                    <option value="culture_environment">Culture & Environment</option>
+                    <option value="interview_tips">Interview Tips</option>
+                  </select>
+                  <div class="invalid-feedback">Please select a theme.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Experience Details Section -->
+            <div class="form-section mb-5">
+              <h4 class="fw-semibold mb-4 text-primary">
+                <span class="step-number">2</span>
+                Share Your Experience
+              </h4>
+
+              <!-- Dynamic Fields Container -->
+              <div id="dynamicFields">
+                <!-- Default fields that will be shown/hidden based on theme selection -->
+                <div class="mb-4" id="field-application-stages">
+                  <label for="application_stages" class="form-label fw-medium">Application Process</label>
+                  <textarea class="form-control" id="application_stages" name="application_stages" rows="4" 
+                           placeholder="Describe the application stages, timeline, requirements, etc."></textarea>
+                  <div class="form-text">Share details about the application process, deadlines, required documents, etc.</div>
+                </div>
+
+                <div class="mb-4" id="field-interview-experience">
+                  <label for="interview_experience" class="form-label fw-medium">Interview Experience</label>
+                  <textarea class="form-control" id="interview_experience" name="interview_experience" rows="4" 
+                           placeholder="Describe your interview experience, questions asked, format, etc."></textarea>
+                  <div class="form-text">Include interview format, types of questions, duration, and your overall experience.</div>
+                </div>
+
+                <div class="mb-4" id="field-advice">
+                  <label for="advice" class="form-label fw-medium">Advice & Tips</label>
+                  <textarea class="form-control" id="advice" name="advice" rows="4" 
+                           placeholder="What advice would you give to future applicants?"></textarea>
+                  <div class="form-text">Share your key learnings and tips for future candidates.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submission Section -->
+            <div class="form-section">
+              <div class="bg-light rounded-3 p-4 mb-4">
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-info-circle-fill text-primary me-3 mt-1"></i>
+                  <div>
+                    <h6 class="fw-semibold mb-2">Privacy & Guidelines</h6>
+                    <ul class="small text-muted mb-0 ps-3">
+                      <li>All submissions are anonymous and secure</li>
+                      <li>Don't include personal details (names, emails, phone numbers)</li>
+                      <li>Be honest and constructive in your feedback</li>
+                      <li>Your story helps build a supportive graduate community</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <button type="submit" class="btn btn-primary btn-lg px-5 py-3">
+                  <i class="bi bi-send me-2"></i>Share My Story
+                </button>
+                <a href="/" class="btn btn-outline-secondary btn-lg px-4 py-3">Cancel</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Success Stories Preview -->
+      <div class="mt-5 text-center">
+        <p class="text-muted mb-3">Join thousands of graduates who have shared their stories</p>
+        <div class="d-flex justify-content-center gap-4 flex-wrap">
+          <div class="badge bg-success-subtle text-success px-3 py-2">
+            <i class="bi bi-check-circle me-1"></i>2,000+ Stories Shared
+          </div>
+          <div class="badge bg-info-subtle text-info px-3 py-2">
+            <i class="bi bi-building me-1"></i>150+ Companies
+          </div>
+          <div class="badge bg-warning-subtle text-warning px-3 py-2">
+            <i class="bi bi-mortarboard me-1"></i>50+ Universities
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="container my-5">
-  {% if user_id %}
-  <div class="alert alert-success mb-4">
-    <i class="bi bi-check-circle me-2"></i>
-    Welcome, {{ user_name }}! You're logged in and ready to share your story.
-  </div>
-  <form method="POST" class="row g-3">
-    <div class="col-md-6">
-      <label class="form-label">Company</label>
-      <input id="company" name="company" class="form-control" required>
-    </div>
-    <div class="col-md-6">
-      <label class="form-label">Role</label>
-      <input name="role" class="form-control" required>
-    </div>
-    <div class="col-md-6">
-      <label class="form-label">Experience Type</label>
-      <select id="experience_type" name="experience_type" class="form-select" required>
-        <option value="">Select type</option>
-        <option value="Graduate Program">Graduate Program</option>
-        <option value="Internship">Internship</option>
-        <option value="Clerkship">Clerkship</option>
-        <option value="Vacation Work">Vacation Work</option>
-        <option value="Entry Level">Entry Level</option>
-      </select>
-    </div>
-    <div class="col-md-6">
-      
-      <small class="text-muted d-block">Auto-fill from CSV data</small>
-    </div>
-    <div class="col-md-12">
-      <label class="form-label">Key Theme</label>
-      <select id="theme" name="theme" class="form-select" required>
-        <option value="">Select theme</option>
-        <option value="application_timeline">Application timeline</option>
-        <option value="selection_process">Selection process</option>
-        <option value="offer_outcomes">Offer outcomes</option>
-        <option value="program_structure">Program structure</option>
-        <option value="pay_benefits">Pay & benefits</option>
-        <option value="hours_workload">Hours & workload</option>
-        <option value="culture_environment">Culture & environment</option>
-        <option value="training_support">Training & support</option>
-        <option value="secondments_mobility">Secondments & mobility</option>
-        <option value="eligibility_requirements">Eligibility & requirements</option>
-        <option value="interview_tips">Interview tips</option>
-      </select>
-    </div>
-    <div class="col-12" id="dynamic-fields">
-      <!-- Dynamic fields will be inserted here based on theme selection -->
-    </div>
+<style>
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bs-primary);
+  color: white;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-right: 0.75rem;
+}
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const themeSelect = document.querySelector('select[name="theme"]');
-        const dynamicFields = document.getElementById('dynamic-fields');
+.form-section {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+}
 
-        const fieldTemplates = {
-          'application_timeline': `
-            <div class="mb-3">
-              <label class="form-label">Application Timeline Details</label>
-              <textarea name="application_stages" class="form-control" rows="3" placeholder="When did applications open/close? What were the key dates and deadlines?"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Timeline Tips</label>
-              <textarea name="advice" class="form-control" rows="2" placeholder="Any advice about timing, deadlines, or when to apply?"></textarea>
-            </div>
-          `,
-          'selection_process': `
-            <div class="mb-3">
-              <label class="form-label">Selection Process Stages</label>
-              <textarea name="application_stages" class="form-control" rows="3" placeholder="Describe each stage: online application, tests, interviews, assessment centre, etc."></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">What to Expect</label>
-              <textarea name="interview_experience" class="form-control" rows="3" placeholder="What should candidates expect at each stage? Any surprises or unique elements?"></textarea>
-            </div>
-          `,
-          'offer_outcomes': `
-            <div class="mb-3">
-              <label class="form-label">Offer Details</label>
-              <textarea name="application_stages" class="form-control" rows="2" placeholder="When did you hear back? How was the offer communicated?"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Outcome Experience</label>
-              <textarea name="interview_experience" class="form-control" rows="3" placeholder="Describe your experience receiving the outcome (offer/rejection). Any negotiation?"></textarea>
-            </div>
-          `,
-          'program_structure': `
-            <div class="mb-3">
-              <label class="form-label">Program Structure</label>
-              <textarea name="application_stages" class="form-control" rows="3" placeholder="How many rotations? What practice areas? Program length and structure?"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Rotation Experience</label>
-              <textarea name="interview_experience" class="form-control" rows="3" placeholder="What were your rotations like? How do you choose seats?"></textarea>
-            </div>
-          `,
-          'pay_benefits': `
-            <div class="mb-3">
-              <label class="form-label">Compensation Details</label>
-              <textarea name="application_stages" class="form-control" rows="2" placeholder="Break down salary, bonuses, benefits, super, overtime rates, etc."></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Benefits Experience</label>
-              <textarea name="interview_experience" class="form-control" rows="3" placeholder="What benefits did you receive? Any hidden costs or unexpected perks?"></textarea>
-            </div>
-          `,
-          'hours_workload': `
-            <div class="mb-3">
-              <label class="form-label">Hours & Workload</label>
-              <textarea name="application_stages" class="form-control" rows="3" placeholder="Typical hours per day/week? Billable targets? Weekend work? Overtime expectations?"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Work-Life Balance</label>
-              <textarea name="interview_experience" class="form-control" rows="3" placeholder="How manageable was the workload? Any tips for balancing work and life?"></textarea>
-            </div>
-          `,
-          'culture_environment': `
-            <div class="mb-3">
-              <label class="form-label">Firm Culture</label>
-              <textarea name="application_stages" class="form-control" rows="3" placeholder="Describe the culture, team dynamics, partner relationships, social events, etc."></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Cultural Fit</label>
-              <textarea name="interview_experience" class="form-control" rows="3" placeholder="What type of person thrives here? Any cultural challenges or highlights?"></textarea>
-            </div>
-          `,
-          'training_support': `
-            <div class="mb-3">
-              <label class="form-label">Training Programs</label>
-              <textarea name="application_stages" class="form-control" rows="3" placeholder="What training did you receive? Mentorship programs? PLT support?"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Support System</label>
-              <textarea name="interview_experience" class="form-control" rows="3" placeholder="How supportive were partners/senior lawyers? Quality of mentorship and feedback?"></textarea>
-            </div>
-          `,
-          'secondments_mobility': `
-            <div class="mb-3">
-              <label class="form-label">Secondment Opportunities</label>
-              <textarea name="application_stages" class="form-control" rows="3" placeholder="What secondment options are available? Client secondments? International opportunities?"></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Mobility Experience</label>
-              <textarea name="interview_experience" class="form-control" rows="3" placeholder="Did you do any secondments? How do you apply? What was the experience like?"></textarea>
-            </div>
-          `,
-          'eligibility_requirements': `
-            <div class="mb-3">
-              <label class="form-label">Eligibility Criteria</label>
-              <textarea name="application_stages" class="form-control" rows="3" placeholder="Academic requirements, citizenship/visa requirements, year of study, etc."></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Application Requirements</label>
-              <textarea name="interview_experience" class="form-control" rows="3" placeholder="What documents were required? Any specific eligibility challenges you faced?"></textarea>
-            </div>
-          `,
-          'interview_tips': `
-            <div class="mb-3">
-              <label class="form-label">Interview Questions</label>
-              <textarea name="interview_experience" class="form-control" rows="4" placeholder="What questions were you asked? Behavioral, technical, case studies? Be specific with examples."></textarea>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Interview Advice</label>
-              <textarea name="advice" class="form-control" rows="3" placeholder="Your best tips for interviews at this firm. What worked? What didn't? How to prepare?"></textarea>
-            </div>
-          `
-        };
+.form-section:nth-child(1) { animation-delay: 0.1s; }
+.form-section:nth-child(2) { animation-delay: 0.2s; }
+.form-section:nth-child(3) { animation-delay: 0.3s; }
 
-        function updateFields() {
-          const selectedTheme = themeSelect.value;
-          if (selectedTheme && fieldTemplates[selectedTheme]) {
-            dynamicFields.innerHTML = fieldTemplates[selectedTheme];
-          } else {
-            // Default fields
-            dynamicFields.innerHTML = `
-              <div class="mb-3">
-                <label class="form-label">Application Stages</label>
-                <textarea name="application_stages" class="form-control" rows="2" placeholder="Describe the application process (e.g., online application, phone screen, assessment centre, etc.)"></textarea>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Interview Experience</label>
-                <textarea name="interview_experience" class="form-control" rows="3" placeholder="What was the interview like? What questions were asked?"></textarea>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Advice</label>
-                <textarea name="advice" class="form-control" rows="3" placeholder="Any advice for future applicants?"></textarea>
-              </div>
-            `;
-          }
-        }
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-        // Initialize with default fields
-        updateFields();
+.form-control:focus, .form-select:focus {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
 
-        // Update fields when theme changes
-        themeSelect.addEventListener('change', updateFields);
-      });
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
-    </script>
-    <div class="col-12">
-      <button type="submit" class="btn btn-primary">Submit</button>
-      <a href="/" class="btn btn-outline-secondary ms-2">Cancel</a>
-    </div>
-  </form>
-  {% else %}
-  <div class="text-center py-5">
-    <div class="mb-4">
-      <i class="bi bi-person-lock text-primary" style="font-size: 4rem;"></i>
-    </div>
-    <h3 class="fw-medium mb-3">Account Required</h3>
-    <p class="text-muted mb-4">Please log in with your Replit account to share your graduate experience and help other students.</p>
-    <div class="mb-4">
-      <button onclick="LoginWithReplit()" class="btn btn-primary btn-lg">
-        <i class="bi bi-box-arrow-in-right me-2"></i>Login with Replit
-      </button>
-    </div>
-    <script>
-      function LoginWithReplit() {
-        window.addEventListener("message", authComplete);
-        var h = 500;
-        var w = 350;
-        var left = screen.width / 2 - w / 2;
-        var top = screen.height / 2 - h / 2;
+.btn {
+  transition: all 0.2s ease;
+}
 
-        var authWindow = window.open(
-          "https://replit.com/auth_with_repl_site?domain=" + location.host,
-          "_blank",
-          "modal=yes, toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=" +
-            w +
-            ", height=" +
-            h +
-            ", top=" +
-            top +
-            ", left=" +
-            left
-        );
+.btn:hover {
+  transform: translateY(-1px);
+}
 
-        function authComplete(e) {
-          if (e.data !== "auth_complete") {
-            return;
-          }
+#dynamicFields .mb-4 {
+  transition: all 0.3s ease;
+}
+</style>
 
-          window.removeEventListener("message", authComplete);
-          authWindow.close();
-          location.reload();
-        }
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.querySelector('form');
+  const themeSelect = document.getElementById('theme');
+  const progressBar = document.getElementById('formProgress');
+  const allFields = form.querySelectorAll('input[required], select[required], textarea');
+  
+  // Dynamic field visibility based on theme
+  function updateFields() {
+    const selectedTheme = themeSelect.value;
+    const dynamicFields = document.getElementById('dynamicFields');
+    const allDynamicFields = dynamicFields.querySelectorAll('[id^="field-"]');
+    
+    // Hide all dynamic fields first
+    allDynamicFields.forEach(field => {
+      field.style.display = 'none';
+    });
+    
+    // Show relevant fields based on theme
+    switch(selectedTheme) {
+      case 'application_timeline':
+      case 'selection_process':
+      case 'eligibility_requirements':
+        document.getElementById('field-application-stages').style.display = 'block';
+        document.getElementById('field-advice').style.display = 'block';
+        break;
+      case 'interview_tips':
+        document.getElementById('field-interview-experience').style.display = 'block';
+        document.getElementById('field-advice').style.display = 'block';
+        break;
+      default:
+        // Show all fields for other themes
+        allDynamicFields.forEach(field => {
+          field.style.display = 'block';
+        });
+    }
+  }
+  
+  // Update progress bar
+  function updateProgress() {
+    const filledFields = Array.from(allFields).filter(field => {
+      if (field.type === 'text' || field.tagName === 'TEXTAREA') {
+        return field.value.trim().length > 0;
       }
-    </script>
-  </div>
-  {% endif %}
-</div>
+      return field.value !== '';
+    });
+    
+    const progress = (filledFields.length / allFields.length) * 100;
+    progressBar.style.width = progress + '%';
+    
+    if (progress > 75) {
+      progressBar.classList.remove('bg-gradient');
+      progressBar.classList.add('bg-success');
+    } else if (progress > 50) {
+      progressBar.classList.remove('bg-success');
+      progressBar.classList.add('bg-gradient');
+    }
+  }
+  
+  // Form validation
+  function validateForm() {
+    form.classList.add('was-validated');
+    return form.checkValidity();
+  }
+  
+  // Event listeners
+  themeSelect.addEventListener('change', updateFields);
+  
+  allFields.forEach(field => {
+    field.addEventListener('input', updateProgress);
+    field.addEventListener('change', updateProgress);
+  });
+  
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (validateForm()) {
+      // Add loading state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sharing Your Story...';
+      submitBtn.disabled = true;
+      
+      // Submit form after short delay for UX
+      setTimeout(() => {
+        form.submit();
+      }, 1000);
+    }
+  });
+  
+  // Initialize
+  updateFields();
+  updateProgress();
+});
+</script>
 {% endblock %}

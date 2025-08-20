@@ -7,7 +7,7 @@ import csv
 from collections import defaultdict, Counter
 from grad_data import load_cards, load_grad_signals
 from grad_data_v2 import load_cards as load_cards_v2
-from draft_service import build_draft
+
 
 # Load data from JSON file
 data_file = 'submissions.json'
@@ -165,19 +165,7 @@ def submit():
             json.dump(data, f, indent=2)
         return redirect(url_for('index'))
     
-    firm_name = request.args.get("firm")
-    generated_draft = None
-
-    if firm_name:
-        try:
-            from csv_to_submission_draft import generate_submission_for_firm, format_submission_html
-            draft_data = generate_submission_for_firm(firm_name)
-            generated_draft = format_submission_html(draft_data)
-        except Exception as e:
-            print(f"Error generating draft: {e}")
-            generated_draft = None
-
-    return render_template("submit.html", generated_draft=generated_draft, firm_name=firm_name, user_id=user_id, user_name=user_name)
+    return render_template("submit.html", user_id=user_id, user_name=user_name)
 
 
 
@@ -308,13 +296,7 @@ def api_grad_data():
     return jsonify({"firms": load_cards("out/grad_program_signals.csv")})
 
 
-@app.route('/api/draft')
-def api_draft():
-    firm = request.args.get("firm", "").strip()
-    if not firm:
-        return jsonify({"error":"firm required"}), 400
-    data = build_draft(firm)
-    return jsonify(data)
+
 
 
 @app.route('/experiences')

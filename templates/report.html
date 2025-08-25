@@ -1,0 +1,172 @@
+
+{% extends "base.html" %}
+
+{% block title %}Report Content – {{ config.SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="display-5 fw-bold mb-4">Report Content</h1>
+      <p class="lead mb-4">Help us maintain a safe community by reporting content that violates our policies.</p>
+
+      <div class="alert alert-info mb-4">
+        <h5 class="alert-heading">Takedown Process Summary</h5>
+        <p class="mb-0">Report at /report with the URL and details. We'll acknowledge within 48 hours, may restrict access while we assess, contact the poster for context, and then remove or restore with reasons. Urgent safety matters are prioritised.</p>
+      </div>
+
+      <form id="reportForm" class="needs-validation" novalidate>
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="reporterName" class="form-label">Your Name *</label>
+                <input type="text" class="form-control" id="reporterName" name="reporter_name" required>
+                <div class="invalid-feedback">Please provide your name.</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="reporterEmail" class="form-label">Your Email *</label>
+                <input type="email" class="form-control" id="reporterEmail" name="reporter_email" required>
+                <div class="invalid-feedback">Please provide a valid email address.</div>
+              </div>
+
+              <div class="col-12">
+                <label for="contentUrl" class="form-label">URL of Content *</label>
+                <input type="url" class="form-control" id="contentUrl" name="content_url" placeholder="https://gradvantage.com/..." required>
+                <div class="form-text">Copy and paste the exact URL of the problematic content.</div>
+                <div class="invalid-feedback">Please provide the URL of the content you're reporting.</div>
+              </div>
+
+              <div class="col-12">
+                <label for="problematicContent" class="form-label">Exact Statement(s) You're Complaining About *</label>
+                <textarea class="form-control" id="problematicContent" name="problematic_content" rows="4" placeholder="Copy the exact text or describe the specific content..." required></textarea>
+                <div class="form-text">Be as specific as possible - quote the exact words or describe the specific images/content.</div>
+                <div class="invalid-feedback">Please specify the exact content you're reporting.</div>
+              </div>
+
+              <div class="col-12">
+                <label for="reasonForReport" class="form-label">Why is this content problematic? *</label>
+                <select class="form-select" id="reasonForReport" name="reason_for_report" required>
+                  <option value="">Choose a reason...</option>
+                  <option value="defamatory">Defamatory content</option>
+                  <option value="privacy_breach">Privacy breach / doxxing</option>
+                  <option value="copyright">Copyright infringement</option>
+                  <option value="confidential">Confidential information</option>
+                  <option value="harassment">Harassment or personal attacks</option>
+                  <option value="hate_speech">Hate speech</option>
+                  <option value="illegal">Illegal content</option>
+                  <option value="spam">Spam or irrelevant content</option>
+                  <option value="other">Other legal issue</option>
+                </select>
+                <div class="invalid-feedback">Please select a reason for your report.</div>
+              </div>
+
+              <div class="col-12">
+                <label for="detailedExplanation" class="form-label">Detailed Explanation *</label>
+                <textarea class="form-control" id="detailedExplanation" name="detailed_explanation" rows="5" placeholder="Explain why this content violates our policies or Australian law..." required></textarea>
+                <div class="form-text">Provide specific details about why this content is unlawful, defamatory, or violates our terms.</div>
+                <div class="invalid-feedback">Please provide a detailed explanation.</div>
+              </div>
+
+              <div class="col-12">
+                <label for="supportingEvidence" class="form-label">Supporting Evidence (Optional)</label>
+                <input type="url" class="form-control" id="supportingEvidence" name="supporting_evidence" placeholder="Links to screenshots, documents, or other evidence">
+                <div class="form-text">Provide links to screenshots, documents, or other supporting evidence if available.</div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="truthDeclaration" name="truth_declaration" required>
+                  <label class="form-check-label" for="truthDeclaration">
+                    I declare that the information provided is true and accurate to the best of my knowledge, and I consent to {{ config.LEGAL_NAME }} sharing this report with the content poster for resolution purposes. *
+                  </label>
+                  <div class="invalid-feedback">You must agree to this declaration to submit the report.</div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="urgentMatter" name="urgent_matter">
+                  <label class="form-check-label" for="urgentMatter">
+                    This is an urgent safety matter requiring immediate attention
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-danger btn-lg" data-testid="report-submit">
+            <i class="bi bi-flag me-2"></i>Submit Report
+          </button>
+          <a href="/" class="btn btn-outline-secondary btn-lg ms-3">Cancel</a>
+        </div>
+      </form>
+
+      <!-- Success Message -->
+      <div id="successMessage" class="alert alert-success mt-4" style="display: none;">
+        <h5 class="alert-heading">Report Submitted Successfully</h5>
+        <p>Thank you for your report. We've received it and will respond within 48 hours (sooner for urgent matters). You'll receive an acknowledgment email shortly.</p>
+        <p class="mb-0">Reference ID: <span id="reportId"></span></p>
+      </div>
+
+      <!-- Error Message -->
+      <div id="errorMessage" class="alert alert-danger mt-4" style="display: none;">
+        <h5 class="alert-heading">Submission Failed</h5>
+        <p class="mb-0">There was an error submitting your report. Please try again or email us directly at {{ config.CONTACT_EMAIL }}.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('reportForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  // Validate form
+  if (!this.checkValidity()) {
+    e.stopPropagation();
+    this.classList.add('was-validated');
+    return;
+  }
+
+  const formData = new FormData(this);
+  const reportData = {
+    reporter_name: formData.get('reporter_name'),
+    reporter_email: formData.get('reporter_email'),
+    content_url: formData.get('content_url'),
+    problematic_content: formData.get('problematic_content'),
+    reason_for_report: formData.get('reason_for_report'),
+    detailed_explanation: formData.get('detailed_explanation'),
+    supporting_evidence: formData.get('supporting_evidence'),
+    truth_declaration: formData.get('truth_declaration') === 'on',
+    urgent_matter: formData.get('urgent_matter') === 'on',
+    submitted_at: new Date().toISOString(),
+    site: '{{ config.SITE_NAME }}'
+  };
+
+  try {
+    const response = await fetch('{{ config.REPORT_WEBHOOK_URL }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reportData)
+    });
+
+    if (response.ok) {
+      document.getElementById('reportForm').style.display = 'none';
+      document.getElementById('successMessage').style.display = 'block';
+      document.getElementById('reportId').textContent = Date.now(); // Simple reference ID
+    } else {
+      throw new Error('Submission failed');
+    }
+  } catch (error) {
+    console.error('Error submitting report:', error);
+    document.getElementById('errorMessage').style.display = 'block';
+  }
+});
+</script>
+{% endblock %}

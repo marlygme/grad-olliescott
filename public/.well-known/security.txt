@@ -1,0 +1,9 @@
+
+Contact: {{ config.CONTACT_EMAIL }}
+Preferred-Languages: en
+Policy: https://gradvantage.com/terms#security
+
+# Disclosure Policy
+We take security seriously. Please report vulnerabilities responsibly by emailing our security team. We'll respond within 48 hours and work with you to address legitimate security issues.
+
+Expires: {{ (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}

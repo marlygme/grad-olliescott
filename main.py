@@ -7,6 +7,7 @@ import csv
 from collections import defaultdict, Counter
 from grad_data import load_cards, load_grad_signals
 from grad_data_v2 import load_cards as load_cards_v2
+from legal_config import LEGAL_CONFIG, NOT_ADVICE_DISCLAIMER
 
 
 # Load data from JSON file
@@ -765,6 +766,27 @@ def export_tracker():
             writer.writerow({field: app.get(field, '') for field in fieldnames})
 
     return send_file(output_file, as_attachment=True, download_name=f'applications_{datetime.now().strftime("%Y%m%d")}.csv')
+
+
+# Legal & Compliance Routes
+@app.route('/terms')
+def terms():
+    return render_template('terms.html', config=LEGAL_CONFIG)
+
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html', config=LEGAL_CONFIG)
+
+
+@app.route('/moderation')
+def moderation():
+    return render_template('moderation.html', config=LEGAL_CONFIG)
+
+
+@app.route('/report')
+def report():
+    return render_template('report.html', config=LEGAL_CONFIG)
 
 
 if __name__ == '__main__':

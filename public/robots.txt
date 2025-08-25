@@ -1,0 +1,10 @@
+
+User-agent: *
+Allow: /
+
+# Disallow admin areas if any exist
+Disallow: /admin/
+Disallow: /api/internal/
+
+# Sitemap
+Sitemap: https://gradvantage.com/sitemap.xml

@@ -1,0 +1,132 @@
+
+{% extends "base.html" %}
+
+{% block title %}Terms of Use – {{ config.SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="alert alert-info mb-4">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Not Advice:</strong> {{ config.NOT_ADVICE_DISCLAIMER }}
+      </div>
+
+      <h1 class="display-5 fw-bold mb-4">Terms of Use</h1>
+      <p class="text-muted mb-4">Last updated: {{ config.LAST_UPDATED }}</p>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">1. Who We Are</h2>
+          <p>{{ config.SITE_NAME }} is operated by {{ config.LEGAL_NAME }} (ABN: {{ config.ABN }}). We provide a platform for graduate program insights and career experiences in Australia.</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">2. Eligibility & Account Rules</h2>
+          <ul>
+            <li>You must be at least 16 years old to use {{ config.SITE_NAME }}</li>
+            <li>Provide accurate information when creating an account</li>
+            <li>You're responsible for keeping your account secure</li>
+            <li>One account per person - don't create multiple accounts</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">3. User-Generated Content</h2>
+          <p><strong>Your Promises:</strong> By posting content, you promise that:</p>
+          <ul>
+            <li>You have the necessary rights to share this content</li>
+            <li>Your content doesn't infringe anyone's intellectual property, privacy, or other rights</li>
+            <li>Your content isn't defamatory, confidential, or illegal</li>
+          </ul>
+          
+          <p><strong>Licence to Us:</strong> You grant {{ config.LEGAL_NAME }} a non-exclusive, worldwide, royalty-free licence to host, display and distribute your content on {{ config.SITE_NAME }}. You can remove your content at any time; this licence continues for reasonable operational backup and cache purposes.</p>
+          
+          <p><strong>Our Rights:</strong> We may moderate, restrict, or remove content at our discretion. Your posts aren't confidential - they're visible to other users and may be shared publicly.</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">4. Acceptable Use</h2>
+          <p><strong>Do:</strong></p>
+          <ul>
+            <li>Share genuine graduate program experiences</li>
+            <li>Be respectful to other users</li>
+            <li>Follow Australian laws</li>
+          </ul>
+          
+          <p><strong>Don't:</strong></p>
+          <ul>
+            <li>Post personal attacks, hate speech, or harassment</li>
+            <li>Share confidential company information</li>
+            <li>Make defamatory statements about individuals or organisations</li>
+            <li>Infringe copyright or share others' private information</li>
+            <li>Use the platform for illegal activities</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">5. No Advice Disclaimer</h2>
+          <p>{{ config.SITE_NAME }} provides general information and user experiences. We don't provide legal, financial, or career advice. All content is for informational purposes only. Consider your specific circumstances and seek professional advice before making important decisions.</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">6. Accuracy & Reliability</h2>
+          <p>We don't guarantee that content on {{ config.SITE_NAME }} is current, complete, or accurate. User-generated content reflects individual experiences and opinions. You rely on this information at your own risk.</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">7. Liability & Australian Consumer Law</h2>
+          <p>To the extent permitted by law, we exclude liability for any indirect, special or consequential loss. Nothing in these Terms limits your non-excludable rights under the Australian Consumer Law.</p>
+          
+          <p><strong>Australian Consumer Law Rights:</strong> If you're a consumer under the Australian Consumer Law, you have certain guarantees that cannot be excluded. Where we supply services to you as a consumer, our liability is limited to re-supplying the services or paying the cost of having them re-supplied.</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">8. User Indemnity</h2>
+          <p>You agree to indemnify {{ config.LEGAL_NAME }} against any claims, damages, or costs arising from your content or use of {{ config.SITE_NAME }}, including defamation, intellectual property infringement, or privacy breaches.</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">9. Copyright</h2>
+          <p>Only post content you own or have permission to share. Respect others' intellectual property rights. If you believe your copyright has been infringed, contact us at {{ config.CONTACT_EMAIL }}.</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">10. Governing Law & Contact</h2>
+          <p>These Terms are governed by the laws of {{ config.GOVERNING_LAW }}. Any disputes will be resolved in the courts of Victoria, Australia.</p>
+          
+          <p><strong>Legal Notices:</strong></p>
+          <ul>
+            <li>Email: {{ config.CONTACT_EMAIL }}</li>
+            <li>Post: {{ config.POSTAL_ADDRESS }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <a href="/report" class="btn btn-warning btn-lg">
+          <i class="bi bi-flag me-2"></i>Report Content
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

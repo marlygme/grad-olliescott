@@ -1,0 +1,127 @@
+
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy – {{ config.SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="display-5 fw-bold mb-4">Privacy Policy</h1>
+      <p class="text-muted mb-4">Last updated: {{ config.LAST_UPDATED }}</p>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">What We Collect</h2>
+          <p>We collect information to operate {{ config.SITE_NAME }} and provide you with graduate program insights:</p>
+          <ul>
+            <li><strong>Account Information:</strong> Username, email, university details when you register</li>
+            <li><strong>Content You Post:</strong> Graduate experiences, company reviews, comments, and application tracking data</li>
+            <li><strong>Usage Analytics:</strong> How you use the site, pages visited, time spent (via Google Analytics)</li>
+            <li><strong>Device Data:</strong> IP address, browser type, device information for security and functionality</li>
+            <li><strong>Cookies:</strong> Essential cookies for site functionality, optional analytics cookies with your consent</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Why We Collect This Information</h2>
+          <ul>
+            <li><strong>Service Operation:</strong> To provide and maintain {{ config.SITE_NAME }}'s features</li>
+            <li><strong>Content Moderation:</strong> To keep the community safe and comply with our policies</li>
+            <li><strong>Analytics & Improvement:</strong> To understand how users engage and improve our platform</li>
+            <li><strong>Communication:</strong> To send important updates about your account or the service</li>
+            <li><strong>Legal Compliance:</strong> To comply with Australian privacy laws and respond to legal requests</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Marketing & Consent</h2>
+          <p>We may send you updates about new features or graduate opportunities with your consent. You can opt out anytime by:</p>
+          <ul>
+            <li>Clicking "unsubscribe" in any marketing email</li>
+            <li>Emailing {{ config.PRIVACY_OFFICER }}</li>
+            <li>Updating your account preferences</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Third-Party Services & Cross-Border Disclosure</h2>
+          <p>We use trusted third-party services to operate {{ config.SITE_NAME }}:</p>
+          <ul>
+            {% for processor in config.PROCESSORS %}
+            <li>{{ processor }}</li>
+            {% endfor %}
+          </ul>
+          <p><strong>Overseas Disclosure:</strong> Some of these services may store or process data outside Australia, including in the United States and European Union. We ensure these providers have appropriate privacy protections.</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Storage, Security & Retention</h2>
+          <p><strong>Security:</strong> We use industry-standard security measures to protect your information, including encryption and secure hosting.</p>
+          
+          <p><strong>Retention:</strong> We keep your information while your account is active and for a reasonable period after to comply with legal obligations.</p>
+          
+          <p><strong>Deletion:</strong> You can request deletion of your account and personal information by emailing {{ config.PRIVACY_OFFICER }}. Some information may be retained for legal or operational purposes.</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Your Rights: Access & Correction</h2>
+          <p>Under Australian privacy law, you have the right to:</p>
+          <ul>
+            <li>Access your personal information</li>
+            <li>Request correction of inaccurate information</li>
+            <li>Request deletion of your information (subject to legal requirements)</li>
+          </ul>
+          <p>To exercise these rights, contact our Privacy Officer: {{ config.PRIVACY_OFFICER }}</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Data Breach Response</h2>
+          <p>If a data breach is likely to result in serious harm to you, we will:</p>
+          <ul>
+            <li>Notify affected users as soon as practicable</li>
+            <li>Report the breach to the Office of the Australian Information Commissioner (OAIC) within 72 hours as required by the Notifiable Data Breaches scheme</li>
+            <li>Provide clear information about what happened and steps you should take</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Cookies & Analytics</h2>
+          <p>We use essential cookies to make {{ config.SITE_NAME }} work properly. We also use optional analytics cookies to understand how the site is used and improve it.</p>
+          <p>You can manage your cookie preferences using our cookie banner or by adjusting your browser settings.</p>
+          <a href="#" class="btn btn-outline-primary" onclick="showCookieSettings()">Manage Cookie Preferences</a>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Complaints</h2>
+          <p>If you have concerns about how we handle your privacy:</p>
+          <ol>
+            <li>First, contact our Privacy Officer: {{ config.PRIVACY_OFFICER }}</li>
+            <li>If you're not satisfied, you can lodge a complaint with the Office of the Australian Information Commissioner (OAIC): <a href="https://www.oaic.gov.au/privacy/privacy-complaints" target="_blank">www.oaic.gov.au/privacy/privacy-complaints</a></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <p class="text-muted">Questions about this Privacy Policy? Contact {{ config.CONTACT_EMAIL }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

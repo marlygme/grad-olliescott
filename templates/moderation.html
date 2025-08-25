@@ -1,0 +1,120 @@
+
+{% extends "base.html" %}
+
+{% block title %}Content & Moderation Policy – {{ config.SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="display-5 fw-bold mb-4">Content & Moderation Policy</h1>
+      <p class="text-muted mb-4">Last updated: {{ config.LAST_UPDATED }}</p>
+
+      <div class="alert alert-info mb-4">
+        <i class="bi bi-shield-check me-2"></i>
+        We're committed to maintaining a safe, respectful community for sharing graduate experiences.
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3 text-success">✓ What's Welcome</h2>
+          <ul>
+            <li>Genuine graduate program experiences and insights</li>
+            <li>Helpful career advice and application tips</li>
+            <li>Respectful discussions about companies and universities</li>
+            <li>Constructive feedback and honest reviews</li>
+            <li>Questions seeking advice or clarification</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3 text-danger">✗ What's Not Allowed</h2>
+          <ul>
+            <li><strong>Personal Information (Doxxing):</strong> Don't share anyone's private contact details, addresses, or personal information without consent</li>
+            <li><strong>Personal Attacks:</strong> No harassment, bullying, or targeted abuse of individuals</li>
+            <li><strong>Hate Speech:</strong> Content targeting people based on race, religion, gender, sexuality, or other protected characteristics</li>
+            <li><strong>Illegal Content:</strong> Anything that violates Australian law</li>
+            <li><strong>Confidential Information:</strong> Don't share confidential company information, internal documents, or proprietary data</li>
+            <li><strong>Defamatory Claims:</strong> False statements that could damage someone's reputation</li>
+            <li><strong>Spam:</strong> Repetitive, irrelevant, or promotional content</li>
+            <li><strong>Copyright Infringement:</strong> Don't post content you don't own or have permission to share</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Pre-Moderation for High-Risk Content</h2>
+          <p>To protect individuals and organisations, we may pre-moderate posts that:</p>
+          <ul>
+            <li>Name specific individuals with allegations of misconduct</li>
+            <li>Make serious claims about company practices</li>
+            <li>Contain potential defamatory statements</li>
+          </ul>
+          <p>These posts will be reviewed before publication to ensure they comply with our policies and Australian law.</p>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Notice-and-Takedown Process</h2>
+          <p><strong>How It Works:</strong></p>
+          <ol>
+            <li><strong>Report Content:</strong> Use our <a href="/report">report form</a> with specific details</li>
+            <li><strong>Acknowledgment:</strong> We'll acknowledge your report within 48 hours</li>
+            <li><strong>Assessment:</strong> We may temporarily restrict access to content while investigating</li>
+            <li><strong>Investigation:</strong> We'll contact the poster for their perspective when appropriate</li>
+            <li><strong>Decision:</strong> We'll decide whether to remove, modify, or restore content with clear reasons</li>
+            <li><strong>Appeal:</strong> Both parties can appeal our decision through {{ config.CONTACT_EMAIL }}</li>
+          </ol>
+          
+          <p><strong>Service Levels:</strong></p>
+          <ul>
+            <li>Urgent safety matters: Immediate action</li>
+            <li>Standard reports: Response within 48 hours</li>
+            <li>Complex legal matters: Up to 7 business days</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Enforcement Actions</h2>
+          <p>Depending on the severity and frequency of violations, we may:</p>
+          <ul>
+            <li><strong>Warning:</strong> First-time minor violations</li>
+            <li><strong>Content Removal:</strong> Remove specific posts or comments</li>
+            <li><strong>Temporary Restriction:</strong> Limit posting abilities for a period</li>
+            <li><strong>Account Suspension:</strong> Temporary suspension for serious or repeated violations</li>
+            <li><strong>Permanent Ban:</strong> For severe violations or users who repeatedly breach policies</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card shadow-sm mb-4">
+        <div class="card-body">
+          <h2 class="h4 mb-3">Appeals Process</h2>
+          <p>If you disagree with a moderation decision:</p>
+          <ol>
+            <li>Email {{ config.CONTACT_EMAIL }} within 30 days</li>
+            <li>Include the specific content and reasons for your appeal</li>
+            <li>We'll review the decision with fresh eyes</li>
+            <li>You'll receive a response within 7 business days</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <a href="/report" class="btn btn-warning btn-lg">
+          <i class="bi bi-flag me-2"></i>Report Content
+        </a>
+        <a href="mailto:{{ config.CONTACT_EMAIL }}" class="btn btn-outline-primary btn-lg ms-3">
+          <i class="bi bi-envelope me-2"></i>Contact Legal Team
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

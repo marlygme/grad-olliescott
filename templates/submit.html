@@ -99,10 +99,10 @@
               <div id="dynamicFields">
                 <!-- Default fields that will be shown/hidden based on theme selection -->
                 <div class="mb-4" id="field-application-stages">
-                  <label for="application_stages" class="form-label fw-medium">Application Process</label>
+                  <label for="application_stages" class="form-label fw-medium">Application Process (Optional)</label>
                   <textarea class="form-control" id="application_stages" name="application_stages" rows="4" 
-                           placeholder="Describe the application stages, timeline, requirements, etc."></textarea>
-                  <div class="form-text">Share details about the application process, deadlines, required documents, etc.</div>
+                           placeholder="Describe the application stages, timeline, requirements, etc. (optional)"></textarea>
+                  <div class="form-text">Share details about the application process, deadlines, required documents, etc. This field is optional.</div>
                 </div>
 
                 <div class="mb-4" id="field-interview-experience">
@@ -265,14 +265,16 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Update progress bar
   function updateProgress() {
-    const filledFields = Array.from(allFields).filter(field => {
+    // Only count required fields for progress
+    const requiredFields = Array.from(allFields).filter(field => field.hasAttribute('required'));
+    const filledRequiredFields = requiredFields.filter(field => {
       if (field.type === 'text' || field.tagName === 'TEXTAREA') {
         return field.value.trim().length > 0;
       }
       return field.value !== '';
     });
     
-    const progress = (filledFields.length / allFields.length) * 100;
+    const progress = requiredFields.length > 0 ? (filledRequiredFields.length / requiredFields.length) * 100 : 0;
     progressBar.style.width = progress + '%';
     
     if (progress > 75) {

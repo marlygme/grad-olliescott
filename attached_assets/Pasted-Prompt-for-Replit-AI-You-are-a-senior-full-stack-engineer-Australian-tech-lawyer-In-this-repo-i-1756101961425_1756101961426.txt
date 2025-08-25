@@ -1,0 +1,205 @@
+Prompt for Replit AI
+
+You are a senior full-stack engineer + Australian tech lawyer. In this repo, implement Gradvantage’s legal & compliance pack for an AU user-generated site. Deliver production-ready pages, components, and docs with clean, plain-English content (AU-specific).
+
+Project assumptions
+
+Detect the stack:
+
+If Next.js/React present: create React/TSX pages + components with Tailwind.
+
+If no framework: create static HTML + a tiny JS bundle + CSS.
+
+Keep design minimal, accessible, mobile-first.
+
+Placeholders (make these clearly visible at the top of each page, and in a central config file)
+
+SITE_NAME = “Gradvantage”
+
+LEGAL_NAME = “{{Your Pty Ltd legal name}}”
+
+ABN = “{{Your ABN}}”
+
+CONTACT_EMAIL = “{{legal@yourdomain.au}}”
+
+POSTAL_ADDRESS = “{{Your mailing address}}”
+
+GOVERNING_LAW = “Victoria, Australia”
+
+PROCESSORS = [Airtable, Softr, Tally, Zapier/Make, Google Analytics, Discord] (list in Privacy)
+
+REPORT_WEBHOOK_URL = “{{Your Tally/Formspree/Make webhook}}”
+
+PRIVACY_OFFICER = “{{Name, role, email}}”
+
+LAST_UPDATED = today’s date, rendered on each policy page.
+
+Create these routes/files
+
+Terms of Use
+
+Path: /terms (Next) or terms.html (static)
+
+Content sections:
+
+Who we are (Pty Ltd + ABN); eligibility (16+/18+); account rules; acceptable use.
+
+User-Generated Content: user promises they have rights; licence to host/display; right for us to moderate/remove; no confidentiality.
+
+No Advice: not legal/financial/career advice; general info only.
+
+Accuracy: no guarantee content is current/complete; users rely at their own risk.
+
+Liability: AU-aware — exclude indirect/consequential loss to the extent permitted by law; do not contract out of non-excludable rights under the Australian Consumer Law (ACL). Include a short, clear ACL paragraph.
+
+User Indemnity for what they post (defamation, IP infringement, privacy breach).
+
+Copyright: post only what you own/have permission to share.
+
+Governing law & venue: Victoria, Australia.
+
+Contact for legal notices: email + postal.
+
+Call-to-action: “Report content” button linking to /report.
+
+Privacy Policy (APP-aligned, AU)
+
+Path: /privacy or privacy.html
+
+Sections (plain English):
+
+What we collect (account info, posts, analytics, device data).
+
+Why we collect (operate the service, moderation, analytics, comms).
+
+Lawful basis/consent for marketing; how to opt-out.
+
+Third-party processors (list PROCESSORS) + cross-border disclosure note.
+
+Storage, security basics, retention & deletion flow (how to request deletion).
+
+Access & correction process (how to contact PRIVACY_OFFICER).
+
+Data breach response summary (OAIC NDB scheme): how we’ll notify affected users.
+
+Cookies/analytics summary + link to preferences.
+
+Complaints: contact details and OAIC link (don’t block if offline).
+
+Last updated date.
+
+Content & Moderation Policy
+
+Path: /moderation or moderation.html
+
+What’s allowed vs banned (doxxing, personal attacks, hate, illegal content, confidential/private info, defamatory claims).
+
+Pre-moderation for high-risk posts (naming individuals/organisations with allegations).
+
+Notice-and-Takedown overview with service levels: acknowledge within 48h; restrict content while assessing; contact poster; decision and reasons; appeal path.
+
+Report / Notice-and-Takedown form
+
+Path: /report or report.html
+
+Form fields:
+
+Your name, email
+
+URL of the content
+
+Exact statement(s) you’re complaining about
+
+Why it’s unlawful/defamatory/infringing
+
+Optional attachments (screenshots/links)
+
+Declaration: information is true; you consent to us sharing with the poster for resolution
+
+On submit: POST JSON to REPORT_WEBHOOK_URL.
+
+Show success/failure states; store no data locally beyond what’s needed to submit.
+
+Cookie/Analytics Preferences
+
+Files: /components/CookieBanner.tsx + /lib/cookies.ts (Next) OR cookie-banner.js (static) + small modal UI.
+
+Features: show a simple banner on first visit; “Accept all”, “Reject non-essential”, “Manage”; store choice in localStorage; gate non-essential analytics behind consent check.
+
+Global Legal Footer + Nav Links
+
+Component: LegalFooter with links to /terms, /privacy, /moderation, /report.
+
+Add LAST_UPDATED to the footer of each policy page.
+
+Robots & Security Contact
+
+public/robots.txt with sane defaults (allow all; disallow admin if any).
+
+public/.well-known/security.txt including CONTACT_EMAIL and a short disclosure policy.
+
+Implementation details
+
+Design: clean, readable; max-width text; headings, lists; skip legalese; write for a uni student audience.
+
+Accessibility: semantic HTML, label inputs, focus states, high contrast.
+
+No third-party UI kits required; Tailwind if available; otherwise simple CSS.
+
+Type safety (if TS): define a LegalConfig with the placeholders above; import into pages.
+
+Testing hooks: data-testids on the cookie banner buttons and form submit.
+
+Copy to include (adapt wording to your style; keep AU/ACL-aware)
+
+Short “Not Advice” disclaimer (appears at top of Terms and on relevant UI pages):
+“{{SITE_NAME}} provides general information and user-submitted content. We don’t provide legal, financial or career advice. Consider your circumstances and seek professional advice before acting.”
+
+ACL-aware liability paragraph (Terms):
+“To the extent permitted by law, we exclude liability for any indirect, special or consequential loss. Nothing in these Terms limits your non-excludable rights under the Australian Consumer Law.”
+
+User-content licence (Terms):
+“By posting content, you promise you have the necessary rights and you grant {{LEGAL_NAME}} a non-exclusive, worldwide, royalty-free licence to host, display and distribute it on {{SITE_NAME}}. You can remove your content at any time; this licence continues for reasonable operational backup and cache purposes.”
+
+Unacceptable content (Moderation Policy):
+“Don’t post personal attacks, confidential information, defamatory statements, hate speech, or content that infringes copyright or privacy. We may remove content or suspend accounts at our discretion.”
+
+Takedown process summary (Moderation page + Report page):
+“Report at /report with the URL and details. We’ll acknowledge within 48 hours, may restrict access while we assess, contact the poster for context, and then remove or restore with reasons. Urgent safety matters are prioritised.”
+
+Privacy (plain-English bullets to expand):
+
+“We collect account details, posts, and device/usage analytics to run {{SITE_NAME}}, improve features and keep the community safe.”
+
+“We use third-party providers ({{PROCESSORS}}). Some may store data overseas.”
+
+“You can access, correct or delete your info by emailing {{PRIVACY_OFFICER}}.”
+
+“If a data breach is likely to cause serious harm, we’ll notify affected users and the OAIC in line with the Notifiable Data Breaches scheme.”
+
+Cookie banner text:
+“We use essential cookies to run the site, and optional analytics to improve it. Choose your preference.”
+
+Quality checklist (must pass)
+
+Pages build without errors; links wired in header/footer.
+
+Mobile layout readable; forms keyboard-navigable.
+
+Cookie banner blocks non-essential analytics until consent=true.
+
+/report actually POSTs JSON to REPORT_WEBHOOK_URL placeholder.
+
+Each page shows LAST_UPDATED.
+
+All policy text is Australia-specific, plain English, and consistent with the ACL (no “all liability excluded” overreach).
+
+Deliverables to show me
+
+List of created files with paths.
+
+A brief README section (“Legal & Compliance Pack”) explaining where to edit placeholders and how the report webhook works.
+
+One screenshot or GIF of the cookie banner and the report form in action (optional if headless).
+
+End of prompt.

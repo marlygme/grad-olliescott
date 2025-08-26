@@ -243,23 +243,73 @@ document.addEventListener('DOMContentLoaded', function() {
       field.style.display = 'none';
     });
     
-    // Show relevant fields based on theme
+    // Update field content and visibility based on theme
     switch(selectedTheme) {
       case 'application_timeline':
       case 'selection_process':
       case 'eligibility_requirements':
+        updateFieldContent('application_stages', 'Application Process (Optional)', 'Describe the application stages, timeline, requirements, deadlines, etc.', 'Share details about application deadlines, required documents, selection criteria, and the overall process timeline.');
+        updateFieldContent('advice', 'Application Advice', 'What advice would you give to future applicants about the application process?', 'Share your key learnings about applying, tips for success, and what you wish you knew earlier.');
         document.getElementById('field-application-stages').style.display = 'block';
         document.getElementById('field-advice').style.display = 'block';
         break;
+        
       case 'interview_tips':
+        updateFieldContent('interview-experience', 'Interview Experience', 'Describe your interview experience, questions asked, format, duration, etc.', 'Include interview format, types of questions, duration, panel composition, and your overall experience.');
+        updateFieldContent('advice', 'Interview Tips & Advice', 'What interview tips would you share with future candidates?', 'Share specific advice about preparation, common questions, what impressed the interviewers, and lessons learned.');
         document.getElementById('field-interview-experience').style.display = 'block';
         document.getElementById('field-advice').style.display = 'block';
         break;
+        
+      case 'pay_benefits':
+        updateFieldContent('advice', 'Salary & Benefits Information', 'Share details about compensation, benefits, bonuses, and financial aspects.', 'Include base salary, superannuation, bonuses, allowances, and any other benefits or perks offered.');
+        document.getElementById('field-advice').style.display = 'block';
+        break;
+        
+      case 'hours_workload':
+        updateFieldContent('advice', 'Hours & Workload Experience', 'Describe the typical hours, workload expectations, and work-life balance.', 'Share details about daily/weekly hours, busy periods, overtime expectations, flexibility, and how the workload impacted your experience.');
+        document.getElementById('field-advice').style.display = 'block';
+        break;
+        
+      case 'program_structure':
+      case 'training_support':
+        updateFieldContent('application_stages', 'Program Structure (Optional)', 'Describe the program structure, rotations, training, and learning opportunities.', 'Share details about rotation structure, training programs, mentorship, learning opportunities, and program organization.');
+        updateFieldContent('advice', 'Program Insights & Advice', 'What would you tell someone considering this program?', 'Share your experience with the program structure, what you learned, and advice for making the most of the opportunity.');
+        document.getElementById('field-application-stages').style.display = 'block';
+        document.getElementById('field-advice').style.display = 'block';
+        break;
+        
+      case 'secondments_mobility':
+        updateFieldContent('advice', 'Secondments & Mobility Experience', 'Share your experience with secondments, interstate opportunities, or mobility within the firm.', 'Include details about secondment opportunities, interstate transfers, international options, and how these impacted your career development.');
+        document.getElementById('field-advice').style.display = 'block';
+        break;
+        
+      case 'culture_environment':
+        updateFieldContent('advice', 'Culture & Environment Insights', 'Describe the workplace culture, team dynamics, and overall environment.', 'Share your experience with the firm culture, team relationships, management style, diversity, social activities, and workplace atmosphere.');
+        document.getElementById('field-advice').style.display = 'block';
+        break;
+        
       default:
         // Show all fields for other themes
         allDynamicFields.forEach(field => {
           field.style.display = 'block';
         });
+    }
+  }
+  
+  // Helper function to update field content
+  function updateFieldContent(fieldId, labelText, placeholderText, helpText) {
+    const field = document.getElementById(fieldId);
+    const fieldContainer = field ? field.closest('.mb-4') : null;
+    
+    if (fieldContainer) {
+      const label = fieldContainer.querySelector('label');
+      const textarea = fieldContainer.querySelector('textarea');
+      const helpDiv = fieldContainer.querySelector('.form-text');
+      
+      if (label) label.textContent = labelText;
+      if (textarea) textarea.placeholder = placeholderText;
+      if (helpDiv) helpDiv.textContent = helpText;
     }
   }
   

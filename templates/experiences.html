@@ -24,22 +24,37 @@
 
   <!-- Search and Filter Section -->
   <div class="row mb-5">
-    <div class="col-md-8 mx-auto">
+    <div class="col-lg-10 mx-auto">
       <div class="card shadow-sm border-0">
         <div class="card-body p-4">
           <div class="row g-3">
-            <div class="col-md-8">
+            <div class="col-md-5">
               <div class="position-relative">
                 <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
                 <input type="text" class="form-control ps-5" id="searchInput" placeholder="Search by company, role, university...">
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <select class="form-select" id="outcomeFilter">
                 <option value="">All Stories</option>
                 <option value="offer">Success Stories</option>
                 <option value="interview">Interview Tips</option>
                 <option value="application">Application Process</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <select class="form-select" id="themeFilter">
+                <option value="">All Themes</option>
+                <option value="application_timeline">Application Timeline</option>
+                <option value="selection_process">Selection Process</option>
+                <option value="pay_benefits">Pay & Benefits</option>
+                <option value="hours_workload">Hours & Workload</option>
+                <option value="program_structure">Program Structure</option>
+                <option value="training_support">Training & Support</option>
+                <option value="secondments_mobility">Secondments & Mobility</option>
+                <option value="eligibility_requirements">Eligibility Requirements</option>
+                <option value="culture_environment">Culture & Environment</option>
+                <option value="interview_tips">Interview Tips</option>
               </select>
             </div>
           </div>
@@ -55,7 +70,10 @@
       <div class="col-lg-6 story-card" 
            data-company="{{ exp.get('company', exp.get('firm_name', '')) }}" 
            data-role="{{ exp.get('role', '') }}" 
-           data-content="{{ exp.get('content', '') }}">
+           data-content="{{ exp.get('content', '') }}"
+           data-theme="{{ exp.get('theme', '') }}"
+           data-experience-type="{{ exp.get('experience_type', '') }}"
+           data-primary-cat="{{ exp.get('primary_cat', '') }}">
         
         <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden story-card-modern">
           <!-- Story Header -->
@@ -120,18 +138,20 @@
             <!-- Process Information -->
             {% if exp.get('application_stages') or exp.get('interview_experience') %}
             <div class="story-process mb-4">
-              <div class="border-start border-primary border-3 ps-3">
-                <h6 class="text-primary fw-semibold mb-2">
-                  <i class="bi bi-arrow-right-circle me-1"></i>Application Journey
+              <div class="bg-light rounded-3 p-3 border-start border-primary border-3">
+                <h6 class="text-primary fw-semibold mb-3 d-flex align-items-center">
+                  <i class="bi bi-clipboard-check me-2"></i>Application Journey
                 </h6>
                 {% if exp.get('application_stages') %}
-                  <div class="mb-2 small text-muted">
-                    <strong>Process:</strong> {{ exp.application_stages }}
+                  <div class="mb-3">
+                    <div class="small fw-medium text-dark mb-1">Application Process</div>
+                    <p class="small text-muted mb-0 lh-base">{{ exp.application_stages }}</p>
                   </div>
                 {% endif %}
                 {% if exp.get('interview_experience') %}
-                  <div class="small text-muted">
-                    <strong>Interview:</strong> {{ exp.interview_experience }}
+                  <div class="mb-0">
+                    <div class="small fw-medium text-dark mb-1">Interview Experience</div>
+                    <p class="small text-muted mb-0 lh-base">{{ exp.interview_experience }}</p>
                   </div>
                 {% endif %}
               </div>
@@ -213,6 +233,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const outcomeFilter = document.getElementById('outcomeFilter');
+    const themeFilter = document.getElementById('themeFilter');
     const storyCards = document.querySelectorAll('.story-card');
     const loadMoreBtn = document.getElementById('loadMoreBtn');
     
@@ -235,21 +256,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function filterStories() {
         const searchTerm = searchInput.value.toLowerCase();
-        const selectedFilter = outcomeFilter.value.toLowerCase();
+        const selectedOutcome = outcomeFilter.value.toLowerCase();
+        const selectedTheme = themeFilter.value.toLowerCase();
 
         storyCards.forEach(card => {
             const company = card.dataset.company.toLowerCase();
             const role = card.dataset.role.toLowerCase();
             const content = card.dataset.content.toLowerCase();
+            const theme = card.dataset.theme ? card.dataset.theme.toLowerCase() : '';
 
             const matchesSearch = !searchTerm || 
                                 company.includes(searchTerm) || 
                                 role.includes(searchTerm) || 
                                 content.includes(searchTerm);
             
-            const matchesFilter = !selectedFilter || content.includes(selectedFilter);
+            const matchesOutcome = !selectedOutcome || content.includes(selectedOutcome);
+            
+            const matchesTheme = !selectedTheme || theme.includes(selectedTheme);
 
-            if (matchesSearch && matchesFilter) {
+            if (matchesSearch && matchesOutcome && matchesTheme) {
                 card.dataset.visible = 'true';
                 card.classList.add('fade-in');
             } else {
@@ -268,6 +293,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (outcomeFilter) {
         outcomeFilter.addEventListener('change', filterStories);
+    }
+    
+    if (themeFilter) {
+        themeFilter.addEventListener('change', filterStories);
     }
     
     if (loadMoreBtn) {

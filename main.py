@@ -554,7 +554,7 @@ def update_application(app_id):
                 app['notes'] = request.json['notes']
             if 'priority' in request.json:
                 app['priority'] = request.json['priority']
-            
+
             app['updated'] = datetime.utcnow().isoformat()
             break
 
@@ -645,11 +645,11 @@ def tracker_analytics():
         'total_apps': 0, 'responses': 0, 'offers': 0,
         'avg_response_time': 0, 'response_times': []
     })
-    
+
     uni_stage_progression = defaultdict(lambda: {
         stage: 0 for stage in interview_stages
     })
-    
+
     uni_company_progression = defaultdict(lambda: defaultdict(lambda: {
         stage: 0 for stage in interview_stages
     }))
@@ -667,12 +667,12 @@ def tracker_analytics():
     for app in all_applications:
         if app.get('company') and app.get('university'):
             company_counts[app['company']]['total_apps'] += 1
-            
+
             # Track stage progression by university and company
             status = app.get('status', 'Applied')
             uni_stage_progression[app['university']][status] += 1
             uni_company_progression[app['university']][app['company']][status] += 1
-            
+
             # Calculate response times
             if app.get('response_date') and app.get('application_date'):
                 try:
@@ -683,7 +683,7 @@ def tracker_analytics():
                     company_counts[app['company']]['responses'] += 1
                 except:
                     pass
-            
+
             # Track offers
             if status == 'Offered':
                 company_counts[app['company']]['offers'] += 1
@@ -694,7 +694,7 @@ def tracker_analytics():
             avg_response_time = 0
             if counts['response_times']:
                 avg_response_time = round(sum(counts['response_times']) / len(counts['response_times']), 1)
-                
+
             company_stats[company] = {
                 'total_apps': counts['total_apps'],
                 'response_rate': round((counts['responses'] / counts['total_apps'] * 100), 1) if counts['total_apps'] > 0 else 0,

@@ -36,6 +36,7 @@
             </div>
             <div class="col-md-7">
               <select class="form-select" id="themeFilter">
+                <option value="">All Experiences</option>
                 <option value="application_timeline">Application Timeline</option>
                 <option value="selection_process">Selection Process</option>
                 <option value="pay_benefits">Pay & Benefits</option>
@@ -259,8 +260,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 role.includes(searchTerm) || 
                                 content.includes(searchTerm);
             
-            // Every story must have a theme, show only if theme matches selected filter
-            const matchesTheme = selectedTheme && theme.includes(selectedTheme);
+            // Show all experiences by default, filter by theme only if one is selected
+            const matchesTheme = !selectedTheme || theme.includes(selectedTheme);
 
             if (matchesSearch && matchesTheme) {
                 card.dataset.visible = 'true';
@@ -281,11 +282,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (themeFilter) {
         themeFilter.addEventListener('change', filterStories);
-        // Set default theme and trigger initial filter
-        if (themeFilter.value === '') {
-            themeFilter.selectedIndex = 0;
-        }
-        filterStories();
     }
     
     if (loadMoreBtn) {

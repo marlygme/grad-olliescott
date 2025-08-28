@@ -545,6 +545,10 @@ def firm_experiences(firm_name):
     # Get university data for this firm
     university_data = FIRM_UNIVERSITY_DATA.get(firm_name, None)
 
+    # Create company slug and title for template
+    company_slug = firm_name.lower().replace(' ', '-').replace('&', 'and')
+    company_title = firm_name.replace('-', ' ').replace('%20', ' ').strip().title()
+
     # Load submissions data for this firm
     with open(data_file, 'r') as f:
         submissions = json.load(f)
@@ -586,7 +590,10 @@ def firm_experiences(firm_name):
 
     return render_template("experiences.html", 
                          experiences=items, 
-                         firm_name=firm_name, 
+                         firm_name=firm_name,
+                         company=firm_name,
+                         company_slug=company_slug,
+                         company_title=company_title,
                          is_filtered=True,
                          university_data=university_data,
                          cat_counts=cat_counts,

@@ -5,32 +5,29 @@
 {% block content %}
 <div class="container py-5">
   <!-- Header Section -->
-  <div class="text-center mb-5">
-    {% if company %}
-      <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb justify-content-center">
-          <li class="breadcrumb-item"><a href="/companies" class="text-decoration-none">Companies</a></li>
-          <li class="breadcrumb-item active">{{ company }}</li>
-        </ol>
-      </nav>
-      <h1 class="display-4 fw-bold mb-3">{{ company }} Stories</h1>
-      <p class="fs-5 text-muted">Real graduate experiences shared by our community</p>
-      
-      <!-- Button to view analytics -->
-      <div class="mt-4">
-        <button class="btn btn-lg btn-outline-primary rounded-pill px-4" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#analyticsSection" 
-                aria-expanded="false" 
-                aria-controls="analyticsSection">
-          <i class="bi bi-bar-chart me-2"></i>View Analytics
-        </button>
+  {% if company_title %}
+    {% set analytics_slug = (company_slug or company_title)|lower|replace('&', 'and')|replace(' & ', '-and-')|replace(' ', '-') %}
+    <div class="page-hero company-hero mb-5">
+      <div>
+        <nav aria-label="breadcrumb" class="mb-3">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/companies" class="text-decoration-none">Companies</a></li>
+            <li class="breadcrumb-item active">{{ company_title }}</li>
+          </ol>
+        </nav>
+        <h1 class="page-title display-4 fw-bold mb-2">{{ company_title }}</h1>
+        <p class="page-sub fs-5 text-muted">Graduate stories</p>
       </div>
-    {% else %}
+      <a class="btn-primary-custom" href="/company/{{ company_title | urlencode }}#analytics">
+        <i class="bi bi-bar-chart me-2"></i>View Analytics
+      </a>
+    </div>
+  {% else %}
+    <div class="text-center mb-5">
       <h1 class="display-4 fw-bold mb-3">Graduate Stories</h1>
       <p class="fs-5 text-muted">Authentic experiences from graduates across Australia's top firms</p>
-    {% endif %}
-  </div>
+    </div>
+  {% endif %}
 
   <!-- Analytics Section (Collapsible) -->
   <div class="collapse mb-5" id="analyticsSection">

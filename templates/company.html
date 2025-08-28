@@ -200,6 +200,70 @@
   {% endif %}
 
   <!-- Recent Experiences -->
+  <!-- Analytics & Insights Section -->
+  <div class="card mb-5">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="card-title mb-0">
+          <i class="bi bi-graph-up me-2"></i>Company Analytics & Insights
+        </h4>
+        <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#analyticsSection" aria-expanded="false">
+          <i class="bi bi-chevron-down me-1"></i>View Analytics
+        </button>
+      </div>
+      
+      <div class="collapse" id="analyticsSection">
+        <div id="company-analytics-detailed" class="mt-4">
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading detailed analytics...</span>
+            </div>
+            <p class="mt-3 text-muted">Loading comprehensive company insights...</p>
+          </div>
+        </div>
+        
+        <!-- Application Timeline Analysis -->
+        <div class="row g-4 mt-3" id="timeline-analysis" style="display: none;">
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="fw-semibold mb-3">
+                  <i class="bi bi-calendar-week me-1"></i>Application Timeline
+                </h6>
+                <div id="application-timeline-chart"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="fw-semibold mb-3">
+                  <i class="bi bi-mortarboard me-1"></i>University Success Breakdown
+                </h6>
+                <div id="university-success-breakdown"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Detailed Metrics -->
+        <div class="row g-4 mt-3" id="detailed-metrics" style="display: none;">
+          <div class="col-12">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="fw-semibold mb-3">
+                  <i class="bi bi-bar-chart me-1"></i>Stage-by-Stage Analysis
+                </h6>
+                <div id="stage-progression-chart"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   {% if firm_data and firm_data.experiences %}
     <div class="card mb-5">
       <div class="card-body">
@@ -380,7 +444,9 @@
 document.addEventListener('DOMContentLoaded', function() {
   const companyName = "{{ company }}";
   const analyticsDiv = document.getElementById('company-analytics');
+  const detailedAnalyticsDiv = document.getElementById('company-analytics-detailed');
 
+  // Basic analytics (existing functionality)
   fetch('/api/company-analytics/' + encodeURIComponent(companyName))
     .then(response => response.json())
     .then(data => {
@@ -479,5 +545,192 @@ document.addEventListener('DOMContentLoaded', function() {
       console.error('Error loading analytics:', error);
       analyticsDiv.innerHTML = '<p class="text-muted text-center">Unable to load analytics data.</p>';
     });
+
+  // Enhanced analytics for collapsible section
+  document.getElementById('analyticsSection').addEventListener('show.bs.collapse', function() {
+    loadDetailedAnalytics();
+  });
+
+  function loadDetailedAnalytics() {
+    fetch('/api/company-analytics/' + encodeURIComponent(companyName))
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          detailedAnalyticsDiv.innerHTML = '<p class="text-muted text-center">No detailed analytics available.</p>';
+          return;
+        }
+
+        let html = '<div class="row g-4">';
+
+        // Detailed company metrics
+        if (data.company_stats) {
+          html += `
+            <div class="col-md-6">
+              <div class="card border-0 bg-primary bg-opacity-10">
+                <div class="card-body">
+                  <h6 class="fw-semibold mb-3 text-primary">
+                    <i class="bi bi-speedometer2 me-1"></i>Performance Metrics
+                  </h6>
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <div class="d-flex justify-content-between">
+                        <span>Total Applications Tracked</span>
+                        <span class="fw-bold">${data.company_stats.total_apps}</span>
+                      </div>
+                      <div class="progress mt-1" style="height: 8px;">
+                        <div class="progress-bar bg-primary" style="width: 100%"></div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="d-flex justify-content-between">
+                        <span>Response Rate</span>
+                        <span class="fw-bold text-success">${data.company_stats.response_rate}%</span>
+                      </div>
+                      <div class="progress mt-1" style="height: 8px;">
+                        <div class="progress-bar bg-success" style="width: ${data.company_stats.response_rate}%"></div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="d-flex justify-content-between">
+                        <span>Offer Rate</span>
+                        <span class="fw-bold text-warning">${data.company_stats.offer_rate}%</span>
+                      </div>
+                      <div class="progress mt-1" style="height: 8px;">
+                        <div class="progress-bar bg-warning" style="width: ${data.company_stats.offer_rate}%"></div>
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="d-flex justify-content-between">
+                        <span>Average Response Time</span>
+                        <span class="fw-bold text-info">${data.company_stats.avg_response_time} days</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // University breakdown with more detail
+        if (data.university_progression && Object.keys(data.university_progression).length > 0) {
+          html += `
+            <div class="col-md-6">
+              <div class="card border-0 bg-success bg-opacity-10">
+                <div class="card-body">
+                  <h6 class="fw-semibold mb-3 text-success">
+                    <i class="bi bi-mortarboard me-1"></i>University Performance Analysis
+                  </h6>
+                  <div class="space-y-3">
+          `;
+
+          // Sort universities by offer rate
+          const sortedUnis = Object.entries(data.university_progression)
+            .sort(([,a], [,b]) => b.offer_rate - a.offer_rate)
+            .slice(0, 5); // Top 5 universities
+
+          sortedUnis.forEach(([uni, stats]) => {
+            html += `
+              <div class="mb-3 p-3 bg-white rounded">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-medium">${uni}</span>
+                  <span class="badge bg-success">${stats.offer_rate}% success</span>
+                </div>
+                <div class="small text-muted mb-2">${stats.total_apps} applications tracked</div>
+                <div class="row g-2 text-center">
+                  <div class="col-4">
+                    <div class="fw-medium text-warning">${stats.assessment_rate}%</div>
+                    <div class="small text-muted">Assessments</div>
+                  </div>
+                  <div class="col-4">
+                    <div class="fw-medium text-info">${stats.interview_rate}%</div>
+                    <div class="small text-muted">Interviews</div>
+                  </div>
+                  <div class="col-4">
+                    <div class="fw-medium text-success">${stats.offer_rate}%</div>
+                    <div class="small text-muted">Offers</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+
+          html += `
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        html += '</div>';
+
+        // Add insights section
+        html += `
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="card border-0 bg-info bg-opacity-10">
+                <div class="card-body">
+                  <h6 class="fw-semibold mb-3 text-info">
+                    <i class="bi bi-lightbulb me-1"></i>Key Insights
+                  </h6>
+                  <div class="row g-3">
+        `;
+
+        // Generate insights
+        if (data.company_stats) {
+          if (data.company_stats.response_rate > 70) {
+            html += `
+              <div class="col-md-4">
+                <div class="p-3 bg-white rounded">
+                  <i class="bi bi-check-circle text-success me-2"></i>
+                  <span class="small">High response rate indicates good application processes</span>
+                </div>
+              </div>
+            `;
+          }
+          
+          if (data.company_stats.avg_response_time < 14) {
+            html += `
+              <div class="col-md-4">
+                <div class="p-3 bg-white rounded">
+                  <i class="bi bi-clock text-info me-2"></i>
+                  <span class="small">Fast response time - efficient recruitment</span>
+                </div>
+              </div>
+            `;
+          }
+          
+          if (data.company_stats.offer_rate > 15) {
+            html += `
+              <div class="col-md-4">
+                <div class="p-3 bg-white rounded">
+                  <i class="bi bi-trophy text-warning me-2"></i>
+                  <span class="small">Competitive offer rate for quality candidates</span>
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        html += `
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        detailedAnalyticsDiv.innerHTML = html;
+        
+        // Show additional sections
+        document.getElementById('timeline-analysis').style.display = 'block';
+        document.getElementById('detailed-metrics').style.display = 'block';
+      })
+      .catch(error => {
+        console.error('Error loading detailed analytics:', error);
+        detailedAnalyticsDiv.innerHTML = '<p class="text-muted text-center">Unable to load detailed analytics.</p>';
+      });
+  }
 });
 </script>

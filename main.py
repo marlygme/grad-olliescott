@@ -388,6 +388,115 @@ def api_company_analytics(company_name):
     })
 
 
+@app.route('/api/company-insights/<company_name>')
+def api_company_insights(company_name):
+    """Get detailed insights and analytics for a specific company"""
+    
+    with open(tracker_file, 'r') as f:
+        all_applications = json.load(f)
+    
+    # Filter applications for this company
+    company_apps = [app for app in all_applications if app.get('company', '').lower() == company_name.lower()]
+    
+    if not company_apps:
+        return jsonify({'error': 'No data available'})
+    
+    # Calculate timeline insights
+    monthly_apps = defaultdict(int)
+    for app in company_apps:
+        if app.get('application_date'):
+            try:
+                app_date = datetime.strptime(app['application_date'], '%Y-%m-%d').date()
+                month_key = app_date.strftime('%Y-%m')
+                monthly_apps[month_key] += 1
+            except:
+                pass
+    
+    # Calculate stage progression insights
+    stage_counts = defaultdict(int)
+    for app in company_apps:
+        status = app.get('status', 'Applied')
+        stage_counts[status] += 1
+    
+    # Calculate WAM distribution if available
+    wam_ranges = {'70-74': 0, '75-79': 0, '80-84': 0, '85+': 0, 'Unknown': 0}
+    for app in company_apps:
+        wam = app.get('wam', '')
+        if wam and str(wam).replace('.', '').isdigit():
+            wam_val = float(wam)
+            if wam_val >= 85:
+                wam_ranges['85+'] += 1
+            elif wam_val >= 80:
+                wam_ranges['80-84'] += 1
+            elif wam_val >= 75:
+                wam_ranges['75-79'] += 1
+            elif wam_val >= 70:
+                wam_ranges['70-74'] += 1
+        else:
+            wam_ranges['Unknown'] += 1
+    
+    # Calculate priority distribution
+    priority_counts = defaultdict(int)
+    for app in company_apps:
+        priority = app.get('priority', 'Medium')
+        priority_counts[priority] += 1
+    
+    # Generate insights
+    insights = []
+    
+    # Response time insight
+    response_times = []
+    for app in company_apps:
+        if app.get('application_date') and app.get('response_date'):
+            try:
+                app_date = datetime.strptime(app['application_date'], '%Y-%m-%d').date()
+                resp_date = datetime.strptime(app['response_date'], '%Y-%m-%d').date()
+                response_times.append((resp_date - app_date).days)
+            except:
+                pass
+    
+    if response_times:
+        avg_response = sum(response_times) / len(response_times)
+        if avg_response < 7:
+            insights.append({
+                'type': 'positive',
+                'title': 'Fast Response Time',
+                'description': f'Average response time of {round(avg_response)} days indicates efficient recruitment'
+            })
+        elif avg_response > 30:
+            insights.append({
+                'type': 'warning',
+                'title': 'Slow Response Time',
+                'description': f'Average response time of {round(avg_response)} days - consider following up'
+            })
+    
+    # Success rate insight
+    offers = len([app for app in company_apps if app.get('status') == 'Offered'])
+    offer_rate = round((offers / len(company_apps) * 100), 1)
+    
+    if offer_rate > 20:
+        insights.append({
+            'type': 'positive',
+            'title': 'High Success Rate',
+            'description': f'{offer_rate}% offer rate suggests good candidate-company fit'
+        })
+    elif offer_rate < 5:
+        insights.append({
+            'type': 'info',
+            'title': 'Competitive Process',
+            'description': f'{offer_rate}% offer rate indicates highly selective recruitment'
+        })
+    
+    return jsonify({
+        'timeline_data': dict(monthly_apps),
+        'stage_progression': dict(stage_counts),
+        'wam_distribution': wam_ranges,
+        'priority_distribution': dict(priority_counts),
+        'insights': insights,
+        'total_tracked': len(company_apps)
+    })
+
+
 
 
 

@@ -1,0 +1,109 @@
+
+{% extends "base.html" %}
+
+{% block title %}Sign In Required – Gradvantage{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <!-- Authentication Required Card -->
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-5 text-center">
+          <div class="mb-4">
+            <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+              <i class="bi bi-shield-lock fs-1"></i>
+            </div>
+          </div>
+          
+          <h1 class="display-6 fw-bold mb-3">Sign In Required</h1>
+          <p class="fs-5 text-muted mb-4">
+            To share your graduate story and help the community, you need to sign in with your Replit account.
+          </p>
+          
+          <div class="mb-4">
+            <div class="d-flex justify-content-center gap-4 text-muted small mb-3">
+              <div><i class="bi bi-shield-check me-1"></i>Secure & Private</div>
+              <div><i class="bi bi-clock me-1"></i>Quick Sign In</div>
+              <div><i class="bi bi-people me-1"></i>Join the Community</div>
+            </div>
+          </div>
+
+          <!-- Replit Auth Script -->
+          <div class="mb-4">
+            <script
+              authed="location.reload()"
+              src="https://auth.util.repl.co/script.js"
+            ></script>
+          </div>
+
+          <div class="text-muted small">
+            <p class="mb-2">
+              <i class="bi bi-info-circle me-1"></i>
+              Why do we require sign in?
+            </p>
+            <ul class="text-start small text-muted">
+              <li>Prevents spam and fake submissions</li>
+              <li>Allows you to track your contributions</li>
+              <li>Maintains quality of shared experiences</li>
+              <li>Enables personalized features like application tracking</li>
+            </ul>
+          </div>
+
+          <div class="mt-4">
+            <a href="/" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>Back to Homepage
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Benefits Section -->
+      <div class="mt-5 text-center">
+        <h5 class="fw-semibold mb-3">What you can do once signed in:</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="p-3">
+              <i class="bi bi-chat-heart text-primary fs-4 mb-2 d-block"></i>
+              <h6 class="fw-medium">Share Stories</h6>
+              <small class="text-muted">Share your graduate experiences</small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3">
+              <i class="bi bi-clipboard-check text-success fs-4 mb-2 d-block"></i>
+              <h6 class="fw-medium">Track Applications</h6>
+              <small class="text-muted">Monitor your job applications</small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3">
+              <i class="bi bi-compass text-info fs-4 mb-2 d-block"></i>
+              <h6 class="fw-medium">Career Match</h6>
+              <small class="text-muted">Get personalized firm recommendations</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bg-primary-subtle {
+  background-color: rgba(37, 99, 235, 0.1) !important;
+}
+
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+</style>
+{% endblock %}

@@ -145,11 +145,11 @@ def submit():
     user_id = request.headers.get('X-Replit-User-Id')
     user_name = request.headers.get('X-Replit-User-Name')
 
-    if request.method == 'POST':
-        # Ensure user is authenticated before allowing submission
-        if not user_id:
-            return redirect(url_for('submit'))
+    # Require authentication for both GET and POST
+    if not user_id:
+        return render_template('auth_required.html')
 
+    if request.method == 'POST':
         new_entry = {
             'company': request.form['company'],
             'role': request.form['role'],

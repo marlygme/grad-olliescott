@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Share Your Story – Gradvantage{% endblock %}
@@ -40,14 +39,14 @@
                 <span class="step-number">1</span>
                 Basic Information
               </h4>
-              
+
               <div class="row g-4">
                 <div class="col-md-6">
                   <label for="company" class="form-label fw-medium">Company *</label>
                   <input type="text" class="form-control form-control-lg" id="company" name="company" required placeholder="e.g., Allens, Clayton Utz">
                   <div class="invalid-feedback">Please enter the company name.</div>
                 </div>
-                
+
                 <div class="col-md-6">
                   <label for="role" class="form-label fw-medium">Role/Program *</label>
                   <input type="text" class="form-control form-control-lg" id="role" name="role" required placeholder="e.g., Graduate Lawyer, Summer Clerk">
@@ -96,29 +95,87 @@
               </h4>
 
               <!-- Dynamic Fields Container -->
-              <div id="dynamicFields">
-                <!-- Default fields that will be shown/hidden based on theme selection -->
-                <div class="mb-4" id="field-application-stages">
-                  <label for="application_stages" class="form-label fw-medium">Application Process (Optional)</label>
-                  <textarea class="form-control" id="application_stages" name="application_stages" rows="4" 
-                           placeholder="Describe the application stages, timeline, requirements, etc. (optional)"></textarea>
-                  <div class="form-text">Share details about the application process, deadlines, required documents, etc. This field is optional.</div>
-                </div>
-
-                <div class="mb-4" id="field-interview-experience">
-                  <label for="interview_experience" class="form-label fw-medium">Interview Experience</label>
-                  <textarea class="form-control" id="interview_experience" name="interview_experience" rows="4" 
-                           placeholder="Describe your interview experience, questions asked, format, etc."></textarea>
-                  <div class="form-text">Include interview format, types of questions, duration, and your overall experience.</div>
-                </div>
-
-                <div class="mb-4" id="field-advice">
-                  <label for="advice" class="form-label fw-medium">Advice & Tips</label>
-                  <textarea class="form-control" id="advice" name="advice" rows="4" 
-                           placeholder="What advice would you give to future applicants?"></textarea>
-                  <div class="form-text">Share your key learnings and tips for future candidates.</div>
-                </div>
+            <div id="dynamicFields">
+              <!-- Application Process Field -->
+              <div class="mb-4" id="field-application-stages" style="display: none;">
+                <label for="application_stages" class="form-label fw-medium">Application Process</label>
+                <textarea class="form-control" id="application_stages" name="application_stages" rows="4" 
+                         placeholder="Describe the application stages, timeline, requirements, etc."></textarea>
+                <div class="form-text">Share details about the application process, deadlines, required documents, etc.</div>
               </div>
+
+              <!-- Interview Experience Field -->
+              <div class="mb-4" id="field-interview-experience" style="display: none;">
+                <label for="interview_experience" class="form-label fw-medium">Interview Experience</label>
+                <textarea class="form-control" id="interview_experience" name="interview_experience" rows="4" 
+                         placeholder="Describe your interview experience, questions asked, format, etc."></textarea>
+                <div class="form-text">Include interview format, types of questions, duration, and your overall experience.</div>
+              </div>
+
+              <!-- Assessment Centre Field -->
+              <div class="mb-4" id="field-assessment-centre" style="display: none;">
+                <label for="assessment_centre" class="form-label fw-medium">Assessment Centre Experience</label>
+                <textarea class="form-control" id="assessment_centre" name="assessment_centre" rows="4" 
+                         placeholder="Describe the assessment centre activities, group exercises, presentations, etc."></textarea>
+                <div class="form-text">Share details about group exercises, case studies, presentations, and other assessment activities.</div>
+              </div>
+
+              <!-- Program Structure Field -->
+              <div class="mb-4" id="field-program-structure" style="display: none;">
+                <label for="program_structure" class="form-label fw-medium">Program Structure & Experience</label>
+                <textarea class="form-control" id="program_structure" name="program_structure" rows="4" 
+                         placeholder="Describe the program structure, rotations, training, mentorship, etc."></textarea>
+                <div class="form-text">Share details about rotation structure, training programs, mentorship, and learning opportunities.</div>
+              </div>
+
+              <!-- Salary & Benefits Field -->
+              <div class="mb-4" id="field-salary-benefits" style="display: none;">
+                <label for="salary_benefits" class="form-label fw-medium">Salary & Benefits Information</label>
+                <textarea class="form-control" id="salary_benefits" name="salary_benefits" rows="4" 
+                         placeholder="Share details about compensation, benefits, bonuses, etc."></textarea>
+                <div class="form-text">Include base salary, superannuation, bonuses, allowances, and any other benefits or perks.</div>
+              </div>
+
+              <!-- Culture & Environment Field -->
+              <div class="mb-4" id="field-culture-environment" style="display: none;">
+                <label for="culture_environment" class="form-label fw-medium">Firm Culture & Environment</label>
+                <textarea class="form-control" id="culture_environment" name="culture_environment" rows="4" 
+                         placeholder="Describe the workplace culture, team dynamics, work environment, etc."></textarea>
+                <div class="form-text">Share your experience with firm culture, team relationships, management style, and workplace atmosphere.</div>
+              </div>
+
+              <!-- Work Hours & Workload Field -->
+              <div class="mb-4" id="field-hours-workload" style="display: none;">
+                <label for="hours_workload" class="form-label fw-medium">Hours & Workload Experience</label>
+                <textarea class="form-control" id="hours_workload" name="hours_workload" rows="4" 
+                         placeholder="Describe typical hours, workload expectations, work-life balance, etc."></textarea>
+                <div class="form-text">Share details about daily/weekly hours, busy periods, overtime expectations, and work-life balance.</div>
+              </div>
+
+              <!-- Practice Areas Field -->
+              <div class="mb-4" id="field-practice-areas" style="display: none;">
+                <label for="practice_areas" class="form-label fw-medium">Practice Areas & Work Type</label>
+                <textarea class="form-control" id="practice_areas" name="practice_areas" rows="4" 
+                         placeholder="Describe the practice areas you worked in and types of work you did."></textarea>
+                <div class="form-text">Share details about the practice areas, types of matters, client work, and learning opportunities.</div>
+              </div>
+
+              <!-- General Experience Field -->
+              <div class="mb-4" id="field-general-experience" style="display: none;">
+                <label for="general_experience" class="form-label fw-medium">Your Experience</label>
+                <textarea class="form-control" id="general_experience" name="general_experience" rows="4" 
+                         placeholder="Share your overall experience and any important details."></textarea>
+                <div class="form-text">Describe your experience in detail, including key highlights and important information.</div>
+              </div>
+
+              <!-- Advice & Tips Field (always available) -->
+              <div class="mb-4" id="field-advice">
+                <label for="advice" class="form-label fw-medium">Advice & Tips</label>
+                <textarea class="form-control" id="advice" name="advice" rows="4" 
+                         placeholder="What advice would you give to future applicants?"></textarea>
+                <div class="form-text">Share your key learnings and tips for future candidates.</div>
+              </div>
+            </div>
             </div>
 
             <!-- Submission Section -->
@@ -229,90 +286,110 @@
 document.addEventListener('DOMContentLoaded', function() {
   const form = document.querySelector('form');
   const themeSelect = document.getElementById('theme');
+  const experienceTypeSelect = document.getElementById('experience_type');
   const progressBar = document.getElementById('formProgress');
   const allFields = form.querySelectorAll('input[required], select[required], textarea');
-  
-  // Dynamic field visibility based on theme
+
+  // Dynamic field visibility based on experience type and theme
   function updateFields() {
     const selectedTheme = themeSelect.value;
+    const selectedExperienceType = experienceTypeSelect.value;
     const dynamicFields = document.getElementById('dynamicFields');
     const allDynamicFields = dynamicFields.querySelectorAll('[id^="field-"]');
-    
+
     // Hide all dynamic fields first
     allDynamicFields.forEach(field => {
       field.style.display = 'none';
     });
-    
-    // Update field content and visibility based on theme
-    switch(selectedTheme) {
-      case 'application_timeline':
-      case 'selection_process':
-      case 'eligibility_requirements':
-        updateFieldContent('application_stages', 'Application Process (Optional)', 'Describe the application stages, timeline, requirements, deadlines, etc.', 'Share details about application deadlines, required documents, selection criteria, and the overall process timeline.');
-        updateFieldContent('advice', 'Application Advice', 'What advice would you give to future applicants about the application process?', 'Share your key learnings about applying, tips for success, and what you wish you knew earlier.');
-        document.getElementById('field-application-stages').style.display = 'block';
-        document.getElementById('field-advice').style.display = 'block';
-        break;
-        
-      case 'interview_tips':
-        updateFieldContent('interview-experience', 'Interview Experience', 'Describe your interview experience, questions asked, format, duration, etc.', 'Include interview format, types of questions, duration, panel composition, and your overall experience.');
-        updateFieldContent('advice', 'Interview Tips & Advice', 'What interview tips would you share with future candidates?', 'Share specific advice about preparation, common questions, what impressed the interviewers, and lessons learned.');
-        document.getElementById('field-interview-experience').style.display = 'block';
-        document.getElementById('field-advice').style.display = 'block';
-        break;
-        
-      case 'pay_benefits':
-        updateFieldContent('advice', 'Salary & Benefits Information', 'Share details about compensation, benefits, bonuses, and financial aspects.', 'Include base salary, superannuation, bonuses, allowances, and any other benefits or perks offered.');
-        document.getElementById('field-advice').style.display = 'block';
-        break;
-        
-      case 'hours_workload':
-        updateFieldContent('advice', 'Hours & Workload Experience', 'Describe the typical hours, workload expectations, and work-life balance.', 'Share details about daily/weekly hours, busy periods, overtime expectations, flexibility, and how the workload impacted your experience.');
-        document.getElementById('field-advice').style.display = 'block';
-        break;
-        
-      case 'program_structure':
-      case 'training_support':
-        updateFieldContent('application_stages', 'Program Structure (Optional)', 'Describe the program structure, rotations, training, and learning opportunities.', 'Share details about rotation structure, training programs, mentorship, learning opportunities, and program organization.');
-        updateFieldContent('advice', 'Program Insights & Advice', 'What would you tell someone considering this program?', 'Share your experience with the program structure, what you learned, and advice for making the most of the opportunity.');
-        document.getElementById('field-application-stages').style.display = 'block';
-        document.getElementById('field-advice').style.display = 'block';
-        break;
-        
-      case 'secondments_mobility':
-        updateFieldContent('advice', 'Secondments & Mobility Experience', 'Share your experience with secondments, interstate opportunities, or mobility within the firm.', 'Include details about secondment opportunities, interstate transfers, international options, and how these impacted your career development.');
-        document.getElementById('field-advice').style.display = 'block';
-        break;
-        
-      case 'culture_environment':
-        updateFieldContent('advice', 'Culture & Environment Insights', 'Describe the workplace culture, team dynamics, and overall environment.', 'Share your experience with the firm culture, team relationships, management style, diversity, social activities, and workplace atmosphere.');
-        document.getElementById('field-advice').style.display = 'block';
-        break;
-        
-      default:
-        // Show all fields for other themes
-        allDynamicFields.forEach(field => {
-          field.style.display = 'block';
-        });
+
+    // Define field mappings based on experience type and theme
+    const fieldMappings = {
+      'Application': {
+        'Applications': ['field-application-stages', 'field-advice'],
+        'Interviews': ['field-interview-experience', 'field-advice'],
+        'Assessment': ['field-assessment-centre', 'field-advice'],
+        'Graduate Program': ['field-program-structure', 'field-advice'],
+        'Internship': ['field-program-structure', 'field-advice'],
+        'Salaries': ['field-salary-benefits', 'field-advice'],
+        'Firm Culture': ['field-culture-environment', 'field-advice'],
+        'Practice Areas': ['field-practice-areas', 'field-advice'],
+        'Locations': ['field-general-experience', 'field-advice'], // General for locations
+        'Other': ['field-general-experience', 'field-advice']
+      },
+      'Interview': {
+        'Interviews': ['field-interview-experience', 'field-advice'],
+        'Applications': ['field-application-stages', 'field-advice'], // Relevant for some interview processes
+        'Assessment': ['field-assessment-centre', 'field-advice'],
+        'Salaries': ['field-salary-benefits', 'field-advice'],
+        'Firm Culture': ['field-culture-environment', 'field-advice'],
+        'Practice Areas': ['field-practice-areas', 'field-advice'],
+        'Other': ['field-general-experience', 'field-advice']
+      },
+      'Assessment': {
+        'Assessment': ['field-assessment-centre', 'field-advice'],
+        'Interviews': ['field-interview-experience', 'field-advice'],
+        'Applications': ['field-application-stages', 'field-advice'],
+        'Firm Culture': ['field-culture-environment', 'field-advice'],
+        'Other': ['field-general-experience', 'field-advice']
+      },
+      'Internship': {
+        'Graduate Program': ['field-program-structure', 'field-advice'],
+        'Internship': ['field-program-structure', 'field-advice'], // Redundant but for clarity
+        'Interviews': ['field-interview-experience', 'field-advice'],
+        'Salaries': ['field-salary-benefits', 'field-advice'],
+        'Firm Culture': ['field-culture-environment', 'field-advice'],
+        'Practice Areas': ['field-practice-areas', 'field-advice'],
+        'Other': ['field-general-experience', 'field-advice']
+      },
+      'Graduate Program': {
+        'Graduate Program': ['field-program-structure', 'field-advice'],
+        'Interviews': ['field-interview-experience', 'field-advice'],
+        'Applications': ['field-application-stages', 'field-advice'],
+        'Salaries': ['field-salary-benefits', 'field-advice'],
+        'Firm Culture': ['field-culture-environment', 'field-advice'],
+        'Practice Areas': ['field-practice-areas', 'field-advice'],
+        'Other': ['field-general-experience', 'field-advice']
+      },
+      'General': {
+        'Other': ['field-general-experience', 'field-advice'],
+        'Firm Culture': ['field-culture-environment', 'field-advice'],
+        'Salaries': ['field-salary-benefits', 'field-advice'],
+        'Locations': ['field-general-experience', 'field-advice']
+      }
+    };
+
+    const relevantFields = fieldMappings[selectedExperienceType]?.[selectedTheme] || fieldMappings[selectedExperienceType]?.['Other'] || ['field-advice'];
+
+    relevantFields.forEach(fieldId => {
+      const fieldElement = document.getElementById(fieldId);
+      if (fieldElement) {
+        fieldElement.style.display = 'block';
+      }
+    });
+
+    // Ensure 'Advice & Tips' is always shown if not explicitly hidden by a theme
+    if (!relevantFields.includes('field-advice')) {
+      const adviceField = document.getElementById('field-advice');
+      if (adviceField) {
+        adviceField.style.display = 'block';
+      }
     }
   }
-  
-  // Helper function to update field content
+
+  // Helper function to update field content (labels, placeholders, help text)
   function updateFieldContent(fieldId, labelText, placeholderText, helpText) {
-    const field = document.getElementById(fieldId);
-    const fieldContainer = field ? field.closest('.mb-4') : null;
-    
-    if (fieldContainer) {
-      const label = fieldContainer.querySelector('label');
-      const textarea = fieldContainer.querySelector('textarea');
-      const helpDiv = fieldContainer.querySelector('.form-text');
-      
-      if (label) label.textContent = labelText;
-      if (textarea) textarea.placeholder = placeholderText;
-      if (helpDiv) helpDiv.textContent = helpText;
-    }
+    const fieldContainer = document.getElementById(fieldId);
+    if (!fieldContainer) return;
+
+    const label = fieldContainer.querySelector('label');
+    const textarea = fieldContainer.querySelector('textarea');
+    const helpDiv = fieldContainer.querySelector('.form-text');
+
+    if (label) label.textContent = labelText;
+    if (textarea) textarea.placeholder = placeholderText;
+    if (helpDiv) helpDiv.textContent = helpText;
   }
-  
+
   // Update progress bar
   function updateProgress() {
     // Only count required fields for progress
@@ -323,50 +400,54 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       return field.value !== '';
     });
-    
+
     const progress = requiredFields.length > 0 ? (filledRequiredFields.length / requiredFields.length) * 100 : 0;
     progressBar.style.width = progress + '%';
-    
+
     if (progress > 75) {
       progressBar.classList.remove('bg-gradient');
       progressBar.classList.add('bg-success');
     } else if (progress > 50) {
       progressBar.classList.remove('bg-success');
       progressBar.classList.add('bg-gradient');
+    } else {
+      progressBar.classList.remove('bg-success');
+      progressBar.classList.add('bg-gradient');
     }
   }
-  
+
   // Form validation
   function validateForm() {
     form.classList.add('was-validated');
     return form.checkValidity();
   }
-  
+
   // Event listeners
   themeSelect.addEventListener('change', updateFields);
-  
+  experienceTypeSelect.addEventListener('change', updateFields);
+
   allFields.forEach(field => {
     field.addEventListener('input', updateProgress);
     field.addEventListener('change', updateProgress);
   });
-  
+
   form.addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     if (validateForm()) {
       // Add loading state
       const submitBtn = form.querySelector('button[type="submit"]');
       const originalText = submitBtn.innerHTML;
       submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Sharing Your Story...';
       submitBtn.disabled = true;
-      
+
       // Submit form after short delay for UX
       setTimeout(() => {
         form.submit();
       }, 1000);
     }
   });
-  
+
   // Initialize
   updateFields();
   updateProgress();

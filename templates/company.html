@@ -309,40 +309,50 @@
                 <p class="mb-0 text-muted">{{ entry.interview_experience[:120] }}{% if entry.interview_experience|length > 120 %}...{% endif %}</p>
               {% endif %}
 
-              {# --- Application process timeline --- #}
-              {% set _process = entry.application_stages or '' %}
-              {% set _p = _process | replace('→','|') | replace('->','|') %}
-              {% set _steps = _p.split('|') | select('string') | list %}
+              {# --- Application process: Chip Stepper + Mini Cards --- #}
+              {% set raw = entry.application_stages or '' %}
+              {% set steps = raw | replace('→','|') | replace('->','|') | split('|') %}
+              {% set steps = steps | select('string') | map('trim') | reject('equalto','') | list %}
+              {% set ix = entry.interview_experience %}
+              {% set adv = entry.advice %}
 
-              {% if _steps|length and _steps|join('')|trim %}
-              <div class="process-card mt-2">
-                <div class="process-head">
+              {% if steps|length %}
+              <div class="process stepper mt-2">
+                <div class="stepper-head">
                   <span class="pill pill-process">Application process</span>
+                  <span class="meta">{{ steps|length }} steps</span>
                 </div>
 
-                <ol class="timeline">
-                  {% for s in _steps if s and s.strip() %}
-                  <li class="timeline-step">
-                    <span class="dot">{{ loop.index }}</span>
-                    <div class="step-card">{{ s.strip() }}</div>
-                  </li>
+                <div class="stepper-chips">
+                  {% for s in steps %}
+                  <div class="chip">
+                    <span class="chip-num">{{ loop.index }}</span>
+                    <span class="chip-text">{{ s }}</span>
+                  </div>
                   {% endfor %}
-                </ol>
+                </div>
 
-                {% set _ix = entry.interview_experience %}
-                {% set _adv = entry.advice %}
-                {% if _ix or _adv %}
+                <div class="step-grid">
+                  {% for s in steps %}
+                  <div class="mini-card">
+                    <div class="mini-num">Step {{ loop.index }}</div>
+                    <div class="mini-title">{{ s }}</div>
+                  </div>
+                  {% endfor %}
+                </div>
+
+                {% if ix or adv %}
                 <details class="process-more">
                   <summary>What to expect</summary>
                   <ul class="ticks">
-                    {% if _ix %}<li>{{ _ix }}</li>{% endif %}
-                    {% if _adv %}<li>{{ _adv }}</li>{% endif %}
+                    {% if ix %}<li>{{ ix }}</li>{% endif %}
+                    {% if adv %}<li>{{ adv }}</li>{% endif %}
                   </ul>
                 </details>
                 {% endif %}
               </div>
               {% endif %}
-              {# --- /Application process timeline --- #}
+              {# --- /Application process --- #}
 
               <div class="text-muted small">
                 Submitted {{ entry.timestamp.split('T')[0] }}

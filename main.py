@@ -319,6 +319,75 @@ def api_grad_data():
     return jsonify({"firms": load_cards("out/grad_program_signals.csv")})
 
 
+@app.route('/api/company-analytics/<company_name>')
+def api_company_analytics(company_name):
+    """Get analytics data for a specific company"""
+    
+    with open(tracker_file, 'r') as f:
+        all_applications = json.load(f)
+    
+    # Filter applications for this company
+    company_apps = [app for app in all_applications if app.get('company', '').lower() == company_name.lower()]
+    
+    if not company_apps:
+        return jsonify({'error': 'No data available'})
+    
+    # Calculate company stats
+    total_apps = len(company_apps)
+    responses = [app for app in company_apps if app.get('response_date')]
+    offers = [app for app in company_apps if app.get('status') == 'Offered']
+    
+    response_times = []
+    for app in responses:
+        if app.get('application_date') and app.get('response_date'):
+            try:
+                app_date = datetime.strptime(app['application_date'], '%Y-%m-%d').date()
+                resp_date = datetime.strptime(app['response_date'], '%Y-%m-%d').date()
+                response_times.append((resp_date - app_date).days)
+            except:
+                pass
+    
+    avg_response_time = round(sum(response_times) / len(response_times)) if response_times else 0
+    
+    company_stats = {
+        'total_apps': total_apps,
+        'response_rate': round((len(responses) / total_apps * 100), 1) if total_apps > 0 else 0,
+        'offer_rate': round((len(offers) / total_apps * 100), 1) if total_apps > 0 else 0,
+        'avg_response_time': avg_response_time
+    }
+    
+    # Calculate university progression for this company
+    uni_progression = defaultdict(lambda: {
+        'Applied': 0, 'Online Assessment Received': 0, 'Phone Interview Scheduled': 0,
+        'Assessment Centre Invited': 0, 'Offered': 0
+    })
+    
+    for app in company_apps:
+        if app.get('university'):
+            uni = app['university']
+            status = app.get('status', 'Applied')
+            uni_progression[uni]['Applied'] += 1
+            if status in uni_progression[uni]:
+                uni_progression[uni][status] += 1
+    
+    # Convert to percentage and filter universities with meaningful data
+    university_progression = {}
+    for uni, stages in uni_progression.items():
+        total_applied = stages.get('Applied', 0)
+        if total_applied >= 2:  # Minimum threshold
+            university_progression[uni] = {
+                'total_apps': total_applied,
+                'assessment_rate': round((stages.get('Online Assessment Received', 0) / total_applied * 100), 1) if total_applied > 0 else 0,
+                'interview_rate': round(((stages.get('Phone Interview Scheduled', 0) + stages.get('Assessment Centre Invited', 0)) / total_applied * 100), 1) if total_applied > 0 else 0,
+                'offer_rate': round((stages.get('Offered', 0) / total_applied * 100), 1) if total_applied > 0 else 0
+            }
+    
+    return jsonify({
+        'company_stats': company_stats if total_apps > 0 else None,
+        'university_progression': university_progression
+    })
+
+
 
 
 

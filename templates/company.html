@@ -364,4 +364,120 @@
     </div>
   {% endif %}
 </div>
-{% endblock %}
+
+{# Add a div for company analytics #}
+<div id="company-analytics" class="container my-5 p-4 border rounded bg-white shadow-sm">
+  <div class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading analytics...</span>
+    </div>
+    <p class="mt-3 text-muted">Loading company analytics...</p>
+  </div>
+</div>
+
+<script>
+// Load company-specific analytics
+document.addEventListener('DOMContentLoaded', function() {
+  const companyName = "{{ company }}";
+  const analyticsDiv = document.getElementById('company-analytics');
+
+  fetch('/api/company-analytics/' + encodeURIComponent(companyName))
+    .then(response => response.json())
+    .then(data => {
+      if (data.error) {
+        analyticsDiv.innerHTML = '<p class="text-muted text-center">No application data available yet.</p>';
+        return;
+      }
+
+      let html = '<div class="row g-4">';
+
+      // Company stats
+      if (data.company_stats) {
+        html += `
+          <div class="col-md-6">
+            <h6 class="fw-semibold mb-3">Application Performance</h6>
+            <div class="row g-3">
+              <div class="col-6">
+                <div class="text-center p-3 bg-light rounded">
+                  <div class="fw-bold text-primary fs-5">${data.company_stats.response_rate}%</div>
+                  <small class="text-muted">Response Rate</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="text-center p-3 bg-light rounded">
+                  <div class="fw-bold text-success fs-5">${data.company_stats.offer_rate}%</div>
+                  <small class="text-muted">Offer Rate</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="text-center p-3 bg-light rounded">
+                  <div class="fw-bold text-info fs-5">${data.company_stats.avg_response_time}</div>
+                  <small class="text-muted">Avg Response (days)</small>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="text-center p-3 bg-light rounded">
+                  <div class="fw-bold text-secondary fs-5">${data.company_stats.total_apps}</div>
+                  <small class="text-muted">Total Applications</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // University progression
+      if (data.university_progression && Object.keys(data.university_progression).length > 0) {
+        html += `
+          <div class="col-md-6">
+            <h6 class="fw-semibold mb-3">University Success Rates</h6>
+        `;
+
+        Object.entries(data.university_progression).forEach(([uni, stats]) => {
+          html += `
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="small fw-medium">${uni}</span>
+                <span class="text-muted small">(${stats.total_apps} apps)</span>
+              </div>
+              <div class="row g-2">
+                <div class="col-4">
+                  <div class="text-center">
+                    <div class="small fw-medium text-warning">${stats.assessment_rate}%</div>
+                    <div class="small text-muted">Assessment</div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="text-center">
+                    <div class="small fw-medium text-info">${stats.interview_rate}%</div>
+                    <div class="small text-muted">Interview</div>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="text-center">
+                    <div class="small fw-medium text-success">${stats.offer_rate}%</div>
+                    <div class="small text-muted">Offers</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        html += '</div>';
+      }
+
+      html += '</div>';
+
+      if (!data.company_stats && (!data.university_progression || Object.keys(data.university_progression).length === 0)) {
+        html = '<p class="text-muted text-center">No application tracking data available for this company yet.</p>';
+      }
+
+      analyticsDiv.innerHTML = html;
+    })
+    .catch(error => {
+      console.error('Error loading analytics:', error);
+      analyticsDiv.innerHTML = '<p class="text-muted text-center">Unable to load analytics data.</p>';
+    });
+});
+</script>

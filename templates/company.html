@@ -313,10 +313,11 @@
               {% set raw_app_process = entry.application_process or entry.application_stages or '' %}
               {% if raw_app_process and raw_app_process.strip() %}
                 {% set cleaned_app = raw_app_process.replace('Application process:', '').replace('application process:', '').strip() %}
-                {% set app_steps = cleaned_app.replace('→', '|').replace('->', '|').replace(' → ', '|').replace(' -> ', '|').split('|') %}
+                {# Split on various arrow formats #}
+                {% set app_steps = cleaned_app.replace(' → ', '|').replace('→', '|').replace(' -> ', '|').replace('->', '|').replace(' • ', '|').replace('•', '|').split('|') %}
                 {% set app_steps = app_steps | map('trim') | reject('equalto','') | list %}
 
-                {% if app_steps and app_steps|length > 0 %}
+                {% if app_steps and app_steps|length > 1 %}
                   <div class="proc">
                     <div class="proc-label">Application Process</div>
                     {% if app_steps|length <= 4 %}
@@ -335,6 +336,12 @@
                       </ol>
                     {% endif %}
                   </div>
+                {% else %}
+                    {# If no clear steps detected, show as single block #}
+                    <div class="proc">
+                      <div class="proc-label">Application Process</div>
+                      <div class="single-process">{{ cleaned_app }}</div>
+                    </div>
                 {% endif %}
               {% endif %}
 

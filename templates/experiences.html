@@ -152,10 +152,11 @@
                 {% set raw_process = exp.get('application_process', '') or exp.get('application_stages', '') %}
                 {% if raw_process and raw_process.strip() %}
                   {% set cleaned_process = raw_process.replace('Application process:', '').replace('application process:', '').strip() %}
-                  {% set process_steps = cleaned_process.replace('→', '|').replace('->', '|').replace(' → ', '|').replace(' -> ', '|').split('|') %}
+                  {# Split on various arrow formats #}
+                  {% set process_steps = cleaned_process.replace(' → ', '|').replace('→', '|').replace(' -> ', '|').replace('->', '|').replace(' • ', '|').replace('•', '|').split('|') %}
                   {% set process_steps = process_steps | map('trim') | reject('equalto','') | list %}
 
-                  {% if process_steps and process_steps|length > 0 %}
+                  {% if process_steps and process_steps|length > 1 %}
                     <div class="proc">
                       <div class="proc-label">Application Process</div>
                       {% if process_steps|length <= 4 %}
@@ -173,6 +174,12 @@
                           {% endfor %}
                         </ol>
                       {% endif %}
+                    </div>
+                  {% else %}
+                    {# If no clear steps detected, show as single block #}
+                    <div class="proc">
+                      <div class="proc-label">Application Process</div>
+                      <div class="single-process">{{ cleaned_process }}</div>
                     </div>
                   {% endif %}
                 {% endif %}

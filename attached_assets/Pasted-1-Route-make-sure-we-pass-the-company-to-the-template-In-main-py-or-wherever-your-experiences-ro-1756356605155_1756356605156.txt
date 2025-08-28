@@ -1,0 +1,76 @@
+1) Route: make sure we pass the company to the template
+
+In main.py (or wherever your experiences route lives), ensure the company slug/name is sent to the template.
+
+@app.route("/experiences/<company_slug>")
+def experiences_by_company(company_slug):
+    # prettify for the page title (Allens, Corrs, etc.)
+    pretty = (
+        company_slug.replace("-", " ").replace("%20", " ").strip().title()
+    )
+    return render_template(
+        "experiences.html",
+        company_slug=company_slug,
+        company_title=pretty,
+    )
+
+
+If you already have this route, just make sure company_slug and company_title are included in render_template(...).
+
+2) Template: add a company-specific hero with “View Analytics”
+
+In templates/experiences.html, replace your current hero heading block with this conditional.
+(Keep the rest of the page as-is.)
+
+{# --- Hero header --- #}
+{% if company_title %}
+  {% set analytics_slug = (company_slug or company_title)|lower
+                           |replace('&', 'and')
+                           |replace(' & ', '-and-')
+                           |replace(' ', '-') %}
+  <div class="page-hero company-hero">
+    <div>
+      <h1 class="page-title">{{ company_title }}</h1>
+      <p class="page-sub">Graduate stories</p>
+    </div>
+    <a class="btn-primary" href="/companies/{{ analytics_slug }}#analytics">View Analytics</a>
+  </div>
+{% else %}
+  <div class="page-hero">
+    <h1 class="page-title">Graduate Stories</h1>
+    <p class="page-sub">Authentic experiences from graduates across Australia’s top firms</p>
+  </div>
+{% endif %}
+{# --- /Hero header --- #}
+
+3) (Optional) Small CSS to align the header + button
+
+Add to the end of static/style.css (or reuse your existing button classes).
+
+.page-hero{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  gap:12px; margin-bottom:16px;
+}
+.company-hero .page-title{ margin-bottom:2px }
+.btn-primary{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:10px 14px; border-radius:10px; font-weight:600;
+  background:#2563eb; color:#fff; border:1px solid #1d4ed8; text-decoration:none;
+}
+.btn-primary:hover{ filter:brightness(0.96) }
+
+4) Ensure the analytics section has an anchor
+
+In templates/company.html, put the id on the analytics wrapper so the #analytics link jumps correctly:
+
+<section id="analytics">
+  <!-- company analytics content -->
+</section>
+
+How it works
+
+When you click “View All Stories” (which goes to /experiences/<company>), the route passes company_title + company_slug.
+
+The stories page detects that and swaps the generic hero for “Allens” + a “View Analytics” button.
+
+The button links back to that company’s page and jumps straight to the analytics block.

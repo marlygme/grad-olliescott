@@ -310,7 +310,7 @@
               {% endif %}
 
               {# --- Application process: Chip Stepper + Mini Cards --- #}
-              {% set raw = entry.application_stages or '' %}
+              {% set raw = entry.application_process or '' %}
               {% set steps = raw | replace('→','|') | replace('->','|') | split('|') %}
               {% set steps = steps | select('string') | map('trim') | reject('equalto','') | list %}
               {% set ix = entry.interview_experience %}

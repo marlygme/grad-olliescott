@@ -148,50 +148,22 @@
                   <i class="bi bi-route me-2"></i>Application Journey
                 </h6>
                 
-                {# --- Application process: Chip Stepper + Mini Cards --- #}
-                {% set raw = exp.get('application_process') or '' %}
-                {% set steps = raw | replace('→','|') | replace('->','|') | split('|') %}
-                {% set steps = steps | select('string') | map('trim') | reject('equalto','') | list %}
-                {% set ix = exp.get('interview_experience') %}
-                {% set adv = exp.get('advice') %}
+                {# Simple, clearer layout: label + numbered steps #}
+                {% set raw = (exp.application_process if exp is defined else exp.get('application_process')) or '' %}
+                {% set steps = raw.replace('Application process:', '').replace('application process:', '') %}
+                {% set steps = steps.replace('→','|').replace('->','|').split('|') %}
+                {% set steps = steps | map('trim') | reject('equalto','') | list %}
 
-                {% if steps|length %}
-                <div class="process stepper">
-                  <div class="stepper-head">
-                    <span class="pill pill-process">Application process</span>
-                    <span class="meta">{{ steps|length }} steps</span>
+                {% if steps %}
+                  <div class="proc">
+                    <div class="proc-label">Application process</div>
+                    <ol class="proc-list">
+                      {% for s in steps %}
+                        <li>{{ s }}</li>
+                      {% endfor %}
+                    </ol>
                   </div>
-
-                  <div class="stepper-chips">
-                    {% for s in steps %}
-                    <div class="chip">
-                      <span class="chip-num">{{ loop.index }}</span>
-                      <span class="chip-text">{{ s }}</span>
-                    </div>
-                    {% endfor %}
-                  </div>
-
-                  <div class="step-grid">
-                    {% for s in steps %}
-                    <div class="mini-card">
-                      <div class="mini-num">Step {{ loop.index }}</div>
-                      <div class="mini-title">{{ s }}</div>
-                    </div>
-                    {% endfor %}
-                  </div>
-
-                  {% if ix or adv %}
-                  <details class="process-more">
-                    <summary>What to expect</summary>
-                    <ul class="ticks">
-                      {% if ix %}<li>{{ ix }}</li>{% endif %}
-                      {% if adv %}<li>{{ adv }}</li>{% endif %}
-                    </ul>
-                  </details>
-                  {% endif %}
-                </div>
                 {% endif %}
-                {# --- /Application process --- #}
               </div>
             </div>
             {% endif %}

@@ -310,26 +310,26 @@
               {% endif %}
 
               {# Enhanced application process with visual flow #}
-              {% set raw = entry.application_process or entry.application_stages or '' %}
-              {% if raw %}
-                {% set cleaned = raw.replace('Application process:', '').replace('application process:', '').strip() %}
-                {% set steps = cleaned.replace('→',' | ').replace('->',' | ').split('|') %}
-                {% set steps = steps | map('trim') | reject('equalto','') | list %}
+              {% set raw_app_process = entry.application_process or entry.application_stages or '' %}
+              {% if raw_app_process and raw_app_process.strip() %}
+                {% set cleaned_app = raw_app_process.replace('Application process:', '').replace('application process:', '').strip() %}
+                {% set app_steps = cleaned_app.replace('→', '|').replace('->', '|').replace(' → ', '|').replace(' -> ', '|').split('|') %}
+                {% set app_steps = app_steps | map('trim') | reject('equalto','') | list %}
 
-                {% if steps and steps|length > 0 %}
+                {% if app_steps and app_steps|length > 0 %}
                   <div class="proc">
                     <div class="proc-label">Application Process</div>
-                    {% if steps|length <= 4 %}
+                    {% if app_steps|length <= 4 %}
                       {# Use flow layout for 4 or fewer steps #}
                       <ul class="proc-flow">
-                        {% for step in steps %}
+                        {% for step in app_steps %}
                           <li>{{ step }}</li>
                         {% endfor %}
                       </ul>
                     {% else %}
                       {# Use numbered list for more than 4 steps #}
                       <ol class="proc-list">
-                        {% for step in steps %}
+                        {% for step in app_steps %}
                           <li>{{ step }}</li>
                         {% endfor %}
                       </ol>

@@ -149,26 +149,26 @@
                 </h6>
                 
                 {# Enhanced application process with visual flow #}
-                {% set raw = exp.get('application_process', '') or exp.get('application_stages', '') %}
-                {% if raw %}
-                  {% set cleaned = raw.replace('Application process:', '').replace('application process:', '').strip() %}
-                  {% set steps = cleaned.replace('→',' | ').replace('->',' | ').split('|') %}
-                  {% set steps = steps | map('trim') | reject('equalto','') | list %}
+                {% set raw_process = exp.get('application_process', '') or exp.get('application_stages', '') %}
+                {% if raw_process and raw_process.strip() %}
+                  {% set cleaned_process = raw_process.replace('Application process:', '').replace('application process:', '').strip() %}
+                  {% set process_steps = cleaned_process.replace('→', '|').replace('->', '|').replace(' → ', '|').replace(' -> ', '|').split('|') %}
+                  {% set process_steps = process_steps | map('trim') | reject('equalto','') | list %}
 
-                  {% if steps and steps|length > 0 %}
+                  {% if process_steps and process_steps|length > 0 %}
                     <div class="proc">
                       <div class="proc-label">Application Process</div>
-                      {% if steps|length <= 4 %}
+                      {% if process_steps|length <= 4 %}
                         {# Use flow layout for 4 or fewer steps #}
                         <ul class="proc-flow">
-                          {% for step in steps %}
+                          {% for step in process_steps %}
                             <li>{{ step }}</li>
                           {% endfor %}
                         </ul>
                       {% else %}
                         {# Use numbered list for more than 4 steps #}
                         <ol class="proc-list">
-                          {% for step in steps %}
+                          {% for step in process_steps %}
                             <li>{{ step }}</li>
                           {% endfor %}
                         </ol>

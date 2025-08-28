@@ -148,7 +148,7 @@
                   <i class="bi bi-route me-2"></i>Application Journey
                 </h6>
                 
-                {# Simple, clearer layout: label + numbered steps #}
+                {# Enhanced application process with visual flow #}
                 {% set raw = exp.get('application_process', '') or exp.get('application_stages', '') %}
                 {% if raw %}
                   {% set cleaned = raw.replace('Application process:', '').replace('application process:', '').strip() %}
@@ -158,11 +158,21 @@
                   {% if steps and steps|length > 0 %}
                     <div class="proc">
                       <div class="proc-label">Application Process</div>
-                      <ol class="proc-list">
-                        {% for step in steps %}
-                          <li>{{ step }}</li>
-                        {% endfor %}
-                      </ol>
+                      {% if steps|length <= 4 %}
+                        {# Use flow layout for 4 or fewer steps #}
+                        <ul class="proc-flow">
+                          {% for step in steps %}
+                            <li>{{ step }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% else %}
+                        {# Use numbered list for more than 4 steps #}
+                        <ol class="proc-list">
+                          {% for step in steps %}
+                            <li>{{ step }}</li>
+                          {% endfor %}
+                        </ol>
+                      {% endif %}
                     </div>
                   {% endif %}
                 {% endif %}

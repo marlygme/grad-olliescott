@@ -159,169 +159,28 @@
   </div>
 
 
-  {% if firm_data and firm_data.experiences %}
-    <div class="card mb-5">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h4 class="card-title mb-0">
-            <i class="bi bi-chat-quote me-2"></i>Graduate Experiences
-          </h4>
-          <a href="/experiences/{{ company | urlencode }}" class="btn btn-outline-primary">
-            View All {{ firm_data.total_experiences }} Experiences
-          </a>
+  <!-- Productive Stories Section -->
+  <div class="card mb-5">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="card-title mb-0">
+          <i class="bi bi-star me-2"></i>Productive Stories
+        </h4>
+        <a href="/stories" class="btn btn-outline-primary">
+          View All Stories
+        </a>
+      </div>
+
+      <div class="text-center py-5">
+        <div class="empty-icon mb-4">
+          <i class="bi bi-lightbulb text-muted" style="font-size: 4rem;"></i>
         </div>
-
-        <div class="row g-4">
-          {% for exp in firm_data.experiences %}
-            <div class="col-12">
-              <div class="card border-0 bg-light">
-                <div class="card-body p-4">
-                  {% if exp.cat_labels %}
-                    <div class="d-flex flex-wrap gap-1 mb-3">
-                      {% for label in exp.cat_labels %}
-                        <span class="badge bg-primary-subtle text-primary">{{ label }}</span>
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-
-                  <div class="mb-3">
-                    <p class="mb-0 lh-base">{{ exp.evidence_span or exp.content }}</p>
-                  </div>
-
-                  <div class="d-flex justify-content-between align-items-center text-muted small">
-                    <div>
-                      {% if exp.city %}
-                        <i class="bi bi-geo-alt me-1"></i>{{ exp.city }}
-                      {% endif %}
-                      {% if exp.program_type %}
-                        <span class="ms-3">
-                          <i class="bi bi-briefcase me-1"></i>{{ exp.program_type }}
-                        </span>
-                      {% endif %}
-                    </div>
-                    {% if exp.intake_year %}
-                      <span>
-                        <i class="bi bi-calendar me-1"></i>{{ exp.intake_year }} intake
-                      </span>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-
-        <div class="text-center mt-4">
-          <p class="text-muted mb-0">
-            <i class="bi bi-shield-check me-1"></i>All experiences are anonymized and usernames removed for privacy
-          </p>
-        </div>
+        <h4 class="fw-medium mb-3">Curated Success Stories Coming Soon</h4>
+        <p class="text-muted mb-4">We're preparing high-quality, actionable stories from {{ company }} graduates.</p>
+        <a href="/submit" class="btn btn-primary">Share Your Success Story</a>
       </div>
     </div>
-  {% endif %}
-
-  <!-- User Submitted Experiences -->
-  {% if entries %}
-    <h3 class="mb-4">Community Experiences</h3>
-    <div class="row g-4">
-      {% for entry in entries %}
-        <div class="col-md-6">
-          <div class="card h-100">
-            <div class="card-body">
-              <h5 class="card-title">{{ entry.role }}</h5>
-
-              <div class="mb-2">
-                <strong>Type:</strong> {{ entry.experience_type or 'Not specified' }}
-              </div>
-
-              <div class="mb-2">
-                <strong>University:</strong> {{ entry.university or 'N/A' }}
-                {% if entry.wam %}(WAM: {{ entry.wam }}){% endif %}
-              </div>
-
-              <div class="mb-2">
-                <strong>Salary:</strong> 
-                {% if entry.salary %}${{ "{:,}".format(entry.salary|int) }}{% else %}Not disclosed{% endif %}
-                {% if entry.bonus %} + {{ entry.bonus }} bonus{% endif %}
-              </div>
-
-              <div class="mb-3">
-                <strong>Outcome:</strong>
-                {% if entry.outcome == 'Success' %}
-                  <span class="badge bg-success">Success</span>
-                {% elif entry.outcome == 'Rejected' %}
-                  <span class="badge bg-danger">Rejected</span>
-                {% else %}
-                  <span class="badge bg-secondary">Ghosted</span>
-                {% endif %}
-              </div>
-
-              {% if entry.interview_experience %}
-                <div class="mb-2">
-                  <strong>Interview:</strong> {{ entry.interview_experience[:150] }}{% if entry.interview_experience|length > 150 %}...{% endif %}
-                </div>
-              {% endif %}
-
-              {% if entry.advice %}
-                <p class="mb-0 text-muted">{{ entry.advice[:120] }}{% if entry.advice|length > 120 %}...{% endif %}</p>
-              {% elif entry.interview_experience %}
-                <p class="mb-0 text-muted">{{ entry.interview_experience[:120] }}{% if entry.interview_experience|length > 120 %}...{% endif %}</p>
-              {% endif %}
-
-              {# Enhanced application process with visual flow #}
-              {% set raw_app_process = entry.application_process or entry.application_stages or '' %}
-              {% if raw_app_process and raw_app_process.strip() %}
-                {% set cleaned_app = raw_app_process.replace('Application process:', '').replace('application process:', '').strip() %}
-                {# Split on various arrow formats #}
-                {% set app_steps = cleaned_app.replace(' → ', '|').replace('->', '|').replace(' -> ', '|').replace('->', '|').replace(' • ', '|').replace('•', '|').split('|') %}
-                {% set app_steps = app_steps | map('trim') | reject('equalto','') | list %}
-
-                {% if app_steps and app_steps|length > 1 %}
-                  <div class="proc">
-                    <div class="proc-label">Application Process</div>
-                    {% if app_steps|length <= 4 %}
-                      {# Use flow layout for 4 or fewer steps #}
-                      <ul class="proc-flow">
-                        {% for step in app_steps %}
-                          <li>{{ step }}</li>
-                        {% endfor %}
-                      </ul>
-                    {% else %}
-                      {# Use numbered list for more than 4 steps #}
-                      <ol class="proc-list">
-                        {% for step in app_steps %}
-                          <li>{{ step }}</li>
-                        {% endfor %}
-                      </ol>
-                    {% endif %}
-                  </div>
-                {% else %}
-                    {# If no clear steps detected, show as single block #}
-                    <div class="proc">
-                      <div class="proc-label">Application Process</div>
-                      <div class="single-process">{{ cleaned_app }}</div>
-                    </div>
-                {% endif %}
-              {% endif %}
-
-              <div class="text-muted small">
-                Submitted {{ entry.timestamp.split('T')[0] }}
-              </div>
-            </div>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="text-center py-5">
-      <div class="empty-icon mb-4">
-        <i class="bi bi-chat-quote text-muted" style="font-size: 4rem;"></i>
-      </div>
-      <h4 class="fw-medium mb-3">No community experiences yet</h4>
-      <p class="text-muted mb-4">Be the first to share your experience with {{ company }}!</p>
-      <a href="/submit" class="btn btn-primary">Share Your Experience</a>
-    </div>
-  {% endif %}
+  </div>
 </div>
 
 {# Add a div for company analytics #}

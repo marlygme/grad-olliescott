@@ -305,7 +305,15 @@
               {% endif %}
 
               {% if entry.advice %}
-                <div class="fst-italic mb-2">"{{ entry.advice[:200] }}{% if entry.advice|length > 200 %}...{% endif %}"</div>
+                <p class="mb-0 text-muted">{{ entry.advice[:120] }}{% if entry.advice|length > 120 %}...{% endif %}</p>
+              {% elif entry.interview_experience %}
+                <p class="mb-0 text-muted">{{ entry.interview_experience[:120] }}{% if entry.interview_experience|length > 120 %}...{% endif %}</p>
+              {% endif %}
+
+              {% if entry.application_stages %}
+                <div class="mt-2">
+                  {{ application_process_block(entry.application_stages, entry.interview_experience, entry.advice) }}
+                </div>
               {% endif %}
 
               <div class="text-muted small">

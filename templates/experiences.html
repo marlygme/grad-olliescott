@@ -173,8 +173,8 @@
                 {% set raw_process = exp.get('application_process', '') or exp.get('application_stages', '') %}
                 {% if raw_process and raw_process.strip() %}
                   {% set cleaned_process = raw_process.replace('Application process:', '').replace('application process:', '').strip() %}
-                  {# Split on various arrow and pipe formats #}
-                  {% set process_steps = cleaned_process.replace(' → ', '|').replace('→', '|').replace(' -> ', '|').replace('->', '|').replace(' • ', '|').replace('•', '|').replace(' | ', '|').split('|') %}
+                  {# Split on various arrow formats #}
+                  {% set process_steps = cleaned_process.replace(' → ', '|').replace('→', '|').replace(' -> ', '|').replace('->', '|').replace(' • ', '|').replace('•', '|').split('|') %}
                   {% set process_steps = process_steps | map('trim') | reject('equalto','') | list %}
 
                   {% if process_steps and process_steps|length > 1 %}
@@ -236,20 +236,21 @@
           </div>
 
           <!-- Story Footer -->
-            <div class="story-footer bg-light border-0 p-3">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex gap-2 flex-wrap">
-                  {% if exp.get('experience_type') %}
-                    <span class="badge bg-secondary text-white">{{ exp.get('experience_type') }}</span>
-                  {% endif %}
-                </div>
-                <div class="story-actions">
-                  <button class="btn btn-sm btn-outline-primary rounded-pill px-3" title="Helpful">
-                    <i class="bi bi-hand-thumbs-up me-1"></i>Helpful
-                  </button>
-                </div>
+          <div class="card-footer bg-light border-0 p-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="story-meta d-flex align-items-center gap-3">
+                <span class="text-muted small">
+                  <i class="bi bi-clock me-1"></i>Recently shared
+                </span>
+              </div>
+
+              <div class="story-actions d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary rounded-pill px-3" title="Helpful">
+                  <i class="bi bi-hand-thumbs-up me-1"></i>Helpful
+                </button>
               </div>
             </div>
+          </div>
         </div>
       </div>
       {% endfor %}

@@ -1,0 +1,127 @@
+I’m using Flask + Jinja. The “Application process” text on each experience card must be rendered as a visual, numbered timeline (no JS). Do these exact edits:
+
+1) Replace the paragraph with inline Jinja timeline (no macros)
+
+Open the template that renders each experience card (search in templates/ for the text Application process:). In that file, delete the paragraph that prints the raw process string, e.g.
+
+Application process: {{ exp.application_process }}
+
+
+(or experience.application_process)
+
+Replace it with this block using whatever variable exists in this template (either exp or experience). If it’s experience, swap the variable names accordingly.
+
+{# --- Application process timeline --- #}
+{% set _process = (exp.application_process if exp is defined else experience.application_process) or '' %}
+{% set _p = _process | replace('→','|') | replace('->','|') %}
+{% set _steps = _p.split('|') | select('string') | list %}
+
+{% if _steps|length and _steps|join('')|trim %}
+<div class="process-card">
+  <div class="process-head">
+    <span class="pill pill-process">Application process</span>
+  </div>
+
+  <ol class="timeline">
+    {% for s in _steps if s and s.strip() %}
+    <li class="timeline-step">
+      <span class="dot">{{ loop.index }}</span>
+      <div class="step-card">{{ s.strip() }}</div>
+    </li>
+    {% endfor %}
+  </ol>
+
+  {% set _ix = (exp.interview_experience if exp is defined else experience.interview_experience) %}
+  {% set _adv = (exp.advice if exp is defined else experience.advice) %}
+  {% if _ix or _adv %}
+  <details class="process-more">
+    <summary>What to expect</summary>
+    <ul class="ticks">
+      {% if _ix %}<li>{{ _ix }}</li>{% endif %}
+      {% if _adv %}<li>{{ _adv }}</li>{% endif %}
+    </ul>
+  </details>
+  {% endif %}
+</div>
+{% endif %}
+{# --- /Application process timeline --- #}
+
+2) Add styles (append to static/style.css)
+
+Do not create styles.css. Append this to the end of static/style.css:
+
+:root{
+  --brand:#2563eb;
+  --line:#e6eaf1;
+  --chip-bg:#eef2ff;
+  --chip-fg:#3b47a0;
+  --card-border:#eaecef;
+}
+
+.process-card{margin-top:8px}
+.process-head{margin-bottom:8px}
+.pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.pill-process{background:var(--chip-bg);color:var(--chip-fg)}
+
+.timeline{list-style:none;margin:0;padding:0}
+.timeline-step{
+  display:grid;
+  grid-template-columns: 28px 1fr;
+  align-items:start;
+  column-gap:10px;
+  position:relative;
+  margin-bottom:10px;
+}
+.timeline-step::before{
+  content:"";
+  position:absolute;
+  left:13px; top:22px; bottom:-6px;
+  width:2px; background:var(--line);
+}
+.timeline-step:last-child::before{display:none}
+
+.dot{
+  width:24px;height:24px;border-radius:50%;
+  border:2px solid var(--brand); color:var(--brand);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:12px;background:#fff;
+}
+
+.step-card{
+  background:#fff; border:1px solid var(--card-border);
+  border-radius:10px; padding:8px 12px; line-height:1.35;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04);
+}
+
+.process-more{margin-top:8px}
+.process-more > summary{
+  cursor:pointer; font-weight:600; user-select:none;
+  padding:6px 0;
+}
+.ticks{margin:6px 0 0 18px}
+.ticks li{margin:6px 0}
+
+3) Ensure the stylesheet is loaded
+
+Open templates/base.html (or your main layout) and confirm there’s a line like:
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+If it points to styles.css, change it to style.css.
+
+4) Clean up
+
+Remove any leftover “Application process:” label text so only the timeline shows.
+
+Restart the Flask server so templates recompile.
+
+5) Acceptance criteria
+
+Application process renders as a vertical, numbered timeline with round number dots.
+
+“Interview experience” + “Advice” appear inside a collapsible “What to expect”.
+
+Works with separators → or ->.
+
+If the process string is empty, the whole block hides (no blank label).

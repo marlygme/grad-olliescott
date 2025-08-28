@@ -11,7 +11,7 @@
       <div class="col-md-8">
         <h1 class="display-4 fw-bold mb-3">{{ company }}</h1>
         <p class="fs-5 text-muted mb-3">Graduate program insights and experiences</p>
-        
+
         <!-- Analytics Button - Prominent placement -->
         <div class="mb-3">
           <button class="btn btn-primary btn-lg" type="button" data-bs-toggle="collapse" data-bs-target="#analyticsSection" aria-expanded="false">
@@ -380,7 +380,7 @@
               {% if raw_app_process and raw_app_process.strip() %}
                 {% set cleaned_app = raw_app_process.replace('Application process:', '').replace('application process:', '').strip() %}
                 {# Split on various arrow formats #}
-                {% set app_steps = cleaned_app.replace(' → ', '|').replace('→', '|').replace(' -> ', '|').replace('->', '|').replace(' • ', '|').replace('•', '|').split('|') %}
+                {% set app_steps = cleaned_app.replace(' → ', '|').replace('->', '|').replace(' -> ', '|').replace('->', '|').replace(' • ', '|').replace('•', '|').split('|') %}
                 {% set app_steps = app_steps | map('trim') | reject('equalto','') | list %}
 
                 {% if app_steps and app_steps|length > 1 %}
@@ -736,3 +736,4 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+{% endblock content %}

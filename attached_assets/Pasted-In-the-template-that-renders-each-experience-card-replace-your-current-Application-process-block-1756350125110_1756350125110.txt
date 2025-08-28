@@ -1,0 +1,140 @@
+In the template that renders each experience card (replace your current “Application process:” block)
+{# --- Application process: Chip Stepper + Mini Cards --- #}
+{% set raw = (exp.application_process if exp is defined else experience.application_process) or '' %}
+{% set steps = raw | replace('→','|') | replace('->','|') | split('|') %}
+{% set steps = steps | select('string') | map('trim') | reject('equalto','') | list %}
+{% set ix = (exp.interview_experience if exp is defined else experience.interview_experience) %}
+{% set adv = (exp.advice if exp is defined else experience.advice) %}
+
+{% if steps|length %}
+<div class="process stepper">
+  <div class="stepper-head">
+    <span class="pill pill-process">Application process</span>
+    <span class="meta">{{ steps|length }} steps</span>
+  </div>
+
+  <div class="stepper-chips">
+    {% for s in steps %}
+    <div class="chip">
+      <span class="chip-num">{{ loop.index }}</span>
+      <span class="chip-text">{{ s }}</span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="step-grid">
+    {% for s in steps %}
+    <div class="mini-card">
+      <div class="mini-num">Step {{ loop.index }}</div>
+      <div class="mini-title">{{ s }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if ix or adv %}
+  <details class="process-more">
+    <summary>What to expect</summary>
+    <ul class="ticks">
+      {% if ix %}<li>{{ ix }}</li>{% endif %}
+      {% if adv %}<li>{{ adv }}</li>{% endif %}
+    </ul>
+  </details>
+  {% endif %}
+</div>
+{% endif %}
+{# --- /Application process --- #}
+
+Add these styles (append to your static/style.css)
+:root{
+  --brand:#2563eb;           /* tweak to your brand blue */
+  --card-border:#eaecef;
+}
+
+/* wrapper */
+.process.stepper{
+  background:#fff;
+  border:1px solid var(--card-border);
+  border-radius:12px;
+  padding:12px;
+}
+
+/* header */
+.stepper-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+.pill{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:600;
+  background:#eef2ff;
+  color:#3b47a0;
+}
+.meta{ font-size:12px; color:#6b7280 }
+
+/* chips row */
+.stepper-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:10px;
+}
+.chip{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:#f8fafc;
+  border:1px solid var(--card-border);
+  border-radius:999px;
+  padding:6px 10px;
+}
+.chip-num{
+  width:18px;height:18px;
+  border-radius:50%;
+  border:2px solid var(--brand);
+  color:var(--brand);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:11px;background:#fff;
+}
+.chip-text{ font-weight:500; }
+
+/* mini card grid */
+.step-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap:8px;
+}
+@media (max-width: 640px){
+  .step-grid{ grid-template-columns: 1fr; }
+}
+.mini-card{
+  border:1px solid var(--card-border);
+  border-radius:10px;
+  padding:10px;
+  background:#fff;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04);
+}
+.mini-num{ font-size:12px; color:#94a3b8; margin-bottom:2px; font-weight:700 }
+.mini-title{ font-weight:600; line-height:1.35 }
+
+/* details/tips */
+.process-more{ margin-top:8px }
+.process-more > summary{
+  cursor:pointer; font-weight:600; user-select:none; padding:6px 0;
+}
+.ticks{ margin:6px 0 0 18px }
+.ticks li{ margin:6px 0 }
+
+Why this reads better
+
+Chips give an instant “at a glance” feel; the grid adds structure for desktop.
+
+Long prose is tucked into a tasteful toggle.
+
+Works with your existing → or -> separators.
+
+No JS, just Jinja + CSS.

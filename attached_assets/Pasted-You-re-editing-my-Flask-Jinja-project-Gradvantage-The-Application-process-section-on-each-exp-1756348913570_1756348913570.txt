@@ -1,0 +1,124 @@
+You’re editing my Flask + Jinja project “Gradvantage.” The “Application process” section on each experience card is too text-heavy. Refactor it into a clean, numbered timeline with an expandable “What to expect” block—no JS required.
+
+Do this exactly:
+
+Create a template component at templates/_components.html with a Jinja macro that converts a string like
+"Online application → Online assessment → Assessment centre → Final interview"
+(or using ->) into numbered steps.
+
+{% macro application_process_block(process_text, interview_experience=None, advice=None) %}
+  {# Normalize separators and split into steps #}
+  {% set _p = (process_text or '') | replace('→','|') | replace('->','|') %}
+  {% set steps = _p.split('|') %}
+
+  <div class="process-card">
+    <div class="process-head">
+      <span class="pill pill-process">Application process</span>
+    </div>
+
+    <ol class="timeline">
+      {% for s in steps if s and s.strip() %}
+      <li class="timeline-step">
+        <span class="dot">{{ loop.index }}</span>
+        <div class="step-card">{{ s.strip() }}</div>
+      </li>
+      {% endfor %}
+    </ol>
+
+    {% if interview_experience or advice %}
+    <details class="process-more">
+      <summary>What to expect</summary>
+      <ul class="ticks">
+        {% if interview_experience %}<li>{{ interview_experience }}</li>{% endif %}
+        {% if advice %}<li>{{ advice }}</li>{% endif %}
+      </ul>
+    </details>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+
+Import and use the macro wherever experience cards are rendered (likely templates/index.html or the experiences page). At the top of that template, add:
+
+{% from "_components.html" import application_process_block %}
+
+
+Then replace the current paragraph that prints the application process (e.g., the line that looks like Application process: {{ ... }}) with the macro call. Use the same variable names already in the template. If the item is named exp, use:
+
+{{ application_process_block(exp.application_process, exp.interview_experience, exp.advice) }}
+
+
+If it’s named experience, use:
+
+{{ application_process_block(experience.application_process, experience.interview_experience, experience.advice) }}
+
+
+Update all templates that render experience cards in the same way.
+
+Append these styles to static/styles.css (keep existing styles; just add these at the end). If a variable already exists, keep the current value.
+
+:root{
+  --brand:#2563eb;
+  --line:#e6eaf1;
+  --chip-bg:#eef2ff;
+  --chip-fg:#3b47a0;
+  --card-border:#eaecef;
+}
+
+.process-card{margin-top:8px}
+.process-head{margin-bottom:8px}
+.pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.pill-process{background:var(--chip-bg);color:var(--chip-fg)}
+
+.timeline{list-style:none;margin:0;padding:0}
+.timeline-step{
+  display:grid;
+  grid-template-columns: 28px 1fr;
+  align-items:start;
+  column-gap:10px;
+  position:relative;
+  margin-bottom:10px;
+}
+.timeline-step::before{
+  content:"";
+  position:absolute;
+  left:13px; top:22px; bottom:-6px;
+  width:2px; background:var(--line);
+}
+.timeline-step:last-child::before{display:none}
+
+.dot{
+  width:24px;height:24px;border-radius:50%;
+  border:2px solid var(--brand); color:var(--brand);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:12px;background:#fff;
+}
+
+.step-card{
+  background:#fff; border:1px solid var(--card-border);
+  border-radius:10px; padding:8px 12px; line-height:1.35;
+  box-shadow: 0 1px 2px rgba(16,24,40,.04);
+}
+
+.process-more{margin-top:8px}
+.process-more > summary{
+  cursor:pointer; font-weight:600; user-select:none;
+  padding:6px 0;
+}
+.ticks{margin:6px 0 0 18px}
+.ticks li{margin:6px 0}
+
+
+Acceptance criteria
+
+The “Application process” shows as a numbered vertical timeline with round number dots and small step cards.
+
+“Interview experience” and “Advice” appear inside a <details> “What to expect” toggle.
+
+Works when the process string uses either → or -> as separators.
+
+If application_process is empty, the section gracefully shows nothing (no broken UI).
+
+No JS added; HTML + CSS only. Don’t change Python code or other page content.
+
+After making these changes, save, run, and ensure the experiences cards render with the new timeline.

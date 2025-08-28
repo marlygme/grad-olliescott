@@ -1,6 +1,5 @@
 
 {% extends "base.html" %}
-{% from "_components.html" import application_process_block %}
 
 {% block title %}Graduate Experiences{% if company %} at {{ company }}{% endif %} – Gradvantage{% endblock %}
 
@@ -149,9 +148,40 @@
                   <i class="bi bi-route me-2"></i>Application Journey
                 </h6>
                 
-                {% if exp.get('application_stages') %}
-                  {{ application_process_block(exp.application_stages, exp.get('interview_experience'), exp.get('advice')) }}
+                {# --- Application process timeline --- #}
+                {% set _process = exp.get('application_stages') or '' %}
+                {% set _p = _process | replace('→','|') | replace('->','|') %}
+                {% set _steps = _p.split('|') | select('string') | list %}
+
+                {% if _steps|length and _steps|join('')|trim %}
+                <div class="process-card">
+                  <div class="process-head">
+                    <span class="pill pill-process">Application process</span>
+                  </div>
+
+                  <ol class="timeline">
+                    {% for s in _steps if s and s.strip() %}
+                    <li class="timeline-step">
+                      <span class="dot">{{ loop.index }}</span>
+                      <div class="step-card">{{ s.strip() }}</div>
+                    </li>
+                    {% endfor %}
+                  </ol>
+
+                  {% set _ix = exp.get('interview_experience') %}
+                  {% set _adv = exp.get('advice') %}
+                  {% if _ix or _adv %}
+                  <details class="process-more">
+                    <summary>What to expect</summary>
+                    <ul class="ticks">
+                      {% if _ix %}<li>{{ _ix }}</li>{% endif %}
+                      {% if _adv %}<li>{{ _adv }}</li>{% endif %}
+                    </ul>
+                  </details>
+                  {% endif %}
+                </div>
                 {% endif %}
+                {# --- /Application process timeline --- #}
               </div>
             </div>
             {% endif %}

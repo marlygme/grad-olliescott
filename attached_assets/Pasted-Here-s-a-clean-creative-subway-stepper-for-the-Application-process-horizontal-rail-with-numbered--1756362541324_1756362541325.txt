@@ -1,0 +1,64 @@
+Here’s a clean, creative “subway stepper” for the Application process—horizontal rail with numbered stops (stacks to a vertical rail on mobile). No JS.
+
+Template (replace your current “Application process …” line)
+{# Application process — Subway Stepper #}
+{% set raw = (exp.application_process if exp is defined else experience.application_process) or '' %}
+{% set steps = raw.replace('Application process:', '').replace('application process:', '') %}
+{% set steps = steps.replace('→','|').replace('->','|').split('|') %}
+{% set steps = steps | map('trim') | reject('equalto','') | list %}
+
+{% if steps %}
+<div class="appflow">
+  <div class="flow-head">
+    <span class="flow-title">Application process</span>
+    <span class="flow-meta">{{ steps|length }} steps</span>
+  </div>
+
+  <ol class="flow-rail" role="list">
+    {% for s in steps %}
+      <li class="flow-stop">
+        <span class="flow-dot">{{ loop.index }}</span>
+        <span class="flow-label">{{ s }}</span>
+      </li>
+    {% endfor %}
+  </ol>
+</div>
+{% endif %}
+
+CSS (append to static/style.css)
+:root{ --brand:#2563eb; --rail:#e6eaf1; --card-border:#eaecef; }
+
+.appflow{ margin-top:8px; }
+.flow-head{ display:flex; align-items:baseline; gap:8px; margin-bottom:6px; }
+.flow-title{ font-weight:700; font-size:14px; }
+.flow-meta{ font-size:12px; color:#6b7280; }
+
+/* Horizontal rail */
+.flow-rail{
+  list-style:none; margin:0; padding:12px 0 0;
+  display:flex; gap:16px; position:relative;
+}
+.flow-rail::before{
+  content:""; position:absolute; left:18px; right:18px; top:22px; height:2px;
+  background:var(--rail);
+}
+.flow-stop{ position:relative; text-align:center; flex:1 1 0; max-width:180px; }
+.flow-dot{
+  width:24px; height:24px; border-radius:50%;
+  border:2px solid var(--brand); color:var(--brand); background:#fff;
+  display:inline-flex; align-items:center; justify-content:center;
+  font-weight:700; font-size:12px; z-index:1;
+}
+.flow-label{ display:block; margin-top:6px; font-weight:600; line-height:1.25; }
+
+/* Mobile: stack vertically with a side rail */
+@media (max-width:640px){
+  .flow-rail{ flex-direction:column; gap:10px; }
+  .flow-rail::before{ display:none; }
+  .flow-stop{ text-align:left; display:grid; grid-template-columns:28px 1fr; column-gap:10px; }
+  .flow-stop::before{
+    content:""; position:absolute; left:12px; top:24px; width:2px; height: calc(100% + 8px);
+    background: var(--rail);
+  }
+  .flow-stop:last-child::before{ display:none; }
+}

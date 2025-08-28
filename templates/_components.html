@@ -1,0 +1,31 @@
+
+{% macro application_process_block(process_text, interview_experience=None, advice=None) %}
+  {# Normalize separators and split into steps #}
+  {% set _p = (process_text or '') | replace('→','|') | replace('->','|') %}
+  {% set steps = _p.split('|') %}
+
+  <div class="process-card">
+    <div class="process-head">
+      <span class="pill pill-process">Application process</span>
+    </div>
+
+    <ol class="timeline">
+      {% for s in steps if s and s.strip() %}
+      <li class="timeline-step">
+        <span class="dot">{{ loop.index }}</span>
+        <div class="step-card">{{ s.strip() }}</div>
+      </li>
+      {% endfor %}
+    </ol>
+
+    {% if interview_experience or advice %}
+    <details class="process-more">
+      <summary>What to expect</summary>
+      <ul class="ticks">
+        {% if interview_experience %}<li>{{ interview_experience }}</li>{% endif %}
+        {% if advice %}<li>{{ advice }}</li>{% endif %}
+      </ul>
+    </details>
+    {% endif %}
+  </div>
+{% endmacro %}

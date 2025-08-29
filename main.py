@@ -637,49 +637,208 @@ def law_match():
             return "Invalid WAM value", 400
         interest = request.form['interest']
         preference = request.form['preference']
+        experience = request.form.get('experience', 'none')
+        location = request.form.get('location', 'any')
+        grad_year = request.form.get('grad_year', '2025')
 
-        # Find firms with good representation from user's university
-        uni_matches = []
-        for firm, uni_data in FIRM_UNIVERSITY_DATA.items():
-            # Check if user's uni has good representation (>= 15%)
-            uni_percentage = uni_data.get(uni, uni_data.get('Other', 0))
-            if uni_percentage >= 15:
-                uni_matches.append((firm, uni_percentage))
+        # Enhanced firm scoring system
+        firm_scores = {}
+        recommendations = []
+        
+        # Define firm characteristics
+        firm_profiles = {
+            'Allens': {
+                'tier': 'top', 'prestige_score': 95, 'training_score': 90, 'worklife_score': 65,
+                'salary_range': '85-95k', 'competitive_level': 'very_high',
+                'strengths': ['Corporate M&A', 'Banking & Finance', 'Competition Law'],
+                'culture': 'Traditional, high-performing, competitive'
+            },
+            'King & Wood Mallesons': {
+                'tier': 'top', 'prestige_score': 95, 'training_score': 85, 'worklife_score': 60,
+                'salary_range': '85-95k', 'competitive_level': 'very_high',
+                'strengths': ['Asia-Pacific focus', 'Corporate M&A', 'Capital Markets'],
+                'culture': 'International, demanding, prestigious'
+            },
+            'Herbert Smith Freehills': {
+                'tier': 'top', 'prestige_score': 90, 'training_score': 88, 'worklife_score': 68,
+                'salary_range': '82-92k', 'competitive_level': 'very_high',
+                'strengths': ['Dispute Resolution', 'Energy & Resources', 'Corporate'],
+                'culture': 'Global outlook, collaborative, high standards'
+            },
+            'Gilbert + Tobin': {
+                'tier': 'top', 'prestige_score': 88, 'training_score': 92, 'worklife_score': 75,
+                'salary_range': '80-90k', 'competitive_level': 'high',
+                'strengths': ['Litigation', 'Corporate Advisory', 'Employment'],
+                'culture': 'Innovative, collegial, quality-focused'
+            },
+            'Clayton Utz': {
+                'tier': 'mid-top', 'prestige_score': 85, 'training_score': 85, 'worklife_score': 70,
+                'salary_range': '78-88k', 'competitive_level': 'high',
+                'strengths': ['Insurance', 'Construction', 'Government Advisory'],
+                'culture': 'Client-focused, collaborative, supportive'
+            },
+            'Ashurst': {
+                'tier': 'mid-top', 'prestige_score': 82, 'training_score': 80, 'worklife_score': 72,
+                'salary_range': '76-86k', 'competitive_level': 'high',
+                'strengths': ['Infrastructure', 'Corporate', 'Financial Services'],
+                'culture': 'International, team-oriented, developmental'
+            },
+            'MinterEllison': {
+                'tier': 'mid', 'prestige_score': 78, 'training_score': 85, 'worklife_score': 75,
+                'salary_range': '75-85k', 'competitive_level': 'moderate',
+                'strengths': ['Government', 'Health', 'Workplace Relations'],
+                'culture': 'Diverse, inclusive, development-focused'
+            },
+            'Corrs Chambers Westgarth': {
+                'tier': 'mid', 'prestige_score': 75, 'training_score': 82, 'worklife_score': 78,
+                'salary_range': '72-82k', 'competitive_level': 'moderate',
+                'strengths': ['Corporate', 'Competition', 'Intellectual Property'],
+                'culture': 'Collegiate, supportive, quality work'
+            },
+            'Lander & Rogers': {
+                'tier': 'mid', 'prestige_score': 70, 'training_score': 88, 'worklife_score': 85,
+                'salary_range': '70-80k', 'competitive_level': 'moderate',
+                'strengths': ['Family Law', 'Commercial', 'Property'],
+                'culture': 'Melbourne-focused, mentoring, work-life balance'
+            }
+        }
 
-        # Sort by university representation
-        uni_matches.sort(key=lambda x: x[1], reverse=True)
+        # Calculate scores for each firm
+        for firm, profile in firm_profiles.items():
+            score = 0
+            reasons = []
+            
+            # University representation bonus
+            uni_percentage = FIRM_UNIVERSITY_DATA.get(firm, {}).get(uni, FIRM_UNIVERSITY_DATA.get(firm, {}).get('Other', 0))
+            if uni_percentage >= 20:
+                score += 25
+                reasons.append(f"Strong {uni} representation ({uni_percentage}%)")
+            elif uni_percentage >= 10:
+                score += 15
+                reasons.append(f"Good {uni} representation ({uni_percentage}%)")
+            elif uni_percentage >= 5:
+                score += 5
+                reasons.append(f"Some {uni} representation ({uni_percentage}%)")
 
-        # Enhanced rule-based match logic
-        if wam >= 75 and preference == 'prestige':
-            top_tier = ['Allens', 'King & Wood Mallesons', 'Herbert Smith Freehills', 'Gilbert + Tobin']
-            relevant_firms = [firm for firm, _ in uni_matches if firm in top_tier]
-            if relevant_firms:
-                match = f'Based on your {uni} background and high WAM, consider top-tier firms: {", ".join(relevant_firms[:3])}. '
-                match += f'Your university has {uni_matches[0][1]}% representation at {uni_matches[0][0]}.'
+            # WAM-based scoring
+            if wam >= 85:
+                if profile['tier'] == 'top':
+                    score += 30
+                    reasons.append("Excellent WAM for top-tier firms")
+                else:
+                    score += 25
+            elif wam >= 80:
+                if profile['tier'] in ['top', 'mid-top']:
+                    score += 25
+                    reasons.append("Strong WAM for competitive firms")
+                else:
+                    score += 20
+            elif wam >= 75:
+                if profile['tier'] in ['mid-top', 'mid']:
+                    score += 20
+                    reasons.append("Good WAM for these firms")
+                else:
+                    score += 15
+            elif wam >= 70:
+                if profile['tier'] == 'mid':
+                    score += 15
+                    reasons.append("Meets typical requirements")
+                else:
+                    score += 5
             else:
-                match = 'Try for top-tier firms like Allens, King & Wood Mallesons, or Herbert Smith Freehills.'
-        elif interest == 'commercial':
-            if uni_matches:
-                match = f'For commercial law, consider firms where {uni} graduates are well-represented: '
-                match += f'{", ".join([firm for firm, _ in uni_matches[:3]])}. '
-                match += f'Your university has particularly strong representation at {uni_matches[0][0]} ({uni_matches[0][1]}%).'
-            else:
-                match = 'Consider mid-tier firms with strong commercial rotations, like MinterEllison or Ashurst.'
-        elif preference == 'worklife':
-            melbourne_focused = [firm for firm, _ in uni_matches if 'Melbourne' in FIRM_UNIVERSITY_DATA[firm] and FIRM_UNIVERSITY_DATA[firm]['University of Melbourne'] > 20]
-            if melbourne_focused:
-                match = f'For better work-life balance, consider Melbourne-focused firms: {", ".join(melbourne_focused[:2])}. '
-                match += 'Also explore boutique firms or in-house clerkships.'
-            else:
-                match = 'Check out boutique firms, Lander & Rogers, or in-house clerkships at government or corporates.'
+                if profile['tier'] == 'mid':
+                    score += 5
+                else:
+                    score -= 10
+
+            # Preference alignment
+            if preference == 'prestige':
+                score += profile['prestige_score'] * 0.4
+                reasons.append(f"High prestige rating ({profile['prestige_score']}/100)")
+            elif preference == 'training':
+                score += profile['training_score'] * 0.4
+                reasons.append(f"Strong training programs ({profile['training_score']}/100)")
+            elif preference == 'worklife':
+                score += profile['worklife_score'] * 0.4
+                reasons.append(f"Good work-life balance ({profile['worklife_score']}/100)")
+            elif preference == 'salary':
+                if '85-95k' in profile['salary_range']:
+                    score += 20
+                    reasons.append("Top salary bracket")
+                elif '80-90k' in profile['salary_range']:
+                    score += 15
+                    reasons.append("High salary bracket")
+                else:
+                    score += 10
+
+            # Experience level adjustments
+            if experience == 'extensive' and profile['competitive_level'] == 'very_high':
+                score += 15
+                reasons.append("Your experience suits highly competitive environment")
+            elif experience == 'some' and profile['competitive_level'] in ['high', 'moderate']:
+                score += 10
+                reasons.append("Good fit for your experience level")
+            elif experience == 'none' and profile['competitive_level'] == 'moderate':
+                score += 15
+                reasons.append("Beginner-friendly environment")
+
+            # Interest area alignment
+            if interest in [strength.lower().replace(' ', '_').replace('&', '').replace('-', '_') 
+                           for strength in profile['strengths']]:
+                score += 20
+                matching_strengths = [s for s in profile['strengths'] if interest in s.lower().replace(' ', '_').replace('&', '').replace('-', '_')]
+                reasons.append(f"Strong in {', '.join(matching_strengths)}")
+
+            firm_scores[firm] = {
+                'score': score,
+                'profile': profile,
+                'reasons': reasons,
+                'uni_percentage': uni_percentage
+            }
+
+        # Sort firms by score and get top recommendations
+        sorted_firms = sorted(firm_scores.items(), key=lambda x: x[1]['score'], reverse=True)
+        top_firms = sorted_firms[:5]
+
+        # Generate personalized recommendations
+        primary_rec = top_firms[0]
+        recommendations.append({
+            'firm': primary_rec[0],
+            'confidence': 'High' if primary_rec[1]['score'] >= 80 else 'Medium' if primary_rec[1]['score'] >= 60 else 'Consider',
+            'reasons': primary_rec[1]['reasons'][:3],
+            'profile': primary_rec[1]['profile']
+        })
+
+        # Add alternative recommendations
+        for firm_name, firm_data in top_firms[1:3]:
+            recommendations.append({
+                'firm': firm_name,
+                'confidence': 'Consider' if firm_data['score'] >= 50 else 'Backup',
+                'reasons': firm_data['reasons'][:2],
+                'profile': firm_data['profile']
+            })
+
+        # Generate overall insights
+        insights = []
+        avg_wam_for_tier = {'top': 82, 'mid-top': 78, 'mid': 75}
+        
+        if wam >= avg_wam_for_tier.get(primary_rec[1]['profile']['tier'], 75) + 5:
+            insights.append("Your WAM is well above the typical range for your top matches - you're competitive!")
+        elif wam >= avg_wam_for_tier.get(primary_rec[1]['profile']['tier'], 75):
+            insights.append("Your WAM meets the typical requirements for your top matches.")
         else:
-            if uni_matches:
-                match = f'Great starting firms for {uni} graduates: {", ".join([firm for firm, _ in uni_matches[:3]])}. '
-                match += f'Your university has {uni_matches[0][1]}% representation at {uni_matches[0][0]}.'
-            else:
-                match = 'Start with firms known for training like Lander & Rogers, MinterEllison, or mid-tier firms.'
+            insights.append("Consider highlighting your extracurricular experiences and practical skills.")
 
-        return render_template('law_match_result.html', match=match, uni_matches=uni_matches[:5])
+        if primary_rec[1]['uni_percentage'] >= 15:
+            insights.append(f"Your university has strong alumni networks at {primary_rec[0]}.")
+        
+        return render_template('law_match_result.html', 
+                             recommendations=recommendations,
+                             insights=insights,
+                             user_profile={
+                                 'uni': uni, 'wam': wam, 'interest': interest, 
+                                 'preference': preference, 'experience': experience
+                             })
 
     return render_template('law_match.html')
 

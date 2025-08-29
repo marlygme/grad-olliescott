@@ -1,63 +1,160 @@
 
 {% extends "base.html" %}
 
-{% block title %}Match Result – Gradvantage{% endblock %}
+{% block title %}Match Result – GradGuide{% endblock %}
 
 {% block content %}
 <div class="hero-section">
   <div class="container text-center">
-    <h1 class="hero-title">Your Match Result</h1>
-    <p class="hero-subtitle">Based on your preferences and profile</p>
+    <h1 class="hero-title">Your Personalized Match</h1>
+    <p class="hero-subtitle">{{ user_profile.uni }} • {{ user_profile.wam }} WAM • {{ user_profile.preference|title }} Priority</p>
   </div>
 </div>
 
 <div class="container my-5">
   <a href="/law-match" class="btn btn-link text-decoration-none mb-4">← Back to matching</a>
   
-  <div class="card">
-    <div class="card-body p-4">
-      <h4 class="card-title mb-3">Our Recommendation</h4>
-      <p class="lead">{{ match }}</p>
-      
-      {% if uni_matches %}
-        <div class="mt-4">
-          <h5>University Representation at Top Firms</h5>
-          <div class="table-responsive">
-            <table class="table table-sm">
-              <thead>
-                <tr>
-                  <th>Firm</th>
-                  <th>Your University Representation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for firm, percentage in uni_matches %}
-                  <tr>
-                    <td>{{ firm }}</td>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <div class="progress me-2" style="width: 100px; height: 20px;">
-                          <div class="progress-bar" role="progressbar" style="width: {{ percentage }}%" aria-valuenow="{{ percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <span>{{ percentage }}%</span>
-                      </div>
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+  <!-- Key Insights -->
+  {% if insights %}
+  <div class="alert alert-info mb-4">
+    <h6 class="alert-heading mb-2"><i class="bi bi-lightbulb me-1"></i>Key Insights</h6>
+    {% for insight in insights %}
+      <p class="mb-1">• {{ insight }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Top Recommendations -->
+  <div class="row g-4 mb-5">
+    {% for rec in recommendations %}
+    <div class="col-lg-4">
+      <div class="card h-100 {% if loop.first %}border-primary{% endif %}">
+        {% if loop.first %}
+        <div class="card-header bg-primary text-white">
+          <div class="d-flex align-items-center justify-content-between">
+            <h6 class="mb-0">🎯 Best Match</h6>
+            <span class="badge bg-white text-primary">{{ rec.confidence }}</span>
           </div>
         </div>
-      {% endif %}
+        {% endif %}
+        
+        <div class="card-body">
+          <h5 class="card-title">{{ rec.firm }}</h5>
+          
+          <div class="mb-3">
+            <span class="badge bg-light text-dark me-2">{{ rec.profile.tier|title }} Tier</span>
+            <span class="badge bg-success">{{ rec.profile.salary_range }}</span>
+          </div>
 
-      <div class="mt-4">
-        <p class="text-muted">Remember, this is just a starting point! Every firm is different, and the best way to find your fit is to research thoroughly and speak to current employees or recent graduates.</p>
+          <p class="small text-muted mb-3">{{ rec.profile.culture }}</p>
+
+          <h6 class="small fw-semibold mb-2">Why this matches you:</h6>
+          <ul class="small mb-3">
+            {% for reason in rec.reasons %}
+            <li>{{ reason }}</li>
+            {% endfor %}
+          </ul>
+
+          <h6 class="small fw-semibold mb-2">Practice strengths:</h6>
+          <div class="mb-3">
+            {% for strength in rec.profile.strengths %}
+            <span class="badge bg-light text-dark small me-1">{{ strength }}</span>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex gap-2">
+            <a href="/experiences/{{ rec.firm }}" class="btn btn-sm btn-outline-primary">View Experiences</a>
+            {% if loop.first %}
+            <a href="/company/{{ rec.firm }}" class="btn btn-sm btn-primary">Learn More</a>
+            {% endif %}
+          </div>
+        </div>
       </div>
-      
-      <div class="mt-4">
-        <a href="/experiences" class="btn btn-primary me-2">Browse Experiences</a>
-        <a href="/submit" class="btn btn-outline-primary">Share Your Experience</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Detailed Breakdown -->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Application Strategy</h5>
+        </div>
+        <div class="card-body">
+          {% set primary = recommendations[0] %}
+          
+          <div class="mb-4">
+            <h6>For {{ primary.firm }}:</h6>
+            {% if primary.profile.competitive_level == 'very_high' %}
+            <p class="mb-2">This is a highly competitive firm. Focus on:</p>
+            <ul class="small">
+              <li>Highlighting unique experiences and achievements</li>
+              <li>Demonstrating genuine interest in their practice areas</li>
+              <li>Networking with current employees or recent graduates</li>
+              <li>Preparing for intensive assessment processes</li>
+            </ul>
+            {% elif primary.profile.competitive_level == 'high' %}
+            <p class="mb-2">This firm is competitive but accessible. Consider:</p>
+            <ul class="small">
+              <li>Showcasing relevant coursework and practical experience</li>
+              <li>Researching recent deals or cases</li>
+              <li>Demonstrating cultural fit and values alignment</li>
+            </ul>
+            {% else %}
+            <p class="mb-2">This firm values development and growth. Emphasize:</p>
+            <ul class="small">
+              <li>Your willingness to learn and develop</li>
+              <li>Any relevant experience, even if limited</li>
+              <li>Interest in their training programs</li>
+            </ul>
+            {% endif %}
+          </div>
+
+          <div class="alert alert-light">
+            <small><strong>Next steps:</strong> Research their recent work, connect with graduates on LinkedIn, and tailor your applications to highlight relevant experiences.</small>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <h6 class="mb-0">Your Profile Summary</h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <small class="text-muted d-block">University</small>
+            <strong>{{ user_profile.uni }}</strong>
+          </div>
+          <div class="mb-3">
+            <small class="text-muted d-block">WAM</small>
+            <strong>{{ user_profile.wam }}</strong>
+          </div>
+          <div class="mb-3">
+            <small class="text-muted d-block">Interest</small>
+            <strong>{{ user_profile.interest|title }}</strong>
+          </div>
+          <div class="mb-3">
+            <small class="text-muted d-block">Priority</small>
+            <strong>{{ user_profile.preference|title }}</strong>
+          </div>
+          <div class="mb-3">
+            <small class="text-muted d-block">Experience</small>
+            <strong>{{ user_profile.experience|title }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5 text-center">
+    <p class="text-muted mb-3">Want to improve your matching? Share your experience to help others!</p>
+    <div class="d-flex gap-2 justify-content-center">
+      <a href="/experiences" class="btn btn-primary">Browse All Experiences</a>
+      <a href="/submit" class="btn btn-outline-primary">Share Your Story</a>
+      <a href="/tracker" class="btn btn-outline-secondary">Track Applications</a>
     </div>
   </div>
 </div>

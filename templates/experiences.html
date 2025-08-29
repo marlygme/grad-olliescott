@@ -173,7 +173,7 @@
                 {% set raw = (exp.get('application_process') or exp.get('application_stages') or '') %}
                 {% set steps = raw.replace('Application process:', '').replace('application process:', '') %}
                 {% set steps = steps.replace('→','|').replace('->','|').split('|') %}
-                {% set steps = steps | map('trim') | reject('equalto','') | list %}
+                {% set steps = steps | map('trim') | reject('equalto','') | reject('equalto','Other') | reject('equalto','other') | list %}
 
                 {% if steps %}
                 <div class="appflow">
@@ -183,15 +183,11 @@
                   </div>
 
                   <ol class="flow-rail" role="list">
-                    {% set step_number = [0] %}
                     {% for s in steps %}
-                      {% if s.lower().strip() != 'other' %}
-                        {% if step_number.append(step_number.pop() + 1) %}{% endif %}
-                        <li class="flow-stop">
-                          <span class="flow-dot">{{ step_number[0] }}</span>
-                          <span class="flow-label">{{ s }}</span>
-                        </li>
-                      {% endif %}
+                      <li class="flow-stop">
+                        <span class="flow-dot">{{ loop.index }}</span>
+                        <span class="flow-label">{{ s }}</span>
+                      </li>
                     {% endfor %}
                   </ol>
                 </div>

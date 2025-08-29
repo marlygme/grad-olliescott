@@ -619,7 +619,15 @@ def firm_experiences(firm_name):
 def law_match():
     if request.method == 'POST':
         uni = request.form['uni']
-        wam = float(request.form['wam'])
+        wam_str = request.form['wam'].strip().lower()
+        if wam_str in ['nan', 'inf', '-inf', '+inf']:
+            return "Invalid WAM value", 400
+        try:
+            wam = float(request.form['wam'])
+            if not (0 <= wam <= 100):  # WAM should be between 0-100
+                return "WAM must be between 0 and 100", 400
+        except ValueError:
+            return "Invalid WAM value", 400
         interest = request.form['interest']
         preference = request.form['preference']
 

@@ -1,7 +1,6 @@
-
 {% extends "base.html" %}
 
-{% block title %}Sign In Required – GradGuide{% endblock %}
+{% block title %}Sign In to Share Your Story – GradGuide{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -12,76 +11,65 @@
         <div class="card-body p-5 text-center">
           <div class="mb-4">
             <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-              <i class="bi bi-shield-lock fs-1"></i>
+              <i class="bi bi-chat-heart fs-1"></i>
             </div>
           </div>
-          
-          <h1 class="display-6 fw-bold mb-3">Sign In Required</h1>
+
+          <h1 class="display-6 fw-bold mb-3">Share Your Story</h1>
           <p class="fs-5 text-muted mb-4">
-            To share your graduate story and help the community, please sign in to your account.
+            To share your graduate experience and help the community, please sign in to your account first.
           </p>
-          
+
           <div class="mb-4">
             <div class="d-flex justify-content-center gap-4 text-muted small mb-3">
               <div><i class="bi bi-shield-check me-1"></i>Secure & Private</div>
               <div><i class="bi bi-clock me-1"></i>Quick Sign In</div>
-              <div><i class="bi bi-people me-1"></i>Join the Community</div>
+              <div><i class="bi bi-people me-1"></i>Help Others</div>
             </div>
           </div>
 
-          <div class="d-flex gap-2 justify-content-center">
+          <div class="d-grid gap-3">
             <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
               <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
             </a>
-            <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">
-              <i class="bi bi-person-plus me-2"></i>Create Account
-            </a>
-          </div>v>
-
-          <div class="text-muted small">
-            <p class="mb-2">
-              <i class="bi bi-info-circle me-1"></i>
-              Why do we require sign in?
-            </p>
-            <ul class="text-start small text-muted">
-              <li>Prevents spam and fake submissions</li>
-              <li>Allows you to track your contributions</li>
-              <li>Maintains quality of shared experiences</li>
-              <li>Enables personalized features like application tracking</li>
-            </ul>
-          </div>
-
-          <div class="mt-4">
-            <a href="/" class="btn btn-outline-secondary">
-              <i class="bi bi-arrow-left me-1"></i>Back to Homepage
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Benefits Section -->
-      <div class="mt-5 text-center">
-        <h5 class="fw-semibold mb-3">What you can do once signed in:</h5>
-        <div class="row g-3">
-          <div class="col-md-4">
-            <div class="p-3">
-              <i class="bi bi-chat-heart text-primary fs-4 mb-2 d-block"></i>
-              <h6 class="fw-medium">Share Stories</h6>
-              <small class="text-muted">Share your graduate experiences</small>
+            <div class="text-center">
+              <p class="text-muted mb-2">Don't have an account?</p>
+              <a href="{{ url_for('register') }}" class="btn btn-outline-primary">
+                <i class="bi bi-person-plus me-2"></i>Create Account
+              </a>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="p-3">
-              <i class="bi bi-clipboard-check text-success fs-4 mb-2 d-block"></i>
-              <h6 class="fw-medium">Track Applications</h6>
-              <small class="text-muted">Monitor your job applications</small>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="p-3">
-              <i class="bi bi-compass text-info fs-4 mb-2 d-block"></i>
-              <h6 class="fw-medium">Career Match</h6>
-              <small class="text-muted">Get personalized firm recommendations</small>
+
+          <div class="mt-4 pt-4 border-top">
+            <h6 class="fw-semibold mb-3">Why share your story?</h6>
+            <div class="row g-3 text-start">
+              <div class="col-12">
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-lightbulb text-warning me-3 mt-1"></i>
+                  <div>
+                    <strong>Help future graduates</strong><br>
+                    <small class="text-muted">Your insights could be exactly what someone needs to succeed</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-people text-success me-3 mt-1"></i>
+                  <div>
+                    <strong>Build community</strong><br>
+                    <small class="text-muted">Connect with fellow graduates and share experiences</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-shield-lock text-primary me-3 mt-1"></i>
+                  <div>
+                    <strong>Stay anonymous</strong><br>
+                    <small class="text-muted">Share safely without revealing personal information</small>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -89,22 +77,4 @@
     </div>
   </div>
 </div>
-
-<style>
-.card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.bg-primary-subtle {
-  background-color: rgba(37, 99, 235, 0.1) !important;
-}
-
-.btn {
-  transition: all 0.2s ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-}
-</style>
 {% endblock %}

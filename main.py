@@ -143,10 +143,12 @@ def index():
 
 
 @app.route('/submit', methods=['GET', 'POST'])
-@login_required
 def submit():
-    # Get user info from session
+    # Check if user is authenticated
     current_user = get_current_user()
+    if not current_user:
+        return render_template('auth_required.html')
+    
     user_id = current_user['user_id']
     user_name = current_user['username']
 

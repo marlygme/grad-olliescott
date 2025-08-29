@@ -197,11 +197,11 @@
             {% endif %}
 
             <!-- Pro Tip -->
-            {% if exp.get('pro_tip') %}
+            {% if exp.get('pro_tip') and exp.pro_tip.strip() %}
             <div class="story-pro-tip mb-4">
               <div class="bg-primary-subtle rounded-3 p-3 border-start border-primary border-3">
                 <div class="d-flex align-items-start">
-                  <i class="bi bi-star-fill text-primary me-2 mt-1 flex-shrink-0"></i>
+                  <i class="bi bi-star-fill me-2 mt-1 flex-shrink-0" style="color: #ffd700;"></i>
                   <div>
                     <h6 class="text-primary fw-semibold mb-1">Pro Tip ✨</h6>
                     <p class="mb-0 small text-dark fw-medium">{{ exp.pro_tip }}</p>

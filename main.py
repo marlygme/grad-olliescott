@@ -994,10 +994,6 @@ def report():
     return render_template('report.html', config=LEGAL_CONFIG)
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-
-
 # Authentication routes
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -1039,3 +1035,7 @@ def register():
 def logout():
     session.clear()
     return redirect(url_for('index'))
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)

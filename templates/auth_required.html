@@ -18,7 +18,7 @@
           
           <h1 class="display-6 fw-bold mb-3">Sign In Required</h1>
           <p class="fs-5 text-muted mb-4">
-            To share your graduate story and help the community, you need to sign in with your Replit account.
+            To share your graduate story and help the community, please sign in to your account.
           </p>
           
           <div class="mb-4">
@@ -29,13 +29,14 @@
             </div>
           </div>
 
-          <!-- Replit Auth Script -->
-          <div class="mb-4">
-            <script
-              authed="location.reload()"
-              src="https://auth.util.repl.co/script.js"
-            ></script>
-          </div>
+          <div class="d-flex gap-2 justify-content-center">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </a>
+            <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">
+              <i class="bi bi-person-plus me-2"></i>Create Account
+            </a>
+          </div>v>
 
           <div class="text-muted small">
             <p class="mb-2">

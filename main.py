@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file, session, flash
 from datetime import datetime, date
 import json
 import os
@@ -8,12 +8,14 @@ from collections import defaultdict, Counter
 from grad_data import load_cards, load_grad_signals
 from grad_data_v2 import load_cards as load_cards_v2
 from legal_config import LEGAL_CONFIG, NOT_ADVICE_DISCLAIMER
+from auth import create_user, authenticate_user, login_required, get_current_user
 
 
 # Load data from JSON file
 data_file = 'submissions.json'
 
 app = Flask(__name__)
+app.secret_key = 'your-secret-key-change-this-in-production'  # Change this to a secure random key
 
 data_file = 'submissions.json'
 tracker_file = 'applications.json'
@@ -84,9 +86,10 @@ if not os.path.exists(tracker_file):
 
 @app.route('/')
 def index():
-    # Get user info from Replit headers
-    user_id = request.headers.get('X-Replit-User-Id')
-    user_name = request.headers.get('X-Replit-User-Name')
+    # Get user info from session
+    current_user = get_current_user()
+    user_id = current_user['user_id'] if current_user else None
+    user_name = current_user['username'] if current_user else None
 
     with open(data_file, 'r') as f:
         submissions = json.load(f)
@@ -140,14 +143,12 @@ def index():
 
 
 @app.route('/submit', methods=['GET', 'POST'])
+@login_required
 def submit():
-    # Get user info from Replit headers
-    user_id = request.headers.get('X-Replit-User-Id')
-    user_name = request.headers.get('X-Replit-User-Name')
-
-    # Require authentication for both GET and POST
-    if not user_id:
-        return render_template('auth_required.html')
+    # Get user info from session
+    current_user = get_current_user()
+    user_id = current_user['user_id']
+    user_name = current_user['username']
 
     if request.method == 'POST':
         new_entry = {
@@ -679,8 +680,9 @@ def law_match():
 
 @app.route('/tracker')
 def tracker():
-    user_id = request.headers.get('X-Replit-User-Id')
-    user_name = request.headers.get('X-Replit-User-Name')
+    current_user = get_current_user()
+    user_id = current_user['user_id'] if current_user else None
+    user_name = current_user['username'] if current_user else None
 
     applications = []
     if user_id:
@@ -703,12 +705,11 @@ def tracker():
 
 
 @app.route('/tracker/add', methods=['POST'])
+@login_required
 def add_application():
-    user_id = request.headers.get('X-Replit-User-Id')
-    user_name = request.headers.get('X-Replit-User-Name')
-
-    if not user_id:
-        return redirect(url_for('tracker'))
+    current_user = get_current_user()
+    user_id = current_user['user_id']
+    user_name = current_user['username']
 
     with open(tracker_file, 'r') as f:
         applications = json.load(f)
@@ -741,11 +742,10 @@ def add_application():
 
 
 @app.route('/tracker/update/<int:app_id>', methods=['POST'])
+@login_required
 def update_application(app_id):
-    user_id = request.headers.get('X-Replit-User-Id')
-
-    if not user_id:
-        return jsonify({'error': 'Not authenticated'}), 401
+    current_user = get_current_user()
+    user_id = current_user['user_id']
 
     with open(tracker_file, 'r') as f:
         applications = json.load(f)
@@ -773,11 +773,10 @@ def update_application(app_id):
 
 
 @app.route('/tracker/delete/<int:app_id>', methods=['DELETE'])
+@login_required
 def delete_application(app_id):
-    user_id = request.headers.get('X-Replit-User-Id')
-
-    if not user_id:
-        return jsonify({'error': 'Not authenticated'}), 401
+    current_user = get_current_user()
+    user_id = current_user['user_id']
 
     with open(tracker_file, 'r') as f:
         applications = json.load(f)
@@ -792,11 +791,10 @@ def delete_application(app_id):
 
 
 @app.route('/tracker/analytics')
+@login_required
 def tracker_analytics():
-    user_id = request.headers.get('X-Replit-User-Id')
-
-    if not user_id:
-        return redirect(url_for('tracker'))
+    current_user = get_current_user()
+    user_id = current_user['user_id']
 
     with open(tracker_file, 'r') as f:
         all_applications = json.load(f)
@@ -952,11 +950,10 @@ def tracker_analytics():
 
 
 @app.route('/tracker/export')
+@login_required
 def export_tracker():
-    user_id = request.headers.get('X-Replit-User-Id')
-
-    if not user_id:
-        return redirect(url_for('tracker'))
+    current_user = get_current_user()
+    user_id = current_user['user_id']
 
     with open(tracker_file, 'r') as f:
         all_applications = json.load(f)
@@ -999,3 +996,46 @@ def report():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+# Authentication routes
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        user = authenticate_user(username, password)
+        if user:
+            session['user_id'] = user['user_id']
+            session['username'] = username
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid username or password')
+    
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        
+        if password != confirm_password:
+            flash('Passwords do not match')
+        elif len(password) < 6:
+            flash('Password must be at least 6 characters long')
+        elif create_user(username, email, password):
+            flash('Account created successfully! Please log in.')
+            return redirect(url_for('login'))
+        else:
+            flash('Username or email already exists')
+    
+    return render_template('register.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))

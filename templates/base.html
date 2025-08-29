@@ -67,13 +67,26 @@
           <a class="btn btn-outline-primary btn-pill" href="/law-match">
             <i class="bi bi-compass me-1"></i>Find Match
           </a>
-          {% if request.headers.get('X-Replit-User-Id') %}
+          {% if session.user_id %}
             <a class="btn btn-primary btn-pill" href="/submit">
               <i class="bi bi-plus-circle me-1"></i>Share Story
             </a>
+            <div class="dropdown">
+              <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle me-1"></i>{{ session.username }}
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/tracker">My Applications</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/logout">Sign Out</a></li>
+              </ul>
+            </div>
           {% else %}
-            <a class="btn btn-primary btn-pill" href="/submit">
-              <i class="bi bi-person-plus me-1"></i>Sign In to Share
+            <a class="btn btn-outline-secondary btn-pill" href="/login">
+              <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
+            </a>
+            <a class="btn btn-primary btn-pill" href="/register">
+              <i class="bi bi-person-plus me-1"></i>Register
             </a>
           {% endif %}
         </div>

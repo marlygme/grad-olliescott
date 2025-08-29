@@ -2,8 +2,8 @@
 // Cookie Banner and Consent Management
 class CookieConsent {
   constructor() {
-    this.CONSENT_KEY = 'gradvantage_cookie_consent';
-    this.ANALYTICS_CONSENT_KEY = 'gradvantage_analytics_consent';
+    this.CONSENT_KEY = 'gradguide_cookie_consent';
+    this.ANALYTICS_CONSENT_KEY = 'gradguide_analytics_consent';
     this.init();
   }
 

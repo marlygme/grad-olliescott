@@ -7,7 +7,7 @@ Edit these placeholders to match your business details
 from datetime import datetime
 
 LEGAL_CONFIG = {
-    'SITE_NAME': 'Gradvantage',
+    'SITE_NAME': 'GradGuide',
     'LEGAL_NAME': '{{Your Pty Ltd legal name}}',
     'ABN': '{{Your ABN}}',
     'CONTACT_EMAIL': '{{legal@yourdomain.au}}',

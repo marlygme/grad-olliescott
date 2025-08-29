@@ -329,21 +329,21 @@ def api_grad_data():
 @app.route('/api/company-analytics/<company_name>')
 def api_company_analytics(company_name):
     """Get analytics data for a specific company"""
-    
+
     with open(tracker_file, 'r') as f:
         all_applications = json.load(f)
-    
+
     # Filter applications for this company
     company_apps = [app for app in all_applications if app.get('company', '').lower() == company_name.lower()]
-    
+
     if not company_apps:
         return jsonify({'error': 'No data available'})
-    
+
     # Calculate company stats
     total_apps = len(company_apps)
     responses = [app for app in company_apps if app.get('response_date')]
     offers = [app for app in company_apps if app.get('status') == 'Offered']
-    
+
     response_times = []
     for app in responses:
         if app.get('application_date') and app.get('response_date'):
@@ -353,22 +353,22 @@ def api_company_analytics(company_name):
                 response_times.append((resp_date - app_date).days)
             except:
                 pass
-    
+
     avg_response_time = round(sum(response_times) / len(response_times)) if response_times else 0
-    
+
     company_stats = {
         'total_apps': total_apps,
         'response_rate': round((len(responses) / total_apps * 100), 1) if total_apps > 0 else 0,
         'offer_rate': round((len(offers) / total_apps * 100), 1) if total_apps > 0 else 0,
         'avg_response_time': avg_response_time
     }
-    
+
     # Calculate university progression for this company
     uni_progression = defaultdict(lambda: {
         'Applied': 0, 'Online Assessment Received': 0, 'Phone Interview Scheduled': 0,
         'Assessment Centre Invited': 0, 'Offered': 0
     })
-    
+
     for app in company_apps:
         if app.get('university'):
             uni = app['university']
@@ -376,7 +376,7 @@ def api_company_analytics(company_name):
             uni_progression[uni]['Applied'] += 1
             if status in uni_progression[uni]:
                 uni_progression[uni][status] += 1
-    
+
     # Convert to percentage and filter universities with meaningful data
     university_progression = {}
     for uni, stages in uni_progression.items():
@@ -388,7 +388,7 @@ def api_company_analytics(company_name):
                 'interview_rate': round(((stages.get('Phone Interview Scheduled', 0) + stages.get('Assessment Centre Invited', 0)) / total_applied * 100), 1) if total_applied > 0 else 0,
                 'offer_rate': round((stages.get('Offered', 0) / total_applied * 100), 1) if total_applied > 0 else 0
             }
-    
+
     return jsonify({
         'company_stats': company_stats if total_apps > 0 else None,
         'university_progression': university_progression
@@ -398,16 +398,16 @@ def api_company_analytics(company_name):
 @app.route('/api/company-insights/<company_name>')
 def api_company_insights(company_name):
     """Get detailed insights and analytics for a specific company"""
-    
+
     with open(tracker_file, 'r') as f:
         all_applications = json.load(f)
-    
+
     # Filter applications for this company
     company_apps = [app for app in all_applications if app.get('company', '').lower() == company_name.lower()]
-    
+
     if not company_apps:
         return jsonify({'error': 'No data available'})
-    
+
     # Calculate timeline insights
     monthly_apps = defaultdict(int)
     for app in company_apps:
@@ -418,13 +418,13 @@ def api_company_insights(company_name):
                 monthly_apps[month_key] += 1
             except:
                 pass
-    
+
     # Calculate stage progression insights
     stage_counts = defaultdict(int)
     for app in company_apps:
         status = app.get('status', 'Applied')
         stage_counts[status] += 1
-    
+
     # Calculate WAM distribution if available
     wam_ranges = {'70-74': 0, '75-79': 0, '80-84': 0, '85+': 0, 'Unknown': 0}
     for app in company_apps:
@@ -441,16 +441,16 @@ def api_company_insights(company_name):
                 wam_ranges['70-74'] += 1
         else:
             wam_ranges['Unknown'] += 1
-    
+
     # Calculate priority distribution
     priority_counts = defaultdict(int)
     for app in company_apps:
         priority = app.get('priority', 'Medium')
         priority_counts[priority] += 1
-    
+
     # Generate insights
     insights = []
-    
+
     # Response time insight
     response_times = []
     for app in company_apps:
@@ -461,7 +461,7 @@ def api_company_insights(company_name):
                 response_times.append((resp_date - app_date).days)
             except:
                 pass
-    
+
     if response_times:
         avg_response = sum(response_times) / len(response_times)
         if avg_response < 7:
@@ -476,11 +476,11 @@ def api_company_insights(company_name):
                 'title': 'Slow Response Time',
                 'description': f'Average response time of {round(avg_response)} days - consider following up'
             })
-    
+
     # Success rate insight
     offers = len([app for app in company_apps if app.get('status') == 'Offered'])
     offer_rate = round((offers / len(company_apps) * 100), 1)
-    
+
     if offer_rate > 20:
         insights.append({
             'type': 'positive',
@@ -493,7 +493,7 @@ def api_company_insights(company_name):
             'title': 'Competitive Process',
             'description': f'{offer_rate}% offer rate indicates highly selective recruitment'
         })
-    
+
     return jsonify({
         'timeline_data': dict(monthly_apps),
         'stage_progression': dict(stage_counts),
@@ -584,7 +584,11 @@ def firm_experiences(firm_name):
             "role": sub.get('role', ''),
             "timestamp": sub.get('timestamp', ''),
             "user_name": sub.get('user_name', 'Anonymous'),
-            "source": sub.get('source', 'user')
+            "source": sub.get('source', 'user'),
+            "application_process": sub.get('application_stages', ''),
+            "application_stages": sub.get('application_stages', ''),
+            "interview_experience": sub.get('interview_experience', ''),
+            "advice": sub.get('advice', '')
         })
 
     # Apply category filter

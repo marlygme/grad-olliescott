@@ -170,7 +170,7 @@
                 </h6>
 
                 {# Application process — Subway Stepper #}
-                {% set raw = exp.get('application_process', '') or exp.get('application_stages', '') %}
+                {% set raw = (exp.get('application_process') or exp.get('application_stages') or '') %}
                 {% set steps = raw.replace('Application process:', '').replace('application process:', '') %}
                 {% set steps = steps.replace('→','|').replace('->','|').split('|') %}
                 {% set steps = steps | map('trim') | reject('equalto','') | list %}

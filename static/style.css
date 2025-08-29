@@ -101,12 +101,12 @@ h1, h2, h3, h4, h5, h6 {
 /* Hero Section */
 .hero-modern {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  padding: 6rem 0 4rem;
+  padding: 3rem 0 2rem;
   overflow: hidden;
 }
 
 .min-vh-75 {
-  min-height: 75vh;
+  min-height: 60vh;
 }
 
 .hero-title {
@@ -206,7 +206,7 @@ h1, h2, h3, h4, h5, h6 {
 .footer-modern {
   background: var(--light);
   border-top: 1px solid var(--border);
-  margin-top: 4rem;
+  margin-top: 2rem;
 }
 
 .footer-link {
@@ -292,9 +292,27 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(135deg, var(--primary) 0%, #06b6d4 100%);
 }
 
+/* Hero Section for non-homepage */
+.hero-section {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 2rem 0 1.5rem;
+}
+
+.hero-section .hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.hero-section .hero-subtitle {
+  font-size: 1.1rem;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
 /* Empty State */
 .empty-state {
-  padding: 4rem 2rem;
+  padding: 3rem 2rem;
 }
 
 /* Stories Page Specific */

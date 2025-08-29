@@ -795,25 +795,17 @@ def law_match():
                 score += salary_score
                 reasons.append(f"Competitive salary (${profile['avg_salary']:,.0f})")
 
-            # Experience level fit
+            # Experience level fit (only add specific bonuses, no generic reasons)
             exp_bonus = 0
-            if experience == 'extensive':
-                if profile['competitive_level'] == 'very_high':
-                    exp_bonus = 15
-                    reasons.append("Your experience suits highly competitive environment")
-                elif profile['competitive_level'] == 'high':
-                    exp_bonus = 10
-                    reasons.append("Good experience level for this firm")
-            elif experience == 'some':
-                if profile['competitive_level'] in ['high', 'moderate']:
-                    exp_bonus = 12
-                    reasons.append("Experience level matches firm expectations")
-            elif experience == 'none':
-                if profile['competitive_level'] == 'moderate':
-                    exp_bonus = 15
-                    reasons.append("Beginner-friendly environment")
-                elif profile['competitive_level'] == 'high':
-                    exp_bonus = 5
+            if experience == 'extensive' and profile['competitive_level'] == 'very_high':
+                exp_bonus = 15
+            elif experience == 'some' and profile['competitive_level'] in ['high', 'moderate']:
+                exp_bonus = 12
+            elif experience == 'none' and profile['competitive_level'] == 'moderate':
+                exp_bonus = 15
+                reasons.append("Welcomes graduates without prior legal experience")
+            elif experience == 'none' and profile['competitive_level'] == 'high':
+                exp_bonus = 5
             
             score += exp_bonus
 
@@ -873,41 +865,48 @@ def law_match():
         for i, (firm_name, firm_data) in enumerate(top_firms):
             rec_type = 'Primary' if i == 0 else 'Strong Alternative' if i == 1 else 'Consider'
             
+            # Only include reasons that are specific and meaningful
+            meaningful_reasons = []
+            for reason in firm_data['reasons']:
+                # Skip generic reasons
+                if not any(generic in reason.lower() for generic in [
+                    'be genuine', 'prepare thoroughly', 'show enthusiasm',
+                    'good experience level', 'matches firm expectations'
+                ]):
+                    meaningful_reasons.append(reason)
+            
             recommendations.append({
                 'firm': firm_name,
                 'confidence': firm_data['confidence'],
                 'recommendation_type': rec_type,
                 'score': round(firm_data['score'], 1),
-                'reasons': firm_data['reasons'],
+                'reasons': meaningful_reasons[:3],  # Limit to top 3 specific reasons
                 'profile': firm_data['profile']
             })
 
-        # Generate sophisticated insights
+        # Generate sophisticated insights (only meaningful ones)
         insights = []
         primary_firm = top_firms[0][1]
         
-        # WAM insights
-        if wam >= primary_firm['profile'].get('wam_threshold', 75) + 8:
+        # Only add WAM insights if they're meaningful
+        wam_threshold = primary_firm['profile'].get('wam_threshold', 75)
+        if wam >= wam_threshold + 10:
             insights.append("Your WAM puts you in the top tier of applicants - you're highly competitive!")
-        elif wam >= primary_firm['profile'].get('wam_threshold', 75):
-            insights.append("Your WAM is competitive for your target firms.")
-        else:
-            insights.append("Focus on showcasing leadership, work experience, and extracurriculars to strengthen your application.")
+        elif wam < wam_threshold - 5:
+            insights.append("Consider emphasizing other strengths like work experience and leadership to offset WAM requirements.")
 
-        # University insights
-        if primary_firm['uni_percentage'] >= 15:
+        # Only add university insights if there's strong representation
+        if primary_firm['uni_percentage'] >= 20:
             insights.append(f"Your university has excellent placement rates at {top_firms[0][0]} - leverage alumni networks.")
         
-        # Competition insights
+        # Only add competition insights if there's a clear pattern
         score_spread = top_firms[0][1]['score'] - top_firms[-1][1]['score']
-        if score_spread < 15:
-            insights.append("You have several well-matched options - consider applying broadly.")
-        else:
+        if score_spread > 25:
             insights.append(f"You have a clear standout match in {top_firms[0][0]}.")
-
-        # Experience gap insights
-        if experience == 'none' and any(f[1]['profile']['competitive_level'] == 'very_high' for f in top_firms[:2]):
-            insights.append("Consider gaining legal work experience through internships or paralegal roles to strengthen top-tier applications.")
+        
+        # Only add experience insights if there's a meaningful gap
+        if experience == 'none' and len([f for f in top_firms[:3] if f[1]['profile']['competitive_level'] == 'very_high']) >= 2:
+            insights.append("Consider gaining legal work experience to strengthen applications to highly competitive firms.")
         
         return render_template('law_match_result.html', 
                              recommendations=recommendations,

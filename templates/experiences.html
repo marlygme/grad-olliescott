@@ -198,21 +198,6 @@
 
             
 
-            <!-- Key Advice -->
-            {% if exp.get('advice') %}
-            <div class="story-advice mb-4">
-              <div class="bg-light rounded-3 p-3 border-start border-warning border-3">
-                <div class="d-flex align-items-start">
-                  <i class="bi bi-lightbulb-fill text-warning me-2 mt-1 flex-shrink-0"></i>
-                  <div>
-                    <h6 class="text-warning fw-semibold mb-1">Advice</h6>
-                    <p class="mb-0 small text-dark">{{ exp.advice }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {% endif %}
-
             <!-- Tags -->
             {% if exp.get('cat_labels') %}
             <div class="story-tags">

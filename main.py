@@ -164,6 +164,7 @@ def submit():
             'hours_workload': request.form.get('hours_workload', ''),
             'practice_areas': request.form.get('practice_areas', ''),
             'general_experience': request.form.get('general_experience', ''),
+            'pro_tip': request.form.get('pro_tip', ''),
             'advice': request.form.get('advice', ''),
             'timestamp': datetime.utcnow().isoformat(),
             'user_id': user_id,
@@ -535,7 +536,9 @@ def experiences():
             "role": sub.get('role', ''),
             "timestamp": sub.get('timestamp', ''),
             "user_name": sub.get('user_name', 'Anonymous'),
-            "source": sub.get('source', 'user')
+            "source": sub.get('source', 'user'),
+            "pro_tip": sub.get('pro_tip', ''),
+            "advice": sub.get('advice', '')
         })
 
     # Sort by timestamp (most recent first)
@@ -588,6 +591,7 @@ def firm_experiences(firm_name):
             "application_process": sub.get('application_stages', ''),
             "application_stages": sub.get('application_stages', ''),
             "interview_experience": sub.get('interview_experience', ''),
+            "pro_tip": sub.get('pro_tip', ''),
             "advice": sub.get('advice', '')
         })
 

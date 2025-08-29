@@ -196,6 +196,21 @@
             </div>
             {% endif %}
 
+            <!-- Pro Tip -->
+            {% if exp.get('pro_tip') %}
+            <div class="story-pro-tip mb-4">
+              <div class="bg-primary-subtle rounded-3 p-3 border-start border-primary border-3">
+                <div class="d-flex align-items-start">
+                  <i class="bi bi-star-fill text-primary me-2 mt-1 flex-shrink-0"></i>
+                  <div>
+                    <h6 class="text-primary fw-semibold mb-1">Pro Tip ✨</h6>
+                    <p class="mb-0 small text-dark fw-medium">{{ exp.pro_tip }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
             <!-- Key Advice -->
             {% if exp.get('advice') %}
             <div class="story-advice mb-4">
@@ -203,7 +218,7 @@
                 <div class="d-flex align-items-start">
                   <i class="bi bi-lightbulb-fill text-warning me-2 mt-1 flex-shrink-0"></i>
                   <div>
-                    <h6 class="text-warning fw-semibold mb-1">Pro Tip</h6>
+                    <h6 class="text-warning fw-semibold mb-1">Advice</h6>
                     <p class="mb-0 small text-dark">{{ exp.advice }}</p>
                   </div>
                 </div>

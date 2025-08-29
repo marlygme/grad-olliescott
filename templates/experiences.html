@@ -145,9 +145,13 @@
               <div class="story-text-content text-dark lh-base">
                 {% set content_lines = exp.content.split('•') %}
                 {% if content_lines|length > 1 %}
-                  <p class="mb-3 fw-medium">{{ content_lines[0].strip() }}</p>
+                  <!-- Skip the first line if it contains "Selection process:" or "Application process:" -->
+                  {% set first_line = content_lines[0].strip() %}
+                  {% if not (first_line.lower().startswith('selection process:') or first_line.lower().startswith('application process:')) %}
+                    <p class="mb-3 fw-medium">{{ first_line }}</p>
+                  {% endif %}
                   {% for line in content_lines[1:] %}
-                    {% if line.strip() %}
+                    {% if line.strip() and not (line.strip().lower().startswith('selection process:') or line.strip().lower().startswith('application process:')) %}
                       <div class="mb-2 d-flex align-items-start">
                         <i class="bi bi-check-circle text-success me-2 mt-1 flex-shrink-0"></i>
                         <span>{{ line.strip() }}</span>
@@ -155,7 +159,16 @@
                     {% endif %}
                   {% endfor %}
                 {% else %}
-                  <p class="mb-0">{{ exp.content }}</p>
+                  <!-- Filter out selection/application process text from single-line content -->
+                  {% set filtered_content = exp.content %}
+                  {% if filtered_content.lower().startswith('selection process:') %}
+                    {% set filtered_content = filtered_content[17:].strip() %}
+                  {% elif filtered_content.lower().startswith('application process:') %}
+                    {% set filtered_content = filtered_content[19:].strip() %}
+                  {% endif %}
+                  {% if filtered_content %}
+                    <p class="mb-0">{{ filtered_content }}</p>
+                  {% endif %}
                 {% endif %}
               </div>
             </div>

@@ -142,13 +142,17 @@ def index():
     return render_template('index.html', companies=companies_lookup, sorted_companies=sorted_companies, total_submissions=len(submissions), firms=firms, user_id=user_id, user_name=user_name)
 
 
+@app.route('/auth_required')
+def auth_required():
+    return render_template('auth_required.html')
+
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
     # Check if user is authenticated
     current_user = get_current_user()
     if not current_user:
         return render_template('auth_required.html')
-    
+
     user_id = current_user['user_id']
     user_name = current_user['username']
 
@@ -1002,7 +1006,7 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
+
         user = authenticate_user(username, password)
         if user:
             session['user_id'] = user['user_id']
@@ -1010,7 +1014,7 @@ def login():
             return redirect(url_for('index'))
         else:
             flash('Invalid username or password')
-    
+
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -1020,7 +1024,7 @@ def register():
         email = request.form['email']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
-        
+
         if password != confirm_password:
             flash('Passwords do not match')
         elif len(password) < 6:
@@ -1030,7 +1034,7 @@ def register():
             return redirect(url_for('login'))
         else:
             flash('Username or email already exists')
-    
+
     return render_template('register.html')
 
 @app.route('/logout')

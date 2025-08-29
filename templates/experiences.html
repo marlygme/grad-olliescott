@@ -183,12 +183,14 @@
                   </div>
 
                   <ol class="flow-rail" role="list">
+                    {% set step_number = [0] %}
                     {% for s in steps %}
                       {% if s.lower().strip() != 'other' %}
-                      <li class="flow-stop">
-                        <span class="flow-dot">{{ loop.index }}</span>
-                        <span class="flow-label">{{ s }}</span>
-                      </li>
+                        {% if step_number.append(step_number.pop() + 1) %}{% endif %}
+                        <li class="flow-stop">
+                          <span class="flow-dot">{{ step_number[0] }}</span>
+                          <span class="flow-label">{{ s }}</span>
+                        </li>
                       {% endif %}
                     {% endfor %}
                   </ol>

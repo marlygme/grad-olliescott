@@ -10,6 +10,37 @@ from grad_data_v2 import load_cards as load_cards_v2
 from legal_config import LEGAL_CONFIG, NOT_ADVICE_DISCLAIMER
 from auth import create_user, authenticate_user, login_required, get_current_user
 
+def is_helpful_advice(advice_text: str) -> bool:
+    """Check if advice text is actually helpful and actionable."""
+    if not advice_text or len(advice_text.strip()) < 20:
+        return False
+    
+    advice_lower = advice_text.lower()
+    
+    # Exclude questions
+    if (advice_text.strip().endswith('?') or 
+        any(q in advice_lower for q in ['does that mean', 'what does', 'how does', 'why does', 
+                                        'is it', 'are they', 'do you', 'did you', 'have you',
+                                        'will they', 'would you', 'can you', 'could you',
+                                        'i wonder', 'wondering if'])):
+        return False
+    
+    # Exclude non-actionable statements
+    if any(na in advice_lower for na in ['i think', 'i believe', 'in my opinion', 
+                                         'it seems', 'appears to be', 'i heard', 'rumor', 
+                                         'supposedly', 'allegedly', 'not sure if', 'unclear',
+                                         'partnership doesn\'t have', 'doesn\'t mean', 
+                                         'probably', 'likely']):
+        return False
+    
+    # Must contain actionable advice indicators
+    advice_indicators = ['recommend', 'suggest', 'should', 'must', 'need to', 'make sure', 
+                        'prepare', 'practice', 'research', 'apply early', 'tailor', 
+                        'focus on', 'emphasize', 'avoid', 'don\'t', 'be sure to', 
+                        'remember to', 'consider', 'try to']
+    
+    return any(indicator in advice_lower for indicator in advice_indicators)
+
 
 # Load data from JSON file
 data_file = 'submissions.json'
@@ -534,9 +565,9 @@ def experiences():
         # Don't include advice in content_parts to avoid duplication
         main_content = " • ".join(content_parts) if content_parts else ""
         
-        # Add advice separately if it exists and is different from other content
+        # Add advice separately if it exists, is different from other content, and is actually helpful
         advice_text = sub.get('advice', '').strip()
-        if advice_text and advice_text not in main_content:
+        if advice_text and advice_text not in main_content and is_helpful_advice(advice_text):
             if main_content:
                 main_content += f" • Advice: {advice_text}"
             else:
@@ -595,9 +626,9 @@ def firm_experiences(firm_name):
         # Don't include advice in content_parts to avoid duplication
         main_content = " • ".join(content_parts) if content_parts else ""
         
-        # Add advice separately if it exists and is different from other content
+        # Add advice separately if it exists, is different from other content, and is actually helpful
         advice_text = sub.get('advice', '').strip()
-        if advice_text and advice_text not in main_content:
+        if advice_text and advice_text not in main_content and is_helpful_advice(advice_text):
             if main_content:
                 main_content += f" • Advice: {advice_text}"
             else:

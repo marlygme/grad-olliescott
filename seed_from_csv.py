@@ -131,16 +131,50 @@ def generate_advice(comment: str, theme: str) -> str:
     advice_parts = []
     comment_lower = comment.lower()
     
-    # Extract actionable advice from comment
-    advice_indicators = ["advice", "tip", "recommend", "suggest", "should", "important", "make sure", "prepare", "practice", "research", "apply early", "tailor"]
+    # Enhanced advice indicators (actionable words)
+    advice_indicators = [
+        "recommend", "suggest", "should", "must", "need to", "make sure", "prepare", 
+        "practice", "research", "apply early", "tailor", "focus on", "emphasize", 
+        "avoid", "don't", "be sure to", "remember to", "consider", "try to"
+    ]
+    
+    # Question indicators to exclude
+    question_indicators = [
+        "does that mean", "what does", "how does", "why does", "is it", "are they", 
+        "do you", "did you", "have you", "will they", "would you", "can you", 
+        "could you", "might", "maybe", "perhaps", "i wonder", "wondering if"
+    ]
+    
+    # Non-advice indicators to exclude
+    non_advice_indicators = [
+        "i think", "i believe", "in my opinion", "it seems", "appears to be",
+        "i heard", "rumor", "supposedly", "allegedly", "not sure if", "unclear",
+        "partnership doesn't have", "doesn't mean", "probably", "likely"
+    ]
+    
     sentences = [s.strip() for s in re.split(r'[.!?]', comment) if s.strip()]
     
     # Find sentences with advice indicators
     advice_sentences = []
     for sentence in sentences:
-        if any(indicator in sentence.lower() for indicator in advice_indicators):
+        sentence_lower = sentence.lower()
+        
+        # Skip if it's a question
+        if (sentence.strip().endswith('?') or 
+            any(q_ind in sentence_lower for q_ind in question_indicators)):
+            continue
+            
+        # Skip if it contains non-advice indicators
+        if any(na_ind in sentence_lower for na_ind in non_advice_indicators):
+            continue
+            
+        # Check for advice indicators
+        if any(indicator in sentence_lower for indicator in advice_indicators):
             cleaned = clean_text(sentence)
-            if len(cleaned) > 20:  # Meaningful advice
+            # More stringent requirements for advice
+            if (len(cleaned) > 30 and  # Longer minimum length
+                not cleaned.lower().startswith(('i think', 'i believe', 'maybe', 'perhaps')) and
+                any(word in cleaned.lower() for word in ['should', 'recommend', 'prepare', 'make sure', 'focus', 'avoid', 'remember'])):
                 advice_sentences.append(cleaned)
     
     if advice_sentences:

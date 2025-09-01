@@ -615,6 +615,8 @@ def firm_experiences(firm_name):
 
     # Convert submissions to experience format for display
     items = []
+    seen_advice = set()  # Track seen advice to prevent duplicates
+    
     for sub in firm_submissions:
         # Build main content without duplicating advice
         content_parts = []
@@ -626,9 +628,11 @@ def firm_experiences(firm_name):
         # Don't include advice in content_parts to avoid duplication
         main_content = " • ".join(content_parts) if content_parts else ""
         
-        # Add advice separately if it exists, is different from other content, and is actually helpful
+        # Add advice separately if it exists, is different from other content, is actually helpful, and not already shown
         advice_text = sub.get('advice', '').strip()
-        if advice_text and advice_text not in main_content and is_helpful_advice(advice_text):
+        if (advice_text and advice_text not in main_content and 
+            is_helpful_advice(advice_text) and advice_text not in seen_advice):
+            seen_advice.add(advice_text)
             if main_content:
                 main_content += f" • Advice: {advice_text}"
             else:

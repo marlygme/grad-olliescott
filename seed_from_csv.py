@@ -182,18 +182,45 @@ def generate_advice(comment: str, theme: str) -> str:
     
     # Theme-specific advice if no good advice found
     if not advice_parts:
+        import random
         if theme == "Applications":
-            advice_parts.append("Start applications early and thoroughly research each firm's practice areas and recent work.")
+            fallback_options = [
+                "Start applications early and thoroughly research each firm's practice areas and recent work.",
+                "Tailor your application to show specific interest in the firm's key practice areas.",
+                "Apply early in the application window and ensure your cover letter is firm-specific."
+            ]
         elif theme == "Interviews":
-            advice_parts.append("Prepare for competency-based questions and be ready to discuss your motivation for commercial law.")
+            fallback_options = [
+                "Prepare for competency-based questions and be ready to discuss your motivation for commercial law.",
+                "Practice discussing recent commercial news and how it affects the legal industry.", 
+                "Research the firm's recent deals and be ready to discuss why you're interested in their work."
+            ]
         elif theme == "Firm Culture":
-            advice_parts.append("Ask current employees about day-to-day work culture and opportunities for mentorship.")
+            fallback_options = [
+                "Ask current employees about day-to-day work culture and opportunities for mentorship.",
+                "Research the firm's values and recent initiatives to understand their culture.",
+                "Connect with current employees on LinkedIn to learn about their experiences."
+            ]
         elif theme == "Salaries":
-            advice_parts.append("Research market rates through graduate surveys and be prepared to discuss total package including benefits.")
+            fallback_options = [
+                "Research market rates through graduate surveys and be prepared to discuss total package including benefits.",
+                "Consider the full package including professional development opportunities, not just base salary.",
+                "Ask about salary progression and performance review processes during interviews."
+            ]
         elif theme == "Programs":
-            advice_parts.append("Understand the rotation structure and express genuine interest in multiple practice areas.")
+            fallback_options = [
+                "Understand the rotation structure and express genuine interest in multiple practice areas.",
+                "Research each practice area offered and be ready to discuss your interests in rotations.",
+                "Ask about mentorship programs and training opportunities available to graduates."
+            ]
         else:
-            advice_parts.append("Be genuine in your interest, prepare thoroughly, and show enthusiasm for learning.")
+            fallback_options = [
+                "Be genuine in your interest, prepare thoroughly, and show enthusiasm for learning.",
+                "Research the firm's recent work and be ready to discuss why you're interested in their practice.",
+                "Demonstrate your commitment to commercial law through relevant experiences and knowledge."
+            ]
+        
+        advice_parts.append(random.choice(fallback_options))
     
     return " ".join(advice_parts)[:500]
 

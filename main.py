@@ -9,6 +9,42 @@ from grad_data import load_cards, load_grad_signals
 from grad_data_v2 import load_cards as load_cards_v2
 from legal_config import LEGAL_CONFIG, NOT_ADVICE_DISCLAIMER
 from auth import create_user, authenticate_user, login_required, get_current_user
+from extractors import FIRM_ALIASES
+
+def normalize_company_name(company_name: str) -> str:
+    """Normalize company name using firm aliases to handle spaces, nicknames, and variations."""
+    if not company_name:
+        return company_name
+    
+    # Clean the input
+    normalized_input = company_name.strip().lower()
+    
+    # Check for exact matches in canonical names
+    for canonical_name in FIRM_ALIASES.keys():
+        if canonical_name.lower() == normalized_input:
+            return canonical_name
+    
+    # Check against aliases
+    for canonical_name, aliases in FIRM_ALIASES.items():
+        for alias in aliases:
+            if alias.lower() == normalized_input:
+                return canonical_name
+    
+    # Handle common spacing variations
+    normalized_spaced = normalized_input.replace('&', ' & ').replace('+', ' + ')
+    normalized_spaced = ' '.join(normalized_spaced.split())  # Normalize spaces
+    
+    for canonical_name, aliases in FIRM_ALIASES.items():
+        # Check canonical with normalized spacing
+        if canonical_name.lower().replace('&', ' & ').replace('+', ' + ') == normalized_spaced:
+            return canonical_name
+        # Check aliases with normalized spacing
+        for alias in aliases:
+            if alias.lower().replace('&', ' & ').replace('+', ' + ') == normalized_spaced:
+                return canonical_name
+    
+    # Return original if no match found (but title case it)
+    return company_name.strip().title()
 
 def is_helpful_advice(advice_text: str) -> bool:
     """Check if advice text is actually helpful and actionable."""
@@ -188,8 +224,12 @@ def submit():
     user_name = current_user['username']
 
     if request.method == 'POST':
+        # Normalize company name to handle variations
+        original_company = request.form['company']
+        normalized_company = normalize_company_name(original_company)
+        
         new_entry = {
-            'company': request.form['company'],
+            'company': normalized_company,
             'role': request.form['role'],
             'experience_type': request.form['experience_type'],
             'theme': request.form['theme'],

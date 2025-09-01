@@ -524,16 +524,26 @@ def experiences():
     # Convert submissions to experience format
     experience_items = []
     for sub in submissions:
+        # Build main content without duplicating advice
         content_parts = []
         if sub.get('application_stages'):
             content_parts.append(f"Application: {sub['application_stages']}")
         if sub.get('interview_experience'):
             content_parts.append(f"Interview: {sub['interview_experience']}")
-        if sub.get('advice'):
-            content_parts.append(f"Advice: {sub['advice']}")
+        
+        # Don't include advice in content_parts to avoid duplication
+        main_content = " • ".join(content_parts) if content_parts else ""
+        
+        # Add advice separately if it exists and is different from other content
+        advice_text = sub.get('advice', '').strip()
+        if advice_text and advice_text not in main_content:
+            if main_content:
+                main_content += f" • Advice: {advice_text}"
+            else:
+                main_content = f"Advice: {advice_text}"
 
         experience_items.append({
-            "content": " • ".join(content_parts),
+            "content": main_content,
             "firm_name": sub['company'],
             "quality_score": 0.95,
             "primary_cat": sub.get('theme', 'other').lower().replace(' ', '_'),
@@ -545,7 +555,7 @@ def experiences():
             "user_name": sub.get('user_name', 'Anonymous'),
             "source": sub.get('source', 'user'),
             "pro_tip": sub.get('pro_tip', ''),
-            "advice": sub.get('advice', '')
+            "advice": advice_text  # Keep for potential separate display but don't duplicate
         })
 
     # Sort by timestamp (most recent first)
@@ -575,16 +585,26 @@ def firm_experiences(firm_name):
     # Convert submissions to experience format for display
     items = []
     for sub in firm_submissions:
+        # Build main content without duplicating advice
         content_parts = []
         if sub.get('application_stages'):
             content_parts.append(f"Application process: {sub['application_stages']}")
         if sub.get('interview_experience'):
             content_parts.append(f"Interview experience: {sub['interview_experience']}")
-        if sub.get('advice'):
-            content_parts.append(f"Advice: {sub['advice']}")
+        
+        # Don't include advice in content_parts to avoid duplication
+        main_content = " • ".join(content_parts) if content_parts else ""
+        
+        # Add advice separately if it exists and is different from other content
+        advice_text = sub.get('advice', '').strip()
+        if advice_text and advice_text not in main_content:
+            if main_content:
+                main_content += f" • Advice: {advice_text}"
+            else:
+                main_content = f"Advice: {advice_text}"
 
         items.append({
-            "content": " • ".join(content_parts),
+            "content": main_content,
             "firm_name": sub['company'],
             "quality_score": 0.95,
             "primary_cat": sub.get('theme', 'other').lower().replace(' ', '_'),
@@ -599,7 +619,7 @@ def firm_experiences(firm_name):
             "application_stages": sub.get('application_stages', ''),
             "interview_experience": sub.get('interview_experience', ''),
             "pro_tip": sub.get('pro_tip', ''),
-            "advice": sub.get('advice', '')
+            "advice": advice_text  # Keep for potential separate display but don't duplicate
         })
 
     # Apply category filter

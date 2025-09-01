@@ -640,6 +640,19 @@ def law_match():
         experience = request.form.get('experience', 'none')
         location = request.form.get('location', 'any')
         grad_year = request.form.get('grad_year', '2025')
+        
+        # Import datetime for timing analysis
+        from datetime import datetime
+        import csv
+        
+        # Advanced candidate profiling for meta-analysis
+        candidate_profile = {
+            'competitiveness': 'high' if wam >= 82 else 'medium' if wam >= 75 else 'developing',
+            'network_strength': 'strong' if any(FIRM_UNIVERSITY_DATA.get(f[0], {}).get(uni, 0) >= 20 for f in sorted_firms[:2]) else 'moderate',
+            'market_timing': 'optimal' if 2 <= datetime.now().month <= 5 else 'late' if datetime.now().month >= 8 else 'early',
+            'experience_level': experience,
+            'career_focus': preference
+        }
 
         # Load real firm data from CSV
         firms = load_cards_v2("out/grad_program_signals.csv")
@@ -910,27 +923,43 @@ def law_match():
             
             score += exp_bonus
 
-            # Interest area alignment (improved matching)
+            # Advanced interest area alignment with market intelligence
             interest_bonus = 0
             interest_keywords = {
-                'commercial': ['corporate', 'm&a', 'banking', 'finance', 'commercial'],
-                'litigation': ['litigation', 'dispute', 'resolution', 'employment'],
+                'commercial': ['corporate', 'm&a', 'banking', 'finance', 'commercial', 'capital markets'],
+                'litigation': ['litigation', 'dispute', 'resolution', 'employment', 'arbitration'],
                 'family': ['family'],
                 'criminal': ['criminal'],
-                'employment': ['employment', 'workplace'],
-                'property': ['property', 'real estate'],
-                'tax': ['tax'],
+                'employment': ['employment', 'workplace', 'industrial'],
+                'property': ['property', 'real estate', 'construction'],
+                'tax': ['tax', 'revenue'],
+                'technology': ['technology', 'ip', 'intellectual property', 'data'],
+                'energy': ['energy', 'resources', 'mining', 'oil'],
                 'other': []
             }
             
             user_keywords = interest_keywords.get(interest, [])
+            matched_strengths = []
+            
             for strength in profile['strengths']:
                 for keyword in user_keywords:
                     if keyword.lower() in strength.lower():
-                        interest_bonus += 18
-                        reasons.append(f"Strong expertise in {strength}")
+                        matched_strengths.append(strength)
+                        interest_bonus += 20
                         confidence_factors.append('practice_match')
                         break
+            
+            # Provide specific practice area insights
+            if matched_strengths:
+                if len(matched_strengths) > 1:
+                    reasons.append(f"Multiple practice strengths: {', '.join(matched_strengths[:2])}")
+                else:
+                    reasons.append(f"Leading expertise in {matched_strengths[0]}")
+            
+            # Emerging practice area bonus for forward-thinking candidates
+            if interest == 'technology' and any('tech' in s.lower() or 'ip' in s.lower() for s in profile['strengths']):
+                interest_bonus += 10
+                reasons.append("Strong in high-growth technology practice")
             
             score += interest_bonus
 
@@ -954,16 +983,81 @@ def law_match():
                         score += 6
                         reasons.append(f"Established presence in {location}")
             
-            # Program type alignment
+            # Advanced program type and career path alignment
+            program_types = profile.get('program_offerings', [])
             if interest in ['clerkship', 'graduate']:
-                program_types = profile.get('program_offerings', [])
                 target_program = 'clerkship' if interest == 'clerkship' else 'graduate'
                 
                 if any(target_program in prog.lower() for prog in program_types):
-                    score += 8
+                    score += 10
                     confidence_factors.append('program_match')
                 elif program_types:  # Has programs but not exact match
-                    score += 4
+                    score += 5
+            
+            # Intelligent career progression analysis
+            if experience == 'extensive' and preference == 'prestige':
+                if profile['tier'] == 'top' and profile.get('market_activity', 0) > 0.5:
+                    score += 12
+                    reasons.append("Perfect timing for experienced candidate seeking prestige")
+            elif experience == 'none' and preference == 'training':
+                if profile['training_score'] >= 85:
+                    score += 15
+                    reasons.append("Excellent graduate development programs")
+                    confidence_factors.append('training_excellence')
+            
+            # Market timing intelligence
+            current_month = datetime.now().month
+            if grad_year == '2025':
+                if 2 <= current_month <= 5:  # Peak recruitment season
+                    if profile.get('market_activity', 0) > 0.7:
+                        score += 8
+                        reasons.append("High recruitment activity this season")
+                elif current_month >= 8:  # Late season opportunities
+                    if profile.get('market_activity', 0) > 0.4:
+                        score += 6
+                        reasons.append("Still actively recruiting late in season")
+            
+            # Sophisticated WAM contextualization
+            if uni in ['University of Melbourne', 'University of Sydney', 'UNSW']:
+                go8_bonus = 3  # Go8 recognition
+                if wam >= 80:
+                    go8_bonus = 8
+                    reasons.append("Strong WAM from prestigious Go8 university")
+                score += go8_bonus
+            
+            # Strategic preference matching with market intelligence
+            if preference == 'salary':
+                salary_competitive = profile.get('avg_salary', 75000)
+                if salary_competitive >= 85000:
+                    score += 18
+                    reasons.append(f"Top-tier compensation (${salary_competitive:,.0f})")
+                elif salary_competitive >= 80000:
+                    score += 12
+                    reasons.append(f"Competitive salary package (${salary_competitive:,.0f})")
+            elif preference == 'prestige' and profile['tier'] == 'top':
+                market_reputation = profile.get('market_activity', 0) * 0.3 + profile.get('csv_confidence', 0.5) * 0.4
+                if market_reputation > 0.6:
+                    score += 15
+                    reasons.append("Market-leading reputation and visibility")
+            
+            # Intelligent experience-firm culture matching
+            culture_match = 0
+            culture = profile.get('culture', '').lower()
+            if experience == 'extensive':
+                if 'traditional' in culture or 'demanding' in culture:
+                    culture_match = 8
+                    reasons.append("Culture rewards experienced professionals")
+            elif experience == 'none':
+                if 'supportive' in culture or 'development' in culture or 'mentoring' in culture:
+                    culture_match = 12
+                    reasons.append("Supportive culture for new graduates")
+                    confidence_factors.append('culture_fit')
+            elif experience == 'some':
+                if 'collaborative' in culture or 'team' in culture:
+                    culture_match = 10
+                    reasons.append("Collaborative environment values diverse experience")
+            
+            score += culture_match
 
             # Enhanced confidence calculation with data quality factors
             confidence = 'Low'
@@ -990,64 +1084,208 @@ def law_match():
                 'confidence': confidence
             }
 
-        # Sort and select top recommendations
+        # Intelligent ranking with diversification logic
         sorted_firms = sorted(firm_scores.items(), key=lambda x: x[1]['score'], reverse=True)
-        top_firms = sorted_firms[:5]
+        
+        # Smart selection algorithm that ensures diversity
+        top_firms = []
+        selected_tiers = set()
+        
+        for firm, data in sorted_firms:
+            tier = data['profile']['tier']
+            
+            # Always include top scorer
+            if len(top_firms) == 0:
+                top_firms.append((firm, data))
+                selected_tiers.add(tier)
+            # For subsequent firms, prefer diversity unless score gap is huge
+            elif len(top_firms) < 5:
+                score_gap = top_firms[0][1]['score'] - data['score']
+                
+                # If score is still very competitive, add it
+                if score_gap <= 20:
+                    top_firms.append((firm, data))
+                    selected_tiers.add(tier)
+                # If we need tier diversity and score is reasonable, include it
+                elif tier not in selected_tiers and score_gap <= 35 and data['score'] >= 50:
+                    top_firms.append((firm, data))
+                    selected_tiers.add(tier)
+                # Otherwise, only include if score is very close
+                elif score_gap <= 10:
+                    top_firms.append((firm, data))
+                    selected_tiers.add(tier)
+        
+        # Ensure we have at least 3 recommendations
+        while len(top_firms) < min(3, len(sorted_firms)):
+            for firm, data in sorted_firms:
+                if (firm, data) not in top_firms:
+                    top_firms.append((firm, data))
+                    break
 
-        # Generate recommendations
+        # Generate intelligent recommendations with strategic advice
         recommendations = []
         for i, (firm_name, firm_data) in enumerate(top_firms):
-            rec_type = 'Primary' if i == 0 else 'Strong Alternative' if i == 1 else 'Consider'
+            # Smart recommendation typing based on score and confidence
+            if i == 0 and firm_data['confidence'] in ['High', 'Very High']:
+                rec_type = 'Top Match'
+            elif i == 0:
+                rec_type = 'Best Option'
+            elif firm_data['score'] >= top_firms[0][1]['score'] - 10:
+                rec_type = 'Excellent Alternative'
+            elif i == 1:
+                rec_type = 'Strong Alternative'
+            elif firm_data['confidence'] in ['High', 'Very High']:
+                rec_type = 'High Confidence'
+            else:
+                rec_type = 'Consider'
             
-            # Only include reasons that are specific and meaningful
+            # Intelligent reason filtering and enhancement
             meaningful_reasons = []
+            strategic_advice = []
+            
             for reason in firm_data['reasons']:
-                # Skip generic reasons
+                # Skip generic reasons but enhance specific ones
                 if not any(generic in reason.lower() for generic in [
                     'be genuine', 'prepare thoroughly', 'show enthusiasm',
                     'good experience level', 'matches firm expectations'
                 ]):
                     meaningful_reasons.append(reason)
             
+            # Add strategic application advice based on firm profile
+            tier = firm_data['profile']['tier']
+            market_activity = firm_data['profile'].get('market_activity', 0)
+            
+            if tier == 'top' and market_activity > 0.7:
+                strategic_advice.append("Apply early - highly competitive positions")
+            elif firm_data['profile']['training_score'] >= 85:
+                strategic_advice.append("Emphasize learning motivation in application")
+            elif 'culture_fit' in firm_data.get('confidence_factors', []):
+                strategic_advice.append("Research firm culture for interview preparation")
+            
             recommendations.append({
                 'firm': firm_name,
                 'confidence': firm_data['confidence'],
                 'recommendation_type': rec_type,
                 'score': round(firm_data['score'], 1),
-                'reasons': meaningful_reasons[:3],  # Limit to top 3 specific reasons
-                'profile': firm_data['profile']
+                'reasons': meaningful_reasons[:3],
+                'strategic_advice': strategic_advice[:2],
+                'profile': firm_data['profile'],
+                'tier': tier,
+                'salary_range': firm_data['profile'].get('salary_range', 'Contact for details')
             })
 
-        # Generate sophisticated insights (only meaningful ones)
+        # Advanced strategic insights with sophisticated reasoning
         insights = []
         primary_firm = top_firms[0][1]
         
-        # Only add WAM insights if they're meaningful
+        # Strategic WAM positioning analysis
         wam_threshold = primary_firm['profile'].get('wam_threshold', 75)
-        if wam >= wam_threshold + 10:
-            insights.append("Your WAM puts you in the top tier of applicants - you're highly competitive!")
+        top_tier_firms = [f for f in top_firms if f[1]['profile']['tier'] == 'top']
+        
+        if wam >= 85:
+            competitive_options = len([f for f in sorted_firms if f[1]['score'] >= 75])
+            insights.append(f"Your exceptional WAM ({wam:.1f}) opens doors to {competitive_options} highly competitive firms - consider applying strategically to 8-12 firms.")
+        elif wam >= wam_threshold + 8:
+            insights.append(f"Your strong WAM ({wam:.1f}) positions you well above market requirements - focus on firms matching your interests rather than just prestige.")
+        elif wam_threshold - 3 <= wam < wam_threshold + 3:
+            market_trend = "competitive" if len(top_tier_firms) >= 2 else "stable"
+            insights.append(f"Your WAM is in the competitive range - in this {market_trend} market, emphasize unique experiences and genuine interest in your applications.")
         elif wam < wam_threshold - 5:
-            insights.append("Consider emphasizing other strengths like work experience and leadership to offset WAM requirements.")
+            mid_tier_matches = len([f for f in top_firms[:3] if f[1]['profile']['tier'] in ['mid', 'mid-top']])
+            if mid_tier_matches >= 2:
+                insights.append("Focus on mid-tier firms where you'll be highly valued - they often provide excellent training and clearer pathways to partnership.")
+            else:
+                insights.append("Consider highlighting leadership roles, work experience, and demonstrated commercial awareness to differentiate your application.")
 
-        # Only add university insights if there's strong representation
-        if primary_firm['uni_percentage'] >= 20:
-            insights.append(f"Your university has excellent placement rates at {top_firms[0][0]} - leverage alumni networks.")
+        # University network strategy analysis
+        uni_strengths = {}
+        for firm, data in top_firms[:3]:
+            uni_pct = data['uni_percentage']
+            if uni_pct >= 15:
+                uni_strengths[firm] = uni_pct
         
-        # Only add competition insights if there's a clear pattern
-        score_spread = top_firms[0][1]['score'] - top_firms[-1][1]['score']
-        if score_spread > 25:
-            insights.append(f"You have a clear standout match in {top_firms[0][0]}.")
+        if len(uni_strengths) >= 2:
+            best_firm, best_pct = max(uni_strengths.items(), key=lambda x: x[1])
+            insights.append(f"Your {uni} network is particularly strong at {best_firm} ({best_pct}%) - reach out to recent graduates for insights and referrals.")
+        elif uni_strengths:
+            firm, pct = list(uni_strengths.items())[0]
+            insights.append(f"Leverage your {uni} connection at {firm} ({pct}% representation) for networking opportunities.")
         
-        # Only add experience insights if there's a meaningful gap
-        if experience == 'none' and len([f for f in top_firms[:3] if f[1]['profile']['competitive_level'] == 'very_high']) >= 2:
-            insights.append("Consider gaining legal work experience to strengthen applications to highly competitive firms.")
+        # Market timing and competition analysis
+        high_activity_firms = [f[0] for f in top_firms[:3] if f[1]['profile'].get('market_activity', 0) > 0.6]
+        if len(high_activity_firms) >= 2 and grad_year == '2025':
+            insights.append(f"Market intelligence shows {', '.join(high_activity_firms[:2])} are actively recruiting - apply early as positions fill quickly.")
+        
+        # Experience-based strategic advice
+        if experience == 'extensive':
+            top_competitive = [f for f in top_firms[:2] if f[1]['profile']['competitive_level'] == 'very_high']
+            if top_competitive:
+                insights.append("Your extensive experience gives you an edge at top-tier firms - highlight specific commercial achievements and client impact.")
+        elif experience == 'none':
+            training_focused = [f for f in top_firms[:3] if f[1]['profile']['training_score'] >= 85]
+            if len(training_focused) >= 2:
+                insights.append("Target firms known for exceptional graduate training - they invest heavily in developing raw talent into skilled lawyers.")
+        
+        # Portfolio strategy based on score distribution
+        score_spread = top_firms[0][1]['score'] - top_firms[2][1]['score'] if len(top_firms) >= 3 else 0
+        high_confidence_matches = len([f for f in top_firms if f[1]['confidence'] in ['High', 'Very High']])
+        
+        if score_spread < 10 and high_confidence_matches >= 3:
+            insights.append("You have multiple excellent matches - create a balanced application portfolio across different firm tiers and practice areas.")
+        elif high_confidence_matches >= 2:
+            insights.append(f"Strong alignment with {high_confidence_matches} firms - focus your energy on crafting compelling, firm-specific applications.")
+        
+        # Interest-practice area intelligence
+        practice_matches = []
+        for firm, data in top_firms[:3]:
+            strengths = data['profile'].get('strengths', [])
+            if interest == 'commercial' and any('Corporate' in s or 'Banking' in s or 'Finance' in s for s in strengths):
+                practice_matches.append(firm)
+            elif interest == 'litigation' and any('Litigation' in s or 'Dispute' in s for s in strengths):
+                practice_matches.append(firm)
+        
+        if len(practice_matches) >= 2:
+            insights.append(f"Your {interest} interest aligns perfectly with {', '.join(practice_matches[:2])} - research their recent major cases and deals.")
+        
+        # Location-based market intelligence
+        if location != 'any':
+            location_matches = [f[0] for f in top_firms[:3] if location.lower() in str(f[1]['profile'].get('active_cities', [])).lower()]
+            if len(location_matches) >= 2:
+                insights.append(f"{location} market shows strong opportunities at {', '.join(location_matches[:2])} - consider the competitive landscape in this city.")
+        
+        # Generate meta-strategic advice based on overall profile
+        meta_insights = []
+        
+        # Application timing strategy
+        if grad_year == '2025':
+            current_month = datetime.now().month
+            if current_month <= 4:  # Early in recruitment season
+                meta_insights.append("Apply early - many firms fill positions on a rolling basis, especially for strong candidates.")
+            elif current_month >= 8:  # Late in season
+                meta_insights.append("Focus on firms still actively recruiting - some opportunities remain for exceptional candidates.")
+        
+        # Portfolio diversification advice
+        tier_distribution = {}
+        for firm, data in top_firms:
+            tier = data['profile']['tier']
+            tier_distribution[tier] = tier_distribution.get(tier, 0) + 1
+        
+        if len(tier_distribution) >= 2:
+            meta_insights.append("Apply across firm tiers - this maximizes opportunities while building valuable experience regardless of outcome.")
+        
+        # Market positioning strategy
+        if preference == 'prestige' and wam >= 82:
+            meta_insights.append("With your profile, consider international firms or emerging practice areas where you can make significant early impact.")
+        elif preference == 'worklife' and experience == 'some':
+            meta_insights.append("Your experience and work-life priorities suggest targeting progressive firms - they often offer more flexible career paths.")
         
         return render_template('law_match_result.html', 
                              recommendations=recommendations,
                              insights=insights,
+                             meta_insights=meta_insights,
                              user_profile={
                                  'uni': uni, 'wam': wam, 'interest': interest, 
-                                 'preference': preference, 'experience': experience
+                                 'preference': preference, 'experience': experience, 'location': location
                              })
 
     return render_template('law_match.html')

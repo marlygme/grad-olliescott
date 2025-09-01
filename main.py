@@ -645,7 +645,52 @@ def law_match():
         firms = load_cards_v2("out/grad_program_signals.csv")
         firm_data_lookup = {firm['name']: firm for firm in firms}
         
-        # Enhanced firm profiling with real data integration
+        # Load comprehensive data from processed CSV
+        csv_insights = {}
+        with open("out/grad_program_signals.csv", 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                firm_name = row.get('firm_name', '').strip()
+                if firm_name:
+                    if firm_name not in csv_insights:
+                        csv_insights[firm_name] = {
+                            'total_mentions': 0, 'recent_activity': 0, 
+                            'avg_confidence': 0, 'cities': set(), 'program_types': set(),
+                            'confidence_scores': [], 'years': set()
+                        }
+                    
+                    data = csv_insights[firm_name]
+                    data['total_mentions'] += 1
+                    
+                    # Track recent activity (2024-2025)
+                    year = row.get('intake_year', '')
+                    if year and year.isdigit() and int(year) >= 2024:
+                        data['recent_activity'] += 1
+                        data['years'].add(int(year))
+                    
+                    # Track confidence and locations
+                    confidence = row.get('confidence', '')
+                    if confidence:
+                        try:
+                            data['confidence_scores'].append(float(confidence))
+                        except: pass
+                    
+                    city = row.get('city', '').strip()
+                    if city and city != 'Other/Unknown':
+                        data['cities'].add(city)
+                    
+                    program_type = row.get('program_type', '').strip()
+                    if program_type and program_type != 'ambiguous':
+                        data['program_types'].add(program_type)
+        
+        # Calculate averages for CSV insights
+        for firm_name, data in csv_insights.items():
+            if data['confidence_scores']:
+                data['avg_confidence'] = sum(data['confidence_scores']) / len(data['confidence_scores'])
+            data['cities'] = list(data['cities'])
+            data['program_types'] = list(data['program_types'])
+        
+        # Enhanced firm profiling with real data integration and CSV insights
         base_profiles = {
             'Allens': {
                 'tier': 'top', 'prestige_score': 95, 'training_score': 90, 'worklife_score': 65,
@@ -703,7 +748,7 @@ def law_match():
             }
         }
 
-        # Merge real data with base profiles
+        # Merge real data with base profiles and CSV insights
         firm_profiles = {}
         for firm_name, base_profile in base_profiles.items():
             profile = base_profile.copy()
@@ -724,57 +769,113 @@ def law_match():
                 profile['avg_salary'] = est['avg']
                 profile['salary_range'] = est['range']
             
+            # Integrate CSV-derived insights
+            csv_data = csv_insights.get(firm_name, {})
+            profile['csv_activity'] = csv_data.get('recent_activity', 0)
+            profile['csv_confidence'] = csv_data.get('avg_confidence', 0.5)
+            profile['csv_mentions'] = csv_data.get('total_mentions', 0)
+            profile['active_cities'] = csv_data.get('cities', [])
+            profile['program_offerings'] = csv_data.get('program_types', [])
+            
+            # Calculate market activity score (0-1)
+            max_activity = max([data.get('recent_activity', 0) for data in csv_insights.values()] + [1])
+            profile['market_activity'] = csv_data.get('recent_activity', 0) / max_activity if max_activity > 0 else 0
+            
             firm_profiles[firm_name] = profile
 
-        # Enhanced scoring algorithm
+        # Enhanced data-driven scoring algorithm
         firm_scores = {}
         
         for firm, profile in firm_profiles.items():
-            score = 50.0  # Base score
+            score = 40.0  # Lower base score to emphasize data-driven factors
             reasons = []
             confidence_factors = []
             
-            # University representation (weighted by firm tier)
-            uni_percentage = FIRM_UNIVERSITY_DATA.get(firm, {}).get(uni, FIRM_UNIVERSITY_DATA.get(firm, {}).get('Other', 0))
-            uni_weight = 1.5 if profile['tier'] == 'top' else 1.2 if profile['tier'] == 'mid-top' else 1.0
+            # Market activity bonus (based on real CSV data)
+            activity_score = profile.get('market_activity', 0) * 15
+            if activity_score >= 10:
+                score += activity_score
+                reasons.append(f"High recent graduate recruitment activity")
+                confidence_factors.append('active_recruiting')
+            elif activity_score >= 5:
+                score += activity_score
+                reasons.append(f"Active graduate recruitment")
+                confidence_factors.append('moderate_recruiting')
             
-            if uni_percentage >= 20:
-                uni_bonus = 25 * uni_weight
+            # Data confidence bonus (how reliable our insights are)
+            csv_confidence = profile.get('csv_confidence', 0.5)
+            csv_mentions = profile.get('csv_mentions', 0)
+            if csv_confidence >= 0.8 and csv_mentions >= 10:
+                score += 8
+                confidence_factors.append('high_data_quality')
+            elif csv_confidence >= 0.7 and csv_mentions >= 5:
+                score += 5
+                confidence_factors.append('good_data_quality')
+            
+            # University representation (weighted by firm tier and data quality)
+            uni_percentage = FIRM_UNIVERSITY_DATA.get(firm, {}).get(uni, FIRM_UNIVERSITY_DATA.get(firm, {}).get('Other', 0))
+            data_weight = 1.0 + (profile.get('csv_confidence', 0.5) - 0.5)  # Boost for high-quality data
+            tier_weight = 1.5 if profile['tier'] == 'top' else 1.2 if profile['tier'] == 'mid-top' else 1.0
+            uni_weight = tier_weight * data_weight
+            
+            if uni_percentage >= 25:
+                uni_bonus = 30 * uni_weight
+                score += uni_bonus
+                reasons.append(f"Excellent {uni} representation ({uni_percentage}%)")
+                confidence_factors.append('excellent_uni_rep')
+            elif uni_percentage >= 15:
+                uni_bonus = 22 * uni_weight
                 score += uni_bonus
                 reasons.append(f"Strong {uni} representation ({uni_percentage}%)")
                 confidence_factors.append('high_uni_rep')
-            elif uni_percentage >= 10:
-                uni_bonus = 15 * uni_weight
+            elif uni_percentage >= 8:
+                uni_bonus = 12 * uni_weight
                 score += uni_bonus
                 reasons.append(f"Good {uni} representation ({uni_percentage}%)")
                 confidence_factors.append('medium_uni_rep')
-            elif uni_percentage >= 5:
-                uni_bonus = 8 * uni_weight
+            elif uni_percentage >= 3:
+                uni_bonus = 6 * uni_weight
                 score += uni_bonus
                 reasons.append(f"Some {uni} representation ({uni_percentage}%)")
 
-            # WAM scoring with firm-specific thresholds
+            # Enhanced WAM scoring with data-driven thresholds
             wam_threshold = profile.get('wam_threshold', 75)
-            wam_diff = wam - wam_threshold
             
-            if wam_diff >= 10:
-                score += 35
-                reasons.append(f"WAM well above typical threshold ({wam:.1f} vs {wam_threshold})")
+            # Adjust threshold based on market competition and data
+            competition_adjustment = 0
+            if profile.get('market_activity', 0) > 0.7:  # High activity = more competitive
+                competition_adjustment = 2
+            elif profile.get('market_activity', 0) < 0.3:  # Low activity = less competitive
+                competition_adjustment = -2
+            
+            adjusted_threshold = wam_threshold + competition_adjustment
+            wam_diff = wam - adjusted_threshold
+            
+            if wam_diff >= 12:
+                score += 40
+                reasons.append(f"WAM significantly exceeds expectations ({wam:.1f} vs ~{adjusted_threshold})")
+                confidence_factors.append('outstanding_wam')
+            elif wam_diff >= 7:
+                score += 30
+                reasons.append(f"WAM well above requirements ({wam:.1f})")
                 confidence_factors.append('excellent_wam')
-            elif wam_diff >= 5:
-                score += 25
-                reasons.append(f"WAM above typical requirements ({wam:.1f})")
+            elif wam_diff >= 3:
+                score += 20
+                reasons.append(f"WAM above typical threshold ({wam:.1f})")
                 confidence_factors.append('strong_wam')
             elif wam_diff >= 0:
-                score += 15
-                reasons.append(f"WAM meets requirements ({wam:.1f})")
+                score += 12
+                reasons.append(f"WAM meets current market expectations ({wam:.1f})")
                 confidence_factors.append('adequate_wam')
-            elif wam_diff >= -5:
-                score += 5
-                reasons.append(f"WAM slightly below typical ({wam:.1f})")
+            elif wam_diff >= -3:
+                score += 3
+                reasons.append(f"WAM slightly below market average")
+            elif wam_diff >= -7:
+                score -= 5
+                reasons.append(f"WAM below typical requirements")
             else:
-                score -= 10
-                reasons.append(f"WAM below typical threshold")
+                score -= 15
+                reasons.append(f"WAM significantly below expectations")
 
             # Preference alignment with dynamic weighting
             pref_weight = 0.3
@@ -833,19 +934,52 @@ def law_match():
             
             score += interest_bonus
 
-            # Location bonus (if specific location preference)
+            # Enhanced location matching with CSV data
             if location != 'any':
+                active_cities = profile.get('active_cities', [])
                 real_data = firm_data_lookup.get(firm)
-                if real_data and real_data.get('top_city'):
+                
+                location_match = False
+                if active_cities:
+                    for city in active_cities:
+                        if location.lower() in city.lower():
+                            score += 12
+                            reasons.append(f"Active recruitment in {city}")
+                            confidence_factors.append('location_match')
+                            location_match = True
+                            break
+                
+                if not location_match and real_data and real_data.get('top_city'):
                     if location.lower() in real_data['top_city'].lower():
-                        score += 8
-                        reasons.append(f"Strong presence in {location}")
+                        score += 6
+                        reasons.append(f"Established presence in {location}")
+            
+            # Program type alignment
+            if interest in ['clerkship', 'graduate']:
+                program_types = profile.get('program_offerings', [])
+                target_program = 'clerkship' if interest == 'clerkship' else 'graduate'
+                
+                if any(target_program in prog.lower() for prog in program_types):
+                    score += 8
+                    confidence_factors.append('program_match')
+                elif program_types:  # Has programs but not exact match
+                    score += 4
 
-            # Calculate confidence level
+            # Enhanced confidence calculation with data quality factors
             confidence = 'Low'
-            if len(confidence_factors) >= 3 or 'excellent_wam' in confidence_factors:
+            high_confidence_factors = ['outstanding_wam', 'excellent_wam', 'excellent_uni_rep', 'active_recruiting', 'high_data_quality']
+            medium_confidence_factors = ['strong_wam', 'high_uni_rep', 'practice_match', 'location_match', 'good_data_quality']
+            
+            if (len(confidence_factors) >= 4 or 
+                any(f in confidence_factors for f in high_confidence_factors) and len(confidence_factors) >= 2 or
+                'outstanding_wam' in confidence_factors):
+                confidence = 'Very High'
+            elif (len(confidence_factors) >= 3 or 
+                  any(f in confidence_factors for f in high_confidence_factors) or
+                  len([f for f in confidence_factors if f in medium_confidence_factors]) >= 2):
                 confidence = 'High'
-            elif len(confidence_factors) >= 2 or any(f in confidence_factors for f in ['strong_wam', 'high_uni_rep']):
+            elif (len(confidence_factors) >= 2 or 
+                  any(f in confidence_factors for f in medium_confidence_factors)):
                 confidence = 'Medium'
 
             firm_scores[firm] = {

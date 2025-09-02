@@ -435,11 +435,25 @@ def api_company_analytics(company_name):
 
     avg_response_time = round(sum(response_times) / len(response_times)) if response_times else 0
 
+    # Enhanced response analytics
+    response_rate = round((len(responses) / total_apps * 100), 1) if total_apps > 0 else 0
+    offer_rate = round((len(offers) / total_apps * 100), 1) if total_apps > 0 else 0
+    
+    # Calculate stage progression rates
+    assessment_invites = len([app for app in company_apps if app.get('status') in ['Online Assessment Received', 'Phone Interview Scheduled', 'Assessment Centre Invited', 'Offered']])
+    interview_invites = len([app for app in company_apps if app.get('status') in ['Phone Interview Scheduled', 'Assessment Centre Invited', 'Offered']])
+    
+    assessment_rate = round((assessment_invites / total_apps * 100), 1) if total_apps > 0 else 0
+    interview_rate = round((interview_invites / total_apps * 100), 1) if total_apps > 0 else 0
+    
     company_stats = {
         'total_apps': total_apps,
-        'response_rate': round((len(responses) / total_apps * 100), 1) if total_apps > 0 else 0,
-        'offer_rate': round((len(offers) / total_apps * 100), 1) if total_apps > 0 else 0,
-        'avg_response_time': avg_response_time
+        'response_rate': response_rate,
+        'assessment_progression_rate': assessment_rate,
+        'interview_progression_rate': interview_rate,
+        'offer_rate': offer_rate,
+        'avg_response_time': avg_response_time,
+        'competitiveness_score': round((offer_rate / 100) * (response_rate / 100) * 100, 1) if offer_rate > 0 and response_rate > 0 else 0
     }
 
     # Calculate university progression for this company
@@ -504,12 +518,30 @@ def api_company_insights(company_name):
         status = app.get('status', 'Applied')
         stage_counts[status] += 1
 
-    # Calculate WAM distribution if available
+    # Enhanced WAM analysis by application stage
+    wam_by_stage = {
+        'Applied': {'samples': [], 'avg': 0, 'min': 0, 'max': 0},
+        'Online Assessment Received': {'samples': [], 'avg': 0, 'min': 0, 'max': 0},
+        'Phone Interview Scheduled': {'samples': [], 'avg': 0, 'min': 0, 'max': 0},
+        'Assessment Centre Invited': {'samples': [], 'avg': 0, 'min': 0, 'max': 0},
+        'Offered': {'samples': [], 'avg': 0, 'min': 0, 'max': 0}
+    }
+    
+    # WAM distribution ranges
     wam_ranges = {'70-74': 0, '75-79': 0, '80-84': 0, '85+': 0, 'Unknown': 0}
+    
     for app in company_apps:
         wam = app.get('wam', '')
+        status = app.get('status', 'Applied')
+        
         if wam and str(wam).replace('.', '').isdigit():
             wam_val = float(wam)
+            
+            # Add to stage-specific WAM tracking
+            if status in wam_by_stage:
+                wam_by_stage[status]['samples'].append(wam_val)
+            
+            # Add to range distribution
             if wam_val >= 85:
                 wam_ranges['85+'] += 1
             elif wam_val >= 80:
@@ -520,6 +552,28 @@ def api_company_insights(company_name):
                 wam_ranges['70-74'] += 1
         else:
             wam_ranges['Unknown'] += 1
+    
+    # Calculate WAM statistics for each stage
+    wam_requirements = {}
+    for stage, data in wam_by_stage.items():
+        if data['samples']:
+            data['avg'] = round(sum(data['samples']) / len(data['samples']), 1)
+            data['min'] = round(min(data['samples']), 1)
+            data['max'] = round(max(data['samples']), 1)
+            data['count'] = len(data['samples'])
+            wam_requirements[stage] = {
+                'average_wam': data['avg'],
+                'minimum_wam': data['min'],
+                'maximum_wam': data['max'],
+                'sample_size': data['count']
+            }
+        else:
+            wam_requirements[stage] = {
+                'average_wam': 'N/A',
+                'minimum_wam': 'N/A', 
+                'maximum_wam': 'N/A',
+                'sample_size': 0
+            }
 
     # Calculate priority distribution
     priority_counts = defaultdict(int)
@@ -573,10 +627,62 @@ def api_company_insights(company_name):
             'description': f'{offer_rate}% offer rate indicates highly selective recruitment'
         })
 
+    # Enhanced university success analysis
+    university_success_rates = {}
+    for app in company_apps:
+        if app.get('university'):
+            uni = app['university']
+            if uni not in university_success_rates:
+                university_success_rates[uni] = {
+                    'total_apps': 0,
+                    'assessment_received': 0,
+                    'interview_reached': 0,
+                    'offers_received': 0,
+                    'avg_wam': [],
+                    'successful_wam_range': []
+                }
+            
+            university_success_rates[uni]['total_apps'] += 1
+            
+            # Track WAM data
+            if app.get('wam') and str(app['wam']).replace('.', '').isdigit():
+                university_success_rates[uni]['avg_wam'].append(float(app['wam']))
+            
+            status = app.get('status', 'Applied')
+            if status in ['Online Assessment Received', 'Phone Interview Scheduled', 'Assessment Centre Invited', 'Offered']:
+                university_success_rates[uni]['assessment_received'] += 1
+                
+            if status in ['Phone Interview Scheduled', 'Assessment Centre Invited', 'Offered']:
+                university_success_rates[uni]['interview_reached'] += 1
+                
+            if status == 'Offered':
+                university_success_rates[uni]['offers_received'] += 1
+                if app.get('wam') and str(app['wam']).replace('.', '').isdigit():
+                    university_success_rates[uni]['successful_wam_range'].append(float(app['wam']))
+    
+    # Calculate percentages and averages for universities
+    uni_analytics = {}
+    for uni, data in university_success_rates.items():
+        if data['total_apps'] >= 2:  # Minimum threshold for meaningful data
+            avg_wam = round(sum(data['avg_wam']) / len(data['avg_wam']), 1) if data['avg_wam'] else 'N/A'
+            successful_wam_avg = round(sum(data['successful_wam_range']) / len(data['successful_wam_range']), 1) if data['successful_wam_range'] else 'N/A'
+            
+            uni_analytics[uni] = {
+                'total_applications': data['total_apps'],
+                'assessment_rate': round((data['assessment_received'] / data['total_apps']) * 100, 1),
+                'interview_rate': round((data['interview_reached'] / data['total_apps']) * 100, 1),
+                'offer_rate': round((data['offers_received'] / data['total_apps']) * 100, 1),
+                'average_applicant_wam': avg_wam,
+                'average_successful_wam': successful_wam_avg,
+                'sample_size': data['total_apps']
+            }
+
     return jsonify({
         'timeline_data': dict(monthly_apps),
         'stage_progression': dict(stage_counts),
         'wam_distribution': wam_ranges,
+        'wam_requirements_by_stage': wam_requirements,
+        'university_analytics': uni_analytics,
         'priority_distribution': dict(priority_counts),
         'insights': insights,
         'total_tracked': len(company_apps)

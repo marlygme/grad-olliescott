@@ -43,6 +43,52 @@
     </div>
   </div>
 
+  <!-- Enhanced Theme Navigation for Company Pages -->
+  {% if company_title %}
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            <h5 class="card-title mb-3 d-flex align-items-center">
+              <i class="bi bi-funnel me-2 text-primary"></i>
+              Browse by Theme
+            </h5>
+            <div class="theme-filter-pills">
+              {% set theme_icons = {
+                'applications': 'bi-file-earmark-text',
+                'interviews': 'bi-chat-dots', 
+                'programs': 'bi-calendar-event',
+                'salaries': 'bi-currency-dollar',
+                'firm_culture': 'bi-people',
+                'pay_benefits': 'bi-award',
+                'hours_workload': 'bi-clock',
+                'training_support': 'bi-mortarboard',
+                'offer_outcomes': 'bi-check-circle',
+                'application_timeline': 'bi-calendar-range'
+              } %}
+              
+              <a href="?cat=" class="btn theme-pill {% if not active_cat %}active{% endif %}" data-theme="">
+                <i class="bi bi-grid-3x3-gap me-2"></i>All Themes
+                <span class="badge bg-secondary ms-2">{{ experiences|length }}</span>
+              </a>
+              
+              {% for cat, count in cat_counts.items() if count > 0 %}
+                {% set icon = theme_icons.get(cat, 'bi-tag') %}
+                {% set theme_label = cat.replace('_', ' ').title() %}
+                <a href="?cat={{ cat }}" 
+                   class="btn theme-pill {% if active_cat == cat %}active{% endif %}" 
+                   data-theme="{{ cat }}">
+                  <i class="{{ icon }} me-2"></i>{{ theme_label }}
+                  <span class="badge bg-secondary ms-2">{{ count }}</span>
+                </a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
   <!-- Search and Filter Section -->
   <div class="row mb-5">
     <div class="col-lg-10 mx-auto">

@@ -8,7 +8,11 @@ from collections import defaultdict, Counter
 from grad_data import load_cards, load_grad_signals
 from grad_data_v2 import load_cards as load_cards_v2
 from legal_config import LEGAL_CONFIG, NOT_ADVICE_DISCLAIMER
-from auth import create_user, authenticate_user, login_required, get_current_user
+from db_auth import (
+    get_current_user, login_required, get_user_applications, 
+    create_application, update_application, delete_application,
+    get_all_submissions, create_submission, get_all_applications
+)
 from extractors import FIRM_ALIASES
 
 def normalize_company_name(company_name: str) -> str:
@@ -158,8 +162,7 @@ def index():
     user_id = current_user['user_id'] if current_user else None
     user_name = current_user['username'] if current_user else None
 
-    with open(data_file, 'r') as f:
-        submissions = json.load(f)
+    submissions = get_all_submissions()
 
     # Group submissions by company for homepage
     companies = {}
@@ -228,7 +231,7 @@ def submit():
         original_company = request.form['company']
         normalized_company = normalize_company_name(original_company)
         
-        new_entry = {
+        submission_data = {
             'company': normalized_company,
             'role': request.form['role'],
             'experience_type': request.form['experience_type'],
@@ -243,16 +246,9 @@ def submit():
             'practice_areas': request.form.get('practice_areas', ''),
             'general_experience': request.form.get('general_experience', ''),
             'pro_tip': request.form.get('pro_tip', ''),
-            'advice': request.form.get('advice', ''),
-            'timestamp': datetime.utcnow().isoformat(),
-            'user_id': user_id,
-            'user_name': user_name
+            'advice': request.form.get('advice', '')
         }
-        with open(data_file, 'r') as f:
-            data = json.load(f)
-        data.append(new_entry)
-        with open(data_file, 'w') as f:
-            json.dump(data, f, indent=2)
+        create_submission(user_id, submission_data)
         return redirect(url_for('index'))
 
     return render_template("submit.html", user_id=user_id, user_name=user_name)
@@ -263,8 +259,7 @@ def submit():
 def company_page(name):
     from categorizer import classify_text, label
 
-    with open(data_file, 'r') as f:
-        data = json.load(f)
+    data = get_all_submissions()
     company_entries = [entry for entry in data if entry['company'].lower() == name.lower()]
 
     # Load firm data from CSV
@@ -350,8 +345,7 @@ def company_page(name):
 
 @app.route('/companies')
 def companies():
-    with open(data_file, 'r') as f:
-        submissions = json.load(f)
+    submissions = get_all_submissions()
 
     # Group submissions by company
     companies = {}
@@ -409,8 +403,7 @@ def api_grad_data():
 def api_company_analytics(company_name):
     """Get analytics data for a specific company"""
 
-    with open(tracker_file, 'r') as f:
-        all_applications = json.load(f)
+    all_applications = get_all_applications()
 
     # Filter applications for this company
     company_apps = [app for app in all_applications if app.get('company', '').lower() == company_name.lower()]
@@ -492,8 +485,7 @@ def api_company_analytics(company_name):
 def api_company_insights(company_name):
     """Get detailed insights and analytics for a specific company"""
 
-    with open(tracker_file, 'r') as f:
-        all_applications = json.load(f)
+    all_applications = get_all_applications()
 
     # Filter applications for this company
     company_apps = [app for app in all_applications if app.get('company', '').lower() == company_name.lower()]
@@ -1495,25 +1487,14 @@ def law_match():
 @app.route('/tracker')
 def tracker():
     current_user = get_current_user()
-    user_id = current_user['user_id'] if current_user else None
-    user_name = current_user['username'] if current_user else None
+    if not current_user:
+        return render_template('auth_required.html')
+    
+    user_id = current_user['user_id']
+    user_name = current_user['username']
 
-    applications = []
-    if user_id:
-        with open(tracker_file, 'r') as f:
-            all_applications = json.load(f)
-
-        # Filter applications for current user
-        user_applications = [app for app in all_applications if app.get('user_id') == user_id]
-
-        # Convert date strings to datetime objects for display
-        for app in user_applications:
-            if app.get('application_date'):
-                app['application_date'] = datetime.strptime(app['application_date'], '%Y-%m-%d').date()
-            if app.get('response_date'):
-                app['response_date'] = datetime.strptime(app['response_date'], '%Y-%m-%d').date()
-
-        applications = sorted(user_applications, key=lambda x: x.get('application_date', date.min), reverse=True)
+    # Get user applications from database
+    applications = get_user_applications(user_id)
 
     return render_template('tracker.html', applications=applications, user_id=user_id, user_name=user_name)
 
@@ -1523,85 +1504,60 @@ def tracker():
 def add_application():
     current_user = get_current_user()
     user_id = current_user['user_id']
-    user_name = current_user['username']
 
-    with open(tracker_file, 'r') as f:
-        applications = json.load(f)
-
-    # Get next ID
-    next_id = max([app.get('id', 0) for app in applications], default=0) + 1
-
-    new_application = {
-        'id': next_id,
+    application_data = {
+        'user_id': user_id,
         'company': request.form['company'],
         'role': request.form['role'],
-        'application_date': request.form['application_date'],
+        'application_date': request.form['application_date'] if request.form['application_date'] else None,
         'university': request.form.get('university', ''),
         'wam': request.form.get('wam', ''),
         'status': request.form['status'],
-        'response_date': request.form.get('response_date', ''),
-        'priority': request.form.get('priority', ''),
-        'notes': request.form.get('notes', ''),
-        'user_id': user_id,
-        'user_name': user_name,
-        'timestamp': datetime.utcnow().isoformat()
+        'response_date': request.form.get('response_date', '') if request.form.get('response_date') else None,
+        'priority': request.form.get('priority', 'Medium'),
+        'notes': request.form.get('notes', '')
     }
 
-    applications.append(new_application)
-
-    with open(tracker_file, 'w') as f:
-        json.dump(applications, f, indent=2)
-
+    create_application(user_id, application_data)
     return redirect(url_for('tracker'))
 
 
 @app.route('/tracker/update/<int:app_id>', methods=['POST'])
 @login_required
-def update_application(app_id):
+def update_application_route(app_id):
     current_user = get_current_user()
     user_id = current_user['user_id']
 
-    with open(tracker_file, 'r') as f:
-        applications = json.load(f)
+    update_data = {}
+    if 'status' in request.json:
+        update_data['status'] = request.json['status']
+    if 'response_date' in request.json:
+        update_data['response_date'] = request.json['response_date'] if request.json['response_date'] else None
+    if 'notes' in request.json:
+        update_data['notes'] = request.json['notes']
+    if 'priority' in request.json:
+        update_data['priority'] = request.json['priority']
 
-    # Find and update application if it belongs to the user
-    for app in applications:
-        if app.get('id') == app_id and app.get('user_id') == user_id:
-            # Update fields from request
-            if 'status' in request.json:
-                app['status'] = request.json['status']
-            if 'response_date' in request.json:
-                app['response_date'] = request.json['response_date']
-            if 'notes' in request.json:
-                app['notes'] = request.json['notes']
-            if 'priority' in request.json:
-                app['priority'] = request.json['priority']
-
-            app['updated'] = datetime.utcnow().isoformat()
-            break
-
-    with open(tracker_file, 'w') as f:
-        json.dump(applications, f, indent=2)
-
-    return jsonify({'success': True})
+    updated_app = update_application(app_id, user_id, update_data)
+    
+    if updated_app:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Application not found or access denied'}), 404
 
 
 @app.route('/tracker/delete/<int:app_id>', methods=['DELETE'])
 @login_required
-def delete_application(app_id):
+def delete_application_route(app_id):
     current_user = get_current_user()
     user_id = current_user['user_id']
 
-    with open(tracker_file, 'r') as f:
-        applications = json.load(f)
-
-    # Remove application if it belongs to the user
-    applications = [app for app in applications if not (app.get('id') == app_id and app.get('user_id') == user_id)]
-
-    with open(tracker_file, 'w') as f:
-        json.dump(applications, f, indent=2)
-
-    return jsonify({'success': True})
+    success = delete_application(app_id, user_id)
+    
+    if success:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Application not found or access denied'}), 404
 
 
 @app.route('/tracker/analytics')
@@ -1610,8 +1566,7 @@ def tracker_analytics():
     current_user = get_current_user()
     user_id = current_user['user_id']
 
-    with open(tracker_file, 'r') as f:
-        all_applications = json.load(f)
+    all_applications = get_all_applications()
 
     # Personal stats
     user_apps = [app for app in all_applications if app.get('user_id') == user_id]

@@ -64,24 +64,24 @@
         </ul>
 
         <div class="d-flex gap-2">
-          {% if session.user_id %}
+          {% if user_id %}
             <a class="btn btn-primary btn-pill" href="/submit">
               <i class="bi bi-plus-circle me-1"></i>Share Story
             </a>
             <div class="dropdown">
               <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="bi bi-person-circle me-1"></i>{{ session.username }}
+                <i class="bi bi-person-circle me-1"></i>{{ user_name or 'User' }}
               </button>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="/tracker">My Applications</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="/logout">Sign Out</a></li>
+                <li><a class="dropdown-item" href="javascript:alert('To sign out, please close this Replit tab or workspace.')">Sign Out Info</a></li>
               </ul>
             </div>
           {% else %}
-            <a class="btn btn-outline-secondary btn-pill" href="/login">
-              <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
-            </a>
+            <div class="text-muted">
+              <i class="bi bi-info-circle me-1"></i>Sign in by opening this app in Replit
+            </div>
           {% endif %}
         </div>
       </div>

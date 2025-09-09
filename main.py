@@ -1764,46 +1764,7 @@ def report():
 
 
 # Authentication routes
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        user = authenticate_user(username, password)
-        if user:
-            session['user_id'] = user['user_id']
-            session['username'] = username
-            return redirect(url_for('index'))
-        else:
-            flash('Invalid username or password')
-
-    return render_template('login.html')
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
-
-        if password != confirm_password:
-            flash('Passwords do not match')
-        elif len(password) < 6:
-            flash('Password must be at least 6 characters long')
-        elif create_user(username, email, password):
-            flash('Account created successfully! Please log in.')
-            return redirect(url_for('login'))
-        else:
-            flash('Username or email already exists')
-
-    return render_template('register.html')
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('index'))
+# Old authentication routes removed - now using Replit Auth via headers
 
 
 if __name__ == '__main__':

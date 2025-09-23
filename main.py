@@ -823,7 +823,7 @@ def law_match():
         if wam_str in ['nan', 'inf', '-inf', '+inf']:
             return "Invalid WAM value", 400
         try:
-            wam = float(request.form['wam'])
+            wam = float(wam_str)
             if not (0 <= wam <= 100):  # WAM should be between 0-100
                 return "WAM must be between 0 and 100", 400
         except ValueError:

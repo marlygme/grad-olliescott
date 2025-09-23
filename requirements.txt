@@ -2,3 +2,7 @@
 pandas
 python-dateutil
 pyarrow
+Flask-WTF>=1.2.1
+Flask-Cors>=4.0.0
+Flask-Talisman>=1.1.0
+flask-limiter>=3.8.0

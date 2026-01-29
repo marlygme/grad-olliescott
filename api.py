@@ -5,14 +5,19 @@ import json
 import os
 from collections import defaultdict
 
-app = Flask(__name__, static_folder='public', static_url_path='')
+app = Flask(__name__, static_folder=None)
 CORS(app, supports_credentials=True)
 
 data_file = 'submissions.json'
+applications_file = 'applications.json'
 
 if not os.path.exists(data_file):
     with open(data_file, 'w') as f:
         json.dump([], f)
+
+if not os.path.exists(applications_file):
+    with open(applications_file, 'w') as f:
+        json.dump({}, f)
 
 FIRM_UNIVERSITY_DATA = {
     'Allens': {
@@ -78,17 +83,68 @@ def save_submissions(submissions):
     with open(data_file, 'w') as f:
         json.dump(submissions, f, indent=2, default=str)
 
+def load_applications():
+    try:
+        with open(applications_file, 'r') as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_applications(applications):
+    with open(applications_file, 'w') as f:
+        json.dump(applications, f, indent=2, default=str)
+
 @app.route('/')
 def index():
     return send_from_directory('public', 'index.html')
 
-@app.route('/<path:path>')
-def serve_static(path):
-    if os.path.exists(os.path.join('public', path)):
-        return send_from_directory('public', path)
-    if not '.' in path:
-        return send_from_directory('public', path + '.html')
-    return send_from_directory('public', 'index.html')
+@app.route('/companies')
+def companies_page():
+    return send_from_directory('public', 'companies.html')
+
+@app.route('/company')
+def company_page():
+    return send_from_directory('public', 'company.html')
+
+@app.route('/experiences')
+def experiences_page():
+    return send_from_directory('public', 'experiences.html')
+
+@app.route('/tracker')
+def tracker_page():
+    return send_from_directory('public', 'tracker.html')
+
+@app.route('/law-match')
+def law_match_page():
+    return send_from_directory('public', 'law-match.html')
+
+@app.route('/submit')
+def submit_page():
+    return send_from_directory('public', 'submit.html')
+
+@app.route('/terms')
+def terms_page():
+    return send_from_directory('public', 'terms.html')
+
+@app.route('/privacy')
+def privacy_page():
+    return send_from_directory('public', 'privacy.html')
+
+@app.route('/moderation')
+def moderation_page():
+    return send_from_directory('public', 'moderation.html')
+
+@app.route('/report')
+def report_page():
+    return send_from_directory('public', 'report.html')
+
+@app.route('/css/<path:filename>')
+def serve_css(filename):
+    return send_from_directory('public/css', filename)
+
+@app.route('/js/<path:filename>')
+def serve_js(filename):
+    return send_from_directory('public/js', filename)
 
 @app.route('/api/companies')
 def get_companies():
@@ -223,6 +279,7 @@ def create_experience():
         'general_experience': data.get('general_experience', ''),
         'pro_tip': data.get('pro_tip', ''),
         'advice': data.get('advice', ''),
+        'salary': data.get('salary', ''),
         'created_at': datetime.now().isoformat()
     }
     
@@ -244,15 +301,14 @@ def get_current_user():
         'username': username
     })
 
-applications_store = {}
-
 @app.route('/api/applications')
 def get_applications():
     user_id = request.headers.get('X-Replit-User-Id')
     if not user_id:
         return jsonify({'error': 'Authentication required'}), 401
     
-    user_apps = applications_store.get(user_id, [])
+    applications = load_applications()
+    user_apps = applications.get(user_id, [])
     return jsonify({'applications': user_apps})
 
 @app.route('/api/applications', methods=['POST'])
@@ -265,11 +321,12 @@ def create_application():
     if not data:
         return jsonify({'error': 'No data provided'}), 400
     
-    if user_id not in applications_store:
-        applications_store[user_id] = []
+    applications = load_applications()
+    if user_id not in applications:
+        applications[user_id] = []
     
     new_app = {
-        'id': len(applications_store[user_id]) + 1,
+        'id': len(applications[user_id]) + 1,
         'company': data.get('company', ''),
         'role': data.get('role', ''),
         'status': data.get('status', 'Applied'),
@@ -279,7 +336,8 @@ def create_application():
         'created_at': datetime.now().isoformat()
     }
     
-    applications_store[user_id].append(new_app)
+    applications[user_id].append(new_app)
+    save_applications(applications)
     return jsonify(new_app), 201
 
 @app.route('/api/applications/<int:app_id>', methods=['PUT'])
@@ -289,11 +347,13 @@ def update_application(app_id):
         return jsonify({'error': 'Authentication required'}), 401
     
     data = request.get_json()
-    user_apps = applications_store.get(user_id, [])
+    applications = load_applications()
+    user_apps = applications.get(user_id, [])
     
     for app in user_apps:
         if app['id'] == app_id:
             app.update(data)
+            save_applications(applications)
             return jsonify(app)
     
     return jsonify({'error': 'Not found'}), 404
@@ -304,11 +364,13 @@ def delete_application(app_id):
     if not user_id:
         return jsonify({'error': 'Authentication required'}), 401
     
-    user_apps = applications_store.get(user_id, [])
+    applications = load_applications()
+    user_apps = applications.get(user_id, [])
     
     for i, app in enumerate(user_apps):
         if app['id'] == app_id:
             del user_apps[i]
+            save_applications(applications)
             return jsonify({'success': True})
     
     return jsonify({'error': 'Not found'}), 404

@@ -1,6 +1,6 @@
 # Overview
 
-Gradvantage is a Flask-based web application that aggregates and displays graduate job experiences and insights for Australian law firms. The platform processes forum data (particularly from Whirlpool) and user submissions to provide structured information about clerkships, graduate programs, salaries, and application processes. The system includes data processing pipelines, content categorization, quality scoring, and experience filtering to deliver meaningful insights to law students and graduates.
+GradGuide is a graduate job insights platform for Australian law firms. The application has been restructured for Cloudflare Pages deployment, with a **static frontend** and **separate JSON API backend**. The platform provides structured information about clerkships, graduate programs, salaries, and application processes from user-submitted experiences.
 
 # User Preferences
 
@@ -8,69 +8,77 @@ Preferred communication style: Simple, everyday language.
 
 # System Architecture
 
-## Core Application Stack
-- **Backend Framework**: Flask with Python 3.x
-- **Template Engine**: Jinja2 for server-side rendering
-- **Data Storage**: JSON files for submissions and application tracking
-- **Frontend**: HTML/CSS with Bootstrap 5.3 and custom styling
-- **Authentication**: Replit's ReplAuth system using HTTP headers
+## Current Stack (Cloudflare Pages Ready)
+- **Frontend**: Static HTML/CSS/JavaScript in `public/` folder
+- **Backend API**: Flask serving JSON endpoints from `api.py`
+- **Data Storage**: JSON files for submissions (can be replaced with database)
+- **CSS Framework**: Bootstrap 5.3 with custom Inter font styling
+- **Authentication**: Replit headers (X-Replit-User-Id, X-Replit-User-Name)
 
-## Data Processing Pipeline
-- **CSV Data Sources**: Multiple forum data files (law_raw.csv, law_whirlpool_2018_2025.csv, raw_all.csv)
-- **Content Processing**: Multi-stage cleaning and filtering system to remove forum metadata
-- **Quality Scoring**: Rule-based scoring system for experience quality and relevance
-- **Content Categorization**: Automatic classification into 11 categories (application timeline, selection process, pay/benefits, etc.)
-- **Firm Matching**: Alias-based system for mapping firm variations to canonical names
+## Static Frontend Structure
+```
+public/
+├── index.html          # Homepage
+├── companies.html      # Companies listing
+├── company.html        # Company detail page
+├── experiences.html    # Experiences listing
+├── tracker.html        # Application tracker
+├── law-match.html      # Career match tool
+├── submit.html         # Submit experience form
+├── terms.html          # Terms of use
+├── privacy.html        # Privacy policy
+├── moderation.html     # Content policy
+├── report.html         # Report content
+├── css/
+│   ├── style.css           # Main styles
+│   └── cookie-banner.css   # Cookie consent styles
+└── js/
+    ├── api.js              # API service module
+    ├── app.js              # App utilities
+    └── cookie-banner.js    # Cookie consent logic
+```
+
+## API Endpoints
+- `GET /api/companies` - List all companies with stats
+- `GET /api/companies/<name>` - Get company details and experiences
+- `GET /api/experiences` - List all experiences (with filters)
+- `POST /api/experiences` - Submit new experience
+- `GET /api/user` - Get current user (via headers)
+- `GET/POST/PUT/DELETE /api/applications` - Application tracker CRUD
+- `GET /api/firm-university-data` - Firm university representation data
+- `POST /api/law-match` - Get firm recommendations
 
 ## Key Features
 - **Experience Submission System**: Form-based user experience collection
-- **Data-Assisted Drafting**: CSV-backed auto-population of experience forms
 - **Company Analytics**: Aggregated firm statistics and program information
-- **Content Filtering**: Answer-focused filtering excluding questions and low-quality posts
-- **Legal Compliance**: Australian compliance pages for user-generated content platforms
-
-## File Organization
-```
-├── main.py (Flask application)
-├── submissions.json (user submissions)
-├── applications.json (application tracking)
-├── templates/ (Jinja2 templates)
-├── static/ (CSS, JS assets)
-├── extractors.py (firm aliases and data extraction)
-├── categorizer.py (content classification)
-├── experience_*.py (quality filtering pipelines)
-├── grad_data*.py (CSV data processing)
-├── legal_config.py (compliance configuration)
-└── out/ (processed data outputs)
-```
+- **Application Tracker**: Personal job application tracking
+- **Career Match Tool**: University-based firm recommendations
+- **GDPR Compliance**: Cookie consent banner
 
 ## Data Models
-- **Submissions**: Company, role, experience type, application stages, interview experience, advice, salary data
+- **Submissions**: Company, role, experience type, application stages, interview experience, advice
 - **Applications**: User application tracking with status, dates, and notes
-- **Processed Experiences**: Cleaned forum posts with quality scores and categories
-- **Firm Analytics**: Aggregated statistics including salary ranges, program types, and application timelines
+- **Firm Analytics**: University representation percentages for career matching
+
+# Deployment Notes
+
+## For Cloudflare Pages
+1. Deploy the `public/` folder as the static site
+2. Set up API backend separately (Workers, external server, etc.)
+3. Configure `API_BASE_URL` in the frontend JS to point to your API
+
+## For Development (Replit)
+- Run `python api.py` to serve both static files and API from port 5000
+- The Flask server serves static files from `public/` directory
 
 # External Dependencies
 
-## Required Python Packages
-- **pandas**: Data manipulation and CSV processing
-- **python-dateutil**: Date parsing and handling
-- **pyarrow**: Parquet file support for data storage
+## Python Packages
+- Flask
+- Flask-CORS
+- gunicorn (for production)
 
-## Authentication
-- **Replit ReplAuth**: User authentication via HTTP headers (X-Replit-User-* headers)
-
-## Frontend Libraries
-- **Bootstrap 5.3**: CSS framework via CDN
-- **Google Fonts**: Inter and Nunito font families
-- **Custom CSS**: Additional styling for specialized components
-
-## Data Sources
-- **Forum CSVs**: Whirlpool forum data with thread titles, content, timestamps
-- **User Submissions**: Direct form submissions via Flask routes
-- **Legal Templates**: Australian compliance page templates
-
-## Potential Future Integrations
-- **Webhook Support**: Configured for Tally/Formspree/Make webhook integration
-- **Analytics**: Google Analytics integration mentioned in legal config
-- **External Services**: Airtable, Softr, Zapier/Make, Discord integrations planned
+## Frontend Libraries (CDN)
+- Bootstrap 5.3
+- Bootstrap Icons
+- Inter font (Google Fonts)

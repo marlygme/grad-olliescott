@@ -8,8 +8,8 @@ channel = "stable-25_05"
 packages = ["arrow-cpp", "glibcLocales", "pkg-config"]
 
 [deployment]
-run = ["sh", "-c", "python3 main.py"]
-deploymentTarget = "cloudrun"
+run = ["gunicorn", "--bind=0.0.0.0:5000", "--workers=2", "api:app"]
+deploymentTarget = "autoscale"
 
 [[ports]]
 localPort = 5000

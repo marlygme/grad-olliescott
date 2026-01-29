@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Career Match - GradGuide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link href="css/style.css" rel="stylesheet">
+  <link href="css/cookie-banner.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3" href="index.html">
+        <span class="text-primary">Grad</span><span class="text-dark">Guide</span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link fw-medium" href="companies.html">Companies</a></li>
+          <li class="nav-item"><a class="nav-link fw-medium" href="experiences.html">Experiences</a></li>
+          <li class="nav-item"><a class="nav-link fw-medium" href="tracker.html"><i class="bi bi-clipboard-check me-1"></i>Track Job Applications</a></li>
+          <li class="nav-item"><a class="nav-link fw-medium text-primary active" href="law-match.html"><i class="bi bi-compass me-1"></i>Career Match</a></li>
+        </ul>
+        <div class="d-flex gap-2" id="auth-nav"></div>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero-section bg-gradient text-white py-5">
+    <div class="container">
+      <h1 class="display-4 fw-bold mb-3"><i class="bi bi-compass me-3"></i>Career Match</h1>
+      <p class="fs-5">Get personalized firm recommendations based on your profile</p>
+    </div>
+  </section>
+
+  <section class="py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-5">
+          <div class="card shadow-sm">
+            <div class="card-body p-4">
+              <h4 class="card-title mb-4">Your Profile</h4>
+              <form id="matchForm">
+                <div class="mb-3">
+                  <label class="form-label">University *</label>
+                  <select class="form-select" name="university" required>
+                    <option value="">Select your university</option>
+                    <option value="University of Melbourne">University of Melbourne</option>
+                    <option value="Monash University">Monash University</option>
+                    <option value="University of Sydney">University of Sydney</option>
+                    <option value="UNSW">UNSW</option>
+                    <option value="University of Queensland">University of Queensland</option>
+                    <option value="Australian National University">Australian National University</option>
+                    <option value="Macquarie University">Macquarie University</option>
+                    <option value="University of Adelaide">University of Adelaide</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">WAM/GPA</label>
+                  <input type="number" class="form-control" name="wam" min="0" max="100" step="0.1" placeholder="e.g., 75">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Preferred Practice Area</label>
+                  <select class="form-select" name="practice_area">
+                    <option value="">No preference</option>
+                    <option value="Corporate">Corporate / M&A</option>
+                    <option value="Litigation">Litigation / Disputes</option>
+                    <option value="Banking">Banking & Finance</option>
+                    <option value="Property">Property / Real Estate</option>
+                    <option value="Employment">Employment</option>
+                    <option value="IP">Intellectual Property</option>
+                    <option value="Tax">Tax</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Firm Size Preference</label>
+                  <select class="form-select" name="firm_size">
+                    <option value="">No preference</option>
+                    <option value="top_tier">Top Tier (Global)</option>
+                    <option value="mid_tier">Mid Tier (National)</option>
+                    <option value="boutique">Boutique / Specialist</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                  <i class="bi bi-search me-2"></i>Find My Match
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div id="results-container" style="display: none;">
+            <h4 class="mb-4">Your Recommended Firms</h4>
+            <div id="results-list"></div>
+          </div>
+
+          <div id="placeholder" class="text-center py-5">
+            <i class="bi bi-compass text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-4 text-muted">Enter your profile to get recommendations</h4>
+            <p class="text-muted">We'll analyze university representation data to suggest the best firms for you.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-light border-top mt-5">
+    <div class="container py-4">
+      <div class="d-flex flex-wrap gap-3">
+        <a href="terms.html" class="text-muted text-decoration-none">Terms of Use</a>
+        <a href="privacy.html" class="text-muted text-decoration-none">Privacy Policy</a>
+      </div>
+      <div class="mt-3">
+        <small class="text-muted">
+          <i class="bi bi-info-circle me-1"></i>
+          This tool provides general guidance only. Actual hiring decisions depend on many factors beyond university representation.
+        </small>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/cookie-banner.js"></script>
+  <script>
+    const FIRM_UNIVERSITY_DATA = {
+      'Allens': {
+        'University of Melbourne': 25, 'Monash University': 10, 'University of Sydney': 20,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 2, 'Other': 3
+      },
+      'Clayton Utz': {
+        'University of Melbourne': 20, 'Monash University': 15, 'University of Sydney': 20,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 3, 'Other': 2
+      },
+      'Herbert Smith Freehills': {
+        'University of Melbourne': 25, 'Monash University': 10, 'University of Sydney': 20,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 2, 'Other': 3
+      },
+      'Ashurst': {
+        'University of Melbourne': 20, 'Monash University': 15, 'University of Sydney': 20,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 2, 'Other': 3
+      },
+      'MinterEllison': {
+        'University of Melbourne': 15, 'Monash University': 20, 'University of Sydney': 15,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 10, 'University of Adelaide': 2, 'Other': 3
+      },
+      'King & Wood Mallesons': {
+        'University of Melbourne': 25, 'Monash University': 10, 'University of Sydney': 25,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 2, 'University of Adelaide': 1, 'Other': 2
+      },
+      'Corrs Chambers Westgarth': {
+        'University of Melbourne': 20, 'Monash University': 15, 'University of Sydney': 20,
+        'UNSW': 15, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 2, 'Other': 3
+      },
+      'Gilbert + Tobin': {
+        'University of Melbourne': 10, 'Monash University': 5, 'University of Sydney': 30,
+        'UNSW': 30, 'University of Queensland': 5, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 1, 'Other': 4
+      },
+      'Lander & Rogers': {
+        'University of Melbourne': 35, 'Monash University': 25, 'University of Sydney': 5,
+        'UNSW': 5, 'University of Queensland': 5, 'Australian National University': 10,
+        'Macquarie University': 5, 'University of Adelaide': 5, 'Other': 5
+      },
+      'Colin Biggers & Paisley': {
+        'University of Melbourne': 20, 'Monash University': 20, 'University of Sydney': 10,
+        'UNSW': 10, 'University of Queensland': 10, 'Australian National University': 10,
+        'Macquarie University': 10, 'University of Adelaide': 5, 'Other': 5
+      }
+    };
+
+    document.getElementById('matchForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const university = formData.get('university');
+      const wam = parseFloat(formData.get('wam')) || 70;
+
+      if (!university) {
+        alert('Please select your university');
+        return;
+      }
+
+      const results = [];
+      
+      for (const [firm, uniData] of Object.entries(FIRM_UNIVERSITY_DATA)) {
+        const uniPercentage = uniData[university] || uniData['Other'] || 0;
+        let score = uniPercentage;
+        
+        if (wam >= 80) score *= 1.3;
+        else if (wam >= 70) score *= 1.1;
+        else if (wam < 60) score *= 0.8;
+        
+        results.push({
+          firm,
+          score: Math.round(score),
+          uniPercentage,
+          matchLevel: score >= 20 ? 'Strong' : score >= 10 ? 'Good' : 'Moderate'
+        });
+      }
+
+      results.sort((a, b) => b.score - a.score);
+
+      document.getElementById('placeholder').style.display = 'none';
+      document.getElementById('results-container').style.display = 'block';
+
+      document.getElementById('results-list').innerHTML = results.slice(0, 5).map((r, i) => `
+        <div class="card mb-3 shadow-sm">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h5 class="card-title fw-bold mb-1">
+                  ${i + 1}. ${escapeHtml(r.firm)}
+                </h5>
+                <p class="text-muted mb-2">${r.uniPercentage}% of grads from ${escapeHtml(university)}</p>
+              </div>
+              <span class="badge ${r.matchLevel === 'Strong' ? 'bg-success' : r.matchLevel === 'Good' ? 'bg-primary' : 'bg-secondary'}">
+                ${r.matchLevel} Match
+              </span>
+            </div>
+            <a href="company.html?name=${encodeURIComponent(r.firm)}" class="btn btn-outline-primary btn-sm">
+              View Experiences <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+          </div>
+        </div>
+      `).join('');
+    });
+  </script>
+</body>
+</html>

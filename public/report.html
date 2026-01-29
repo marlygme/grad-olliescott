@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report Content - GradGuide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3" href="index.html">
+        <span class="text-primary">Grad</span><span class="text-dark">Guide</span>
+      </a>
+    </div>
+  </nav>
+
+  <section class="py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-6">
+          <h1 class="display-5 fw-bold mb-4">Report Content</h1>
+          <p class="text-muted mb-4">Help us maintain a safe and helpful community</p>
+
+          <div class="card shadow-sm">
+            <div class="card-body p-4">
+              <form id="reportForm">
+                <div class="mb-3">
+                  <label class="form-label">What are you reporting?</label>
+                  <select class="form-select" name="type" required>
+                    <option value="">Select type</option>
+                    <option value="false_info">False or misleading information</option>
+                    <option value="harassment">Harassment or personal attacks</option>
+                    <option value="spam">Spam or promotional content</option>
+                    <option value="confidential">Confidential information</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Link or description of content</label>
+                  <textarea class="form-control" name="description" rows="4" required placeholder="Please provide details about the content you're reporting"></textarea>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label">Your email (optional)</label>
+                  <input type="email" class="form-control" name="email" placeholder="For follow-up if needed">
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="bi bi-flag me-2"></i>Submit Report
+                </button>
+              </form>
+
+              <div id="success-message" class="text-center py-4" style="display: none;">
+                <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Thank you for your report</h5>
+                <p class="text-muted">We will review the content and take appropriate action.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <a href="index.html" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-2"></i>Back to Home</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('reportForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      this.style.display = 'none';
+      document.getElementById('success-message').style.display = 'block';
+    });
+  </script>
+</body>
+</html>

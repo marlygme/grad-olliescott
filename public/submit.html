@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Your Experience - GradGuide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link href="css/style.css" rel="stylesheet">
+  <link href="css/cookie-banner.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold fs-3" href="index.html">
+        <span class="text-primary">Grad</span><span class="text-dark">Guide</span>
+      </a>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link fw-medium" href="companies.html">Companies</a></li>
+          <li class="nav-item"><a class="nav-link fw-medium" href="experiences.html">Experiences</a></li>
+          <li class="nav-item"><a class="nav-link fw-medium" href="tracker.html"><i class="bi bi-clipboard-check me-1"></i>Track Job Applications</a></li>
+          <li class="nav-item"><a class="nav-link fw-medium text-primary" href="law-match.html"><i class="bi bi-compass me-1"></i>Career Match</a></li>
+        </ul>
+        <div class="d-flex gap-2" id="auth-nav"></div>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero-section">
+    <div class="container">
+      <h1 class="hero-title display-4 fw-bold mb-3">Share Your Experience</h1>
+      <p class="hero-subtitle">Help fellow graduates by sharing your journey</p>
+    </div>
+  </section>
+
+  <section class="py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div id="auth-required" class="text-center py-5" style="display: none;">
+            <i class="bi bi-lock text-muted" style="font-size: 4rem;"></i>
+            <h3 class="mt-4">Sign in to share your experience</h3>
+            <p class="text-muted">You need to be logged in to submit an experience.</p>
+          </div>
+
+          <div id="submit-form-container" style="display: none;">
+            <div class="card shadow-sm">
+              <div class="card-body p-4">
+                <form id="submitForm">
+                  <h5 class="mb-4">Basic Information</h5>
+                  
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Company *</label>
+                      <input type="text" class="form-control" name="company" required placeholder="e.g., Allens, Clayton Utz">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Role *</label>
+                      <input type="text" class="form-control" name="role" required placeholder="e.g., Graduate Lawyer, Paralegal">
+                    </div>
+                  </div>
+
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Experience Type</label>
+                      <select class="form-select" name="experience_type">
+                        <option value="">Select type</option>
+                        <option value="Graduate Program">Graduate Program</option>
+                        <option value="Clerkship">Clerkship</option>
+                        <option value="Internship">Internship</option>
+                        <option value="Paralegal">Paralegal</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Theme</label>
+                      <select class="form-select" name="theme">
+                        <option value="">Select theme</option>
+                        <option value="Application Process">Application Process</option>
+                        <option value="Interview Experience">Interview Experience</option>
+                        <option value="Work Culture">Work Culture</option>
+                        <option value="Salary & Benefits">Salary & Benefits</option>
+                        <option value="General Experience">General Experience</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <hr class="my-4">
+                  <h5 class="mb-4">Your Experience</h5>
+
+                  <div class="mb-3">
+                    <label class="form-label">Application Stages</label>
+                    <textarea class="form-control" name="application_stages" rows="3" placeholder="Describe the application process (e.g., online application, video interview, assessment centre)"></textarea>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Interview Experience</label>
+                    <textarea class="form-control" name="interview_experience" rows="3" placeholder="What was the interview like? What questions were asked?"></textarea>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">General Experience</label>
+                    <textarea class="form-control" name="general_experience" rows="4" placeholder="Share your overall experience and thoughts"></textarea>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Culture & Environment</label>
+                    <textarea class="form-control" name="culture_environment" rows="3" placeholder="Describe the work culture and environment"></textarea>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Pro Tip / Advice</label>
+                    <textarea class="form-control" name="pro_tip" rows="3" placeholder="What advice would you give to future applicants?"></textarea>
+                  </div>
+
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                      <i class="bi bi-send me-2"></i>Submit Experience
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div id="success-message" class="text-center py-5" style="display: none;">
+            <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+            <h3 class="mt-4">Thank you for sharing!</h3>
+            <p class="text-muted">Your experience has been submitted and will help fellow graduates.</p>
+            <a href="experiences.html" class="btn btn-primary btn-pill px-4">View All Experiences</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-light border-top mt-5">
+    <div class="container py-4">
+      <div class="d-flex flex-wrap gap-3">
+        <a href="terms.html" class="text-muted text-decoration-none">Terms of Use</a>
+        <a href="privacy.html" class="text-muted text-decoration-none">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/cookie-banner.js"></script>
+  <script>
+    async function checkAuth() {
+      try {
+        const user = await api.getCurrentUser();
+        if (user) {
+          document.getElementById('auth-required').style.display = 'none';
+          document.getElementById('submit-form-container').style.display = 'block';
+        } else {
+          document.getElementById('auth-required').style.display = 'block';
+          document.getElementById('submit-form-container').style.display = 'none';
+        }
+      } catch (e) {
+        document.getElementById('auth-required').style.display = 'block';
+        document.getElementById('submit-form-container').style.display = 'none';
+      }
+    }
+
+    document.getElementById('submitForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const data = Object.fromEntries(formData);
+
+      try {
+        await api.submitExperience(data);
+        document.getElementById('submit-form-container').style.display = 'none';
+        document.getElementById('success-message').style.display = 'block';
+      } catch (error) {
+        alert('Failed to submit experience. Please try again.');
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', checkAuth);
+  </script>
+</body>
+</html>
